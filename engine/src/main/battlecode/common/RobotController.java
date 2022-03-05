@@ -56,34 +56,9 @@ public strictfp interface RobotController {
     int getRobotCount();
 
     /**
-     * Returns the number of Archons on your team.
-     * If this number ever reaches zero, you immediately lose.
-     *
-     * @return the number of Archons on your team
-     *
-     * @battlecode.doc.costlymethod
+     * Returns the number of 
      */
-    int getArchonCount();
 
-    /**
-     * Returns the amount of lead a team has in its reserves.
-     *
-     * @param team the team being queried.
-     * @return the amount of lead a team has in its reserves.
-     *
-     * @battlecode.doc.costlymethod
-     */
-    int getTeamLeadAmount(Team team);
-
-    /**
-     * Returns the amount of gold a team has in its reserves.
-     *
-     * @param team the team being queried.
-     * @return the amount of gold a team has in its reserves.
-     *
-     * @battlecode.doc.costlymethod
-     */
-    int getTeamGoldAmount(Team team);
 
     // *********************************
     // ****** UNIT QUERY METHODS *******

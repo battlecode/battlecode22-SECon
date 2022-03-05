@@ -19,13 +19,13 @@ public class GameConstants {
     public static final int MAP_MIN_HEIGHT = 20;
 
     /** The maximum possible map height. */
-    public static final int MAP_MAX_HEIGHT = 60;
+    public static final int MAP_MAX_HEIGHT = 40;
 
     /** The minimum possible map width. */
     public static final int MAP_MIN_WIDTH = 20;
 
     /** The maximum possible map width. */
-    public static final int MAP_MAX_WIDTH = 60;
+    public static final int MAP_MAX_WIDTH = 40;
 
     /** The minimum number of starting Archons per team. */
     public static final int MIN_STARTING_ARCHONS = 1;
@@ -114,5 +114,5 @@ public class GameConstants {
     public static final int GAME_DEFAULT_SEED = 6370;
 
     /** The maximum number of rounds in a game.  **/
-    public static final int GAME_MAX_NUMBER_OF_ROUNDS = 2000;
+    public static final int GAME_MAX_NUMBER_OF_ROUNDS = 3000;
 }

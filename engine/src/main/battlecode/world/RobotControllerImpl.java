@@ -92,20 +92,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return this.gameWorld.getObjectInfo().getRobotCount(getTeam());
     }
 
-    @Override
-    public int getArchonCount() {
-        return this.gameWorld.getObjectInfo().getRobotTypeCount(getTeam(), RobotType.ARCHON);
-    }
-
-    @Override
-    public int getTeamLeadAmount(Team team) {
-        return this.gameWorld.getTeamInfo().getLead(team);
-    }
-
-    @Override
-    public int getTeamGoldAmount(Team team) {
-        return this.gameWorld.getTeamInfo().getGold(team);
-    }
 
     // *********************************
     // ****** UNIT QUERY METHODS *******
@@ -272,103 +258,22 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return validSensedRobots.toArray(new RobotInfo[validSensedRobots.size()]);
     }
 
-    @Override 
-    public int senseRubble(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
-        return this.gameWorld.getRubble(loc);
-    }
+    // TODO: ADDED FOR SECON
 
     @Override 
-    public int senseLead(MapLocation loc) throws GameActionException {
+    public int senseUranium(MapLocation loc) throws GameActionException {
         assertCanSenseLocation(loc);
-        return this.gameWorld.getLead(loc);
+        return this.gameWorld.getUranium(loc);
     }
 
     @Override 
-    public int senseGold(MapLocation loc) throws GameActionException {
+    public int senseWall(MapLocation loc) throws GameActionException {
         assertCanSenseLocation(loc);
-        return this.gameWorld.getGold(loc);
+        return this.gameWorld.getWall(loc);
     }
 
-    @Override
-    public MapLocation[] senseNearbyLocationsWithLead() {
-        try {
-            return senseNearbyLocationsWithLead(getLocation(), -1, 1);
-        } catch (GameActionException willNeverHappen) {
-            throw new RuntimeException("impossible", willNeverHappen);
-        }
-    }
+    // END TODO
 
-    @Override
-    public MapLocation[] senseNearbyLocationsWithLead(int radiusSquared) throws GameActionException {
-        return senseNearbyLocationsWithLead(getLocation(), radiusSquared, 1);
-    }
-
-    @Override
-    public MapLocation[] senseNearbyLocationsWithLead(MapLocation center, int radiusSquared) throws GameActionException {
-        return senseNearbyLocationsWithLead(center, radiusSquared, 1);
-    }
-
-    @Override
-    public MapLocation[] senseNearbyLocationsWithLead(int radiusSquared, int minLead) throws GameActionException {
-        return senseNearbyLocationsWithLead(getLocation(), radiusSquared, minLead);
-    }
-
-    @Override
-    public MapLocation[] senseNearbyLocationsWithLead(MapLocation center, int radiusSquared, int minLead) throws GameActionException {
-        radiusSquared = (radiusSquared == -1) ? getType().visionRadiusSquared : Math.min(radiusSquared, getType().visionRadiusSquared);
-        if (radiusSquared < 0)
-            throw new GameActionException(CANT_DO_THAT,
-                    "Radius squared must be non-negative.");
-        ArrayList<MapLocation> locations = new ArrayList<>();
-        for (MapLocation loc : this.gameWorld.getAllLocationsWithinRadiusSquared(center, radiusSquared)) {
-            if (this.gameWorld.getLead(loc) >= minLead && canSenseLocation(loc)) {
-                locations.add(loc);
-            }
-        }
-        MapLocation[] result = new MapLocation[locations.size()];
-        return locations.toArray(result);
-    }
-
-    @Override
-    public MapLocation[] senseNearbyLocationsWithGold() {
-        try {
-            return senseNearbyLocationsWithGold(getLocation(), -1, 1);
-        } catch (GameActionException willNeverHappen) {
-            throw new RuntimeException("impossible", willNeverHappen);
-        }
-    }
-
-    @Override
-    public MapLocation[] senseNearbyLocationsWithGold(int radiusSquared) throws GameActionException {
-        return senseNearbyLocationsWithGold(getLocation(), radiusSquared, 1);
-    }
-
-    @Override
-    public MapLocation[] senseNearbyLocationsWithGold(MapLocation center, int radiusSquared) throws GameActionException {
-        return senseNearbyLocationsWithGold(center, radiusSquared, 1);
-    }
-
-    @Override
-    public MapLocation[] senseNearbyLocationsWithGold(int radiusSquared, int minGold) throws GameActionException {
-        return senseNearbyLocationsWithGold(getLocation(), radiusSquared, minGold);
-    }
-
-    @Override
-    public MapLocation[] senseNearbyLocationsWithGold(MapLocation center, int radiusSquared, int minGold) throws GameActionException {
-        radiusSquared = (radiusSquared == -1) ? getType().visionRadiusSquared : Math.min(radiusSquared, getType().visionRadiusSquared);
-        if (radiusSquared < 0)
-            throw new GameActionException(CANT_DO_THAT,
-                    "Radius squared must be non-negative.");
-        ArrayList<MapLocation> locations = new ArrayList<>();
-        for (MapLocation loc : this.gameWorld.getAllLocationsWithinRadiusSquared(center, radiusSquared)) {
-            if (this.gameWorld.getGold(loc) >= minGold && canSenseLocation(loc)) {
-                locations.add(loc);
-            }
-        }
-        MapLocation[] result = new MapLocation[locations.size()];
-        return locations.toArray(result);
-    }
 
     @Override
     public MapLocation adjacentLocation(Direction dir) {
@@ -579,49 +484,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     // *****************************
-    // ******** SAGE METHODS ******* 
-    // *****************************
-
-    private void assertCanEnvision(AnomalyType anomaly) throws GameActionException {
-        assertNotNull(anomaly);
-        assertIsActionReady();
-        if (!getType().canEnvision())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is of type " + getType() + " which cannot envision.");
-        if (!anomaly.isSageAnomaly)
-            throw new GameActionException(CANT_DO_THAT,
-                    "Sage can not use anomaly of type " + anomaly);
-    }
-
-    @Override
-    public boolean canEnvision(AnomalyType anomaly) {
-        try {
-            assertCanEnvision(anomaly);
-            return true;
-        } catch (GameActionException e) { return false; }  
-    }
-
-    @Override
-    public void envision(AnomalyType anomaly) throws GameActionException {
-        assertCanEnvision(anomaly);
-        this.robot.addActionCooldownTurns(getType().actionCooldown);
-        switch (anomaly) {
-            case ABYSS:
-                this.gameWorld.causeAbyssSage(this.robot);
-                this.gameWorld.getMatchMaker().addAction(getID(), Action.LOCAL_ABYSS, locationToInt(getLocation()));
-                break;
-            case CHARGE:
-                this.gameWorld.causeChargeSage(this.robot);
-                this.gameWorld.getMatchMaker().addAction(getID(), Action.LOCAL_CHARGE, locationToInt(getLocation()));
-                break;
-            case FURY:
-                this.gameWorld.causeFurySage(this.robot);
-                this.gameWorld.getMatchMaker().addAction(getID(), Action.LOCAL_FURY, locationToInt(getLocation()));
-                break;
-        }
-    }
-
-    // *****************************
     // ****** REPAIR METHODS *******
     // *****************************
 
@@ -639,23 +501,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (bot.getTeam() != getTeam())
             throw new GameActionException(CANT_DO_THAT,
                     "Robot is not on your team so can't be repaired.");
-    }
-
-    @Override
-    public boolean canRepair(MapLocation loc) {
-        try {
-            assertCanRepair(loc);
-            return true;
-        } catch (GameActionException e) { return false; }  
-    }
-
-    @Override
-    public void repair(MapLocation loc) throws GameActionException {
-        assertCanRepair(loc);
-        this.robot.addActionCooldownTurns(getType().actionCooldown);
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        this.robot.heal(bot);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.REPAIR, bot.getID());
     }
 
     // ***********************

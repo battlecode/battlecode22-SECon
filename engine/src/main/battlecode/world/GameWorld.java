@@ -193,25 +193,20 @@ public strictfp class GameWorld {
         return this.currentRound;
     }
 
-    public int getRubble(MapLocation loc) {
-        return this.rubble[locationToIndex(loc)];
+    // TODO: ADDED FOR SECON
+    public int getWall(MapLocation loc) {
+        return this.wall[locationToIndex(loc)];
     }
 
-    public int getLead(MapLocation loc) {
-        return this.lead[locationToIndex(loc)];
+    public int getUranium(MapLocation loc) {
+        return this.uranium[locationToIndex(loc)];
     }
 
-    public void setLead(MapLocation loc, int amount) {
-        this.lead[locationToIndex(loc)] = amount;
+     public int setUranium(MapLocation loc) {
+        return this.uranium[locationToIndex(loc)];
     }
+    // end functions for SECON
 
-    public int getGold(MapLocation loc) {
-        return this.gold[locationToIndex(loc)];
-    }
-
-    public void setGold(MapLocation loc, int amount) {
-        this.gold[locationToIndex(loc)] = amount;
-    }
 
     /**
      * Helper method that converts a location into an index.
