@@ -651,10 +651,37 @@ locs(obj?:battlecode.schema.VecTable):battlecode.schema.VecTable|null {
 };
 
 /**
+ * The healths of these newly spawned robots
+ *
+ * @param number index
+ * @returns number
+ */
+healths(index: number):number|null {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+};
+
+/**
+ * @returns number
+ */
+healthsLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns Int32Array
+ */
+healthsArray():Int32Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
  * @param flatbuffers.Builder builder
  */
 static startSpawnedBodyTable(builder:flatbuffers.Builder) {
-  builder.startObject(4);
+  builder.startObject(5);
 };
 
 /**
@@ -754,6 +781,35 @@ static addLocs(builder:flatbuffers.Builder, locsOffset:flatbuffers.Offset) {
 
 /**
  * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset healthsOffset
+ */
+static addHealths(builder:flatbuffers.Builder, healthsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(4, healthsOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<number> data
+ * @returns flatbuffers.Offset
+ */
+static createHealthsVector(builder:flatbuffers.Builder, data:number[] | Uint8Array):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt32(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startHealthsVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
  * @returns flatbuffers.Offset
  */
 static endSpawnedBodyTable(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -761,12 +817,13 @@ static endSpawnedBodyTable(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 };
 
-static createSpawnedBodyTable(builder:flatbuffers.Builder, robotIDsOffset:flatbuffers.Offset, teamIDsOffset:flatbuffers.Offset, typesOffset:flatbuffers.Offset, locsOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createSpawnedBodyTable(builder:flatbuffers.Builder, robotIDsOffset:flatbuffers.Offset, teamIDsOffset:flatbuffers.Offset, typesOffset:flatbuffers.Offset, locsOffset:flatbuffers.Offset, healthsOffset:flatbuffers.Offset):flatbuffers.Offset {
   SpawnedBodyTable.startSpawnedBodyTable(builder);
   SpawnedBodyTable.addRobotIDs(builder, robotIDsOffset);
   SpawnedBodyTable.addTeamIDs(builder, teamIDsOffset);
   SpawnedBodyTable.addTypes(builder, typesOffset);
   SpawnedBodyTable.addLocs(builder, locsOffset);
+  SpawnedBodyTable.addHealths(builder, healthsOffset);
   return SpawnedBodyTable.endSpawnedBodyTable(builder);
 }
 }
@@ -1740,7 +1797,7 @@ increasePeriod():number {
 /**
  * @returns number
  */
-leadAdditiveIncease():number {
+uraniumAdditiveIncease():number {
   var offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 };
@@ -1762,10 +1819,10 @@ static addIncreasePeriod(builder:flatbuffers.Builder, increasePeriod:number) {
 
 /**
  * @param flatbuffers.Builder builder
- * @param number leadAdditiveIncease
+ * @param number uraniumAdditiveIncease
  */
-static addLeadAdditiveIncease(builder:flatbuffers.Builder, leadAdditiveIncease:number) {
-  builder.addFieldInt32(1, leadAdditiveIncease, 0);
+static addUraniumAdditiveIncease(builder:flatbuffers.Builder, uraniumAdditiveIncease:number) {
+  builder.addFieldInt32(1, uraniumAdditiveIncease, 0);
 };
 
 /**
@@ -1777,10 +1834,10 @@ static endConstants(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 };
 
-static createConstants(builder:flatbuffers.Builder, increasePeriod:number, leadAdditiveIncease:number):flatbuffers.Offset {
+static createConstants(builder:flatbuffers.Builder, increasePeriod:number, uraniumAdditiveIncease:number):flatbuffers.Offset {
   Constants.startConstants(builder);
   Constants.addIncreasePeriod(builder, increasePeriod);
-  Constants.addLeadAdditiveIncease(builder, leadAdditiveIncease);
+  Constants.addUraniumAdditiveIncease(builder, uraniumAdditiveIncease);
   return Constants.endConstants(builder);
 }
 }

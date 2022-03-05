@@ -44,6 +44,8 @@ table SpawnedBodyTable {
     types: [BodyType];
     /// The locations of the bodies.
     locs: VecTable;
+    /// The healths of these newly spawned robots
+    healths: [int];
 }
 
 /// The map a round is played on.
@@ -170,7 +172,7 @@ table Constants {
     // number of rounds for passive uranium increase
     increasePeriod: int;
     // amounts of uranium added every increasePeriod rounds
-    leadAdditiveIncease: int;
+    uraniumAdditiveIncease: int;
 }
 
 
