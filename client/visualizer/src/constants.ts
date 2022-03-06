@@ -2,18 +2,9 @@ import { schema } from 'battlecode-playback'
 import { Symmetry } from './mapeditor/index'
 
 // Body types
-export const ARCHON = schema.BodyType.ARCHON
-export const BUILDER = schema.BodyType.BUILDER
-export const LABORATORY = schema.BodyType.LABORATORY
-export const MINER = schema.BodyType.MINER
-export const SAGE = schema.BodyType.SAGE
-export const SOLDIER = schema.BodyType.SOLDIER
-export const WATCHTOWER = schema.BodyType.WATCHTOWER
+export const ROBOT = schema.BodyType.ROBOT
 
-export const bodyTypeList: number[] = [ARCHON, WATCHTOWER, LABORATORY, SOLDIER, BUILDER,  MINER, SAGE]
-export const buildingTypeList: number[] = [ARCHON, LABORATORY, WATCHTOWER];
-export const initialBodyTypeList: number[] = [ARCHON]
-export const anomalyList = [0, 1, 2, 3]
+export const bodyTypeList: number[] = [ROBOT]
 
 export const bodyTypePriority: number[] = [] // for guns, drones, etc. that should be drawn over other robots
 
@@ -72,19 +63,7 @@ export const VISION_RADIUS_COLOR = "#0000ff"
 
 export function bodyTypeToSize(bodyType: schema.BodyType) {
   switch (bodyType) {
-    case ARCHON:
-      return 50
-    case WATCHTOWER:
-      return 50
-    case BUILDER:
-      return 25
-    case MINER:
-      return 35
-    case SAGE:
-      return 25
-    case SOLDIER:
-      return 35
-    case LABORATORY:
+    case ROBOT:
       return 50
     default: throw new Error("invalid body type")
   }
@@ -191,20 +170,8 @@ export const SERVER_MAPS: Map<string, MapType> = new Map<string, MapType>([
 
 export function bodyTypeToString(bodyType: schema.BodyType) {
   switch (bodyType) {
-    case ARCHON:
-      return "archon"
-    case WATCHTOWER:
-      return "watchtower"
-    case BUILDER:
-      return "builder"
-    case MINER:
-      return "miner"
-    case SAGE:
-      return "sage"
-    case SOLDIER:
-      return "soldier"
-    case LABORATORY:
-      return "laboratory"
+    case ROBOT:
+      return "robot"
     default: throw new Error("invalid body type")
   }
 }
@@ -218,36 +185,36 @@ export function symmetryToString(symmetry: Symmetry) {
   }
 }
 
-export function anomalyToString(anomaly: schema.Action) {
-  switch (anomaly) {
-    case 3:
-      return "vortex"
-    case 2:
-      return "fury"
-    case 0:
-      return "abyss"
-    case 1:
-      return "charge"
-    default: throw new Error("invalid anomaly")
-  }
-}
+// export function anomalyToString(anomaly: schema.Action) {
+//   switch (anomaly) {
+//     case 3:
+//       return "vortex"
+//     case 2:
+//       return "fury"
+//     case 0:
+//       return "abyss"
+//     case 1:
+//       return "charge"
+//     default: throw new Error("invalid anomaly")
+//   }
+// }
 
-export function abilityToEffectString(effect: number): string | null {
-  switch (effect) {
-    case 1:
-      return "empower"
-    case 2:
-      return "expose"
-    case 3:
-      return "embezzle"
-    case 4:
-      return "camouflage_red"
-    case 5:
-      return "camouflage_blue"
-    default:
-      return null
-  }
-}
+// export function abilityToEffectString(effect: number): string | null {
+//   switch (effect) {
+//     case 1:
+//       return "empower"
+//     case 2:
+//       return "expose"
+//     case 3:
+//       return "embezzle"
+//     case 4:
+//       return "camouflage_red"
+//     case 5:
+//       return "camouflage_blue"
+//     default:
+//       return null
+//   }
+// }
 
 // TODO: fix radius (is this vision that can be toggled in sidebar?)
 export function radiusFromBodyType(bodyType: schema.BodyType) {
