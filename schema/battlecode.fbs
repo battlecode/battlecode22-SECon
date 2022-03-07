@@ -92,9 +92,8 @@ enum Action : byte {
 table BodyTypeMetadata {
     type: BodyType;
     deathThreshold: float;
-    actionCooldown: int;
+    cooldown: int;
     healthDecayPercentage: int;
-    bytecodeLimit: int;
 }
 
 /// Data relevant to a particular team.
