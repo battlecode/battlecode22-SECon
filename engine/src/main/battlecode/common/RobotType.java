@@ -9,16 +9,17 @@ package battlecode.common;
  */
 public enum RobotType {
 
-    // Action Cooldown, Movement Cooldown, Health Decay, Bytecode Limit
+    // Action Cooldown, Health Decay, Health Limit
 
     /**
      * Robots are general-purpose units. They can mine uranium deposts around
-     * the map and explode to attack enemy units. 
+     * the map and explode to attack enemy units. If they move onto an enemy unit,
+     * the two robots initiate a battle. 
      *
      * @battlecode.doc.robottype
      */
-    ROBOT (  10, 10, 0.0007, 100000),
-    //       AC  MC    HD      BL
+    ROBOT (  10, 0.0007, 0.1),
+    //       AC    HD     HL
     ;
 
     /**
@@ -27,24 +28,18 @@ public enum RobotType {
     public final int actionCooldown;
 
     /**
-     * The movement cooldown applied to the robot per move.
-     */
-    public final int movementCooldown;
-
-    /**
      * The fraction of health lost per turn due to radioactive decay.
      */
     public final float healthDecay;
 
     /**
-     * Base bytecode limit of this robot.
+     * The minimum health value before the robot disintegrates.
      */
-    public final int bytecodeLimit;
+    public final float healthLimit;
 
-    RobotType(int actionCooldown, int movementCooldown, float healthDecay, int bytecodeLimit) {
+    RobotType(int actionCooldown, float healthDecay, float healthLimit) {
         this.actionCooldown                 = actionCooldown;
-        this.movementCooldown               = movementCooldown;
         this.healthDecay                    = healthDecay;
-        this.bytecodeLimit                  = bytecodeLimit;
+        this.healthLimit                    = healthLimit;
     }
 }
