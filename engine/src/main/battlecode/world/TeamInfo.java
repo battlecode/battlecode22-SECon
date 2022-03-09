@@ -46,6 +46,16 @@ public class TeamInfo {
         return this.uraniumCounts[team.ordinal()];
     }
 
+    /**
+     * Get the amount of uranium mined.
+     *
+     * @param team the team to query
+     * @return the amount of uranium the team has mined
+     */
+    public int getUraniumMined(Team team) {
+        return this.uraniumMined[team.ordinal()];
+    }
+
     // *********************************
     // ***** UPDATE METHODS ************
     // *********************************
@@ -78,13 +88,20 @@ public class TeamInfo {
         this.uraniumMined[team.ordinal()] += amount;
     }
 
-    public int getRoundLeadChange(Team team) {
+    public int getRoundUraniumChange(Team team) {
         return this.uraniumCounts[team.ordinal()] - this.oldUraniumCounts[team.ordinal()];
+    }
+
+    public int getRoundUraniumMined(Team team) {
+        return this.uraniumMined[team.ordinal()] - this.oldUraniumMined[team.ordinal()];
     }
 
     public void processEndOfRound() {
         if (this.uraniumCounts[0] != this.oldUraniumCounts[0] && this.uraniumCounts[1] != this.oldUraniumCounts[1]) {
             throw new IllegalArgumentException("Both teams uranium can not change");
+        }
+        if (this.uraniumMined[0] != this.oldUraniumMined[0] && this.uraniumMined[1] != this.oldUraniumMined[1]) {
+            throw new IllegalArgumentException("Both teams can not mine uranium");
         }
         this.oldUraniumCounts[0] = this.uraniumCounts[0];
         this.oldUraniumCounts[1] = this.uraniumCounts[1];
