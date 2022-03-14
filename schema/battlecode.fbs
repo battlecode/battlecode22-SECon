@@ -169,7 +169,7 @@ table Constants {
     // number of rounds for passive uranium increase
     increasePeriod: int;
     // amounts of uranium added every increasePeriod rounds
-    leadAdditiveIncrease: int;
+    uraniumAdditiveIncrease: int;
 }
 
 
@@ -218,7 +218,7 @@ table Round {
     /// The IDs of teams in the Game.
     teamIDs: [int];
 
-    /// The total amount of lead change of this team, this round
+    /// The total amount of uranium change of this team, this round
     teamUraniumChanges: [int];
 
     /// The IDs of bodies that moved.

@@ -18,7 +18,7 @@ public enum RobotType {
      *
      * @battlecode.doc.robottype
      */
-    ROBOT (  10, 0.0007, 0.1),
+    ROBOT (  10, 0.0007f, 0.1f),
     //       AC    HD     HL
     ;
 
