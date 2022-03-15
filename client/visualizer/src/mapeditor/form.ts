@@ -593,10 +593,10 @@ export default class MapEditorForm {
   private setAnomalyInfo() {
     while (this.anomalyInfo.firstChild) this.anomalyInfo.removeChild(this.anomalyInfo.firstChild);
     this.anomalies.forEach((anomaly, i) => {
-      let anomaly_str = cst.anomalyToString(anomaly);
+    //   let anomaly_str = cst.anomalyToString(anomaly);
       let round = this.anomalyRounds[i]; 
       let anomaly_el: HTMLSpanElement = document.createElement("div");
-      anomaly_el.innerHTML = `Round ${round}: <b>${anomaly_str}</b>`;
+    //   anomaly_el.innerHTML = `Round ${round}: <b>${anomaly_str}</b>`;
       this.anomalyInfo.appendChild(anomaly_el);
     })
   }

@@ -45,7 +45,7 @@ export default class SymmetryForm {
     this.SYMMETRY_OPTIONS.forEach((option: Symmetry) => {
       let opt = document.createElement("option");
       opt.value = String(option);
-      opt.appendChild(document.createTextNode(cst.symmetryToString(option)));
+    //   opt.appendChild(document.createTextNode(cst.symmetryToString(option)));
       this.select.appendChild(opt);
     });
   }

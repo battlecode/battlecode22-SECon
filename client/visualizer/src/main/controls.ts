@@ -420,13 +420,12 @@ export default class Controls {
   /**
    * Updates the location readout
    */
-  setTileInfo(x: number, y: number, xrel: number, yrel: number, rubble: number, lead: number, gold: number): void {
+  setTileInfo(x: number, y: number, xrel: number, yrel: number, wall: number, uranuium: number): void {
     let content: string = "";
     content += 'X: ' + `<b>${xrel}</b>`.padStart(3) + ` (${x})`.padStart(3);
     content += ' | Y: ' + `<b>${yrel}</b>`.padStart(3) + ` (${y})`.padStart(3);
-    content += ' | Rubble: ' + `<b>${rubble}</b>`;
-    content += ' | Lead: ' + `<b>${lead}</b>`;
-    content += ' | Gold: ' + `<b>${gold}</b>`;
+    content += ' | Wall: ' + `<b>${wall}</b>`;
+    content += ' | Uranium: ' + `<b>${uranuium}</b>`;
 
     this.tileInfo.innerHTML = content;
   }
@@ -439,7 +438,7 @@ export default class Controls {
    * Bytecodes Used: bytecodes"
    */
   // TODO fix this (different stats)
-  setInfoString(id, x: number, y: number, hp: number, max_hp: number, dp: number, bodyType: string, bytecodes: number, level: number, indicatorString: string, parent?: number, portable?: boolean, prototype?: boolean): void {
+  setInfoString(id, x: number, y: number, hp: number, bodyType: string, bytecodes: number, level: number, indicatorString: string, parent?: number): void {
     // console.log(carryDirt);
     if(!indicatorString)
       indicatorString = '&nbsp;'
@@ -447,10 +446,10 @@ export default class Controls {
     let infoString = `<span class="info-name">ID:</span> <span class="info-num">${id}</span> | `;
     infoString += `<span class="info-name">Location:</span> <span class="info-num">(${x}, ${y})</span> | `;
     infoString += `<span class="info-name">Level:</span> <span class="info-num">${level}</span> | `; 
-    if (portable !== undefined && prototype !== undefined) infoString += `<span class="info-name">Mode:</span> <span class="info-num">${portable ? 'Port' : prototype ? 'Prot' : 'Turr'}</span>`;
+    // if (portable !== undefined && prototype !== undefined) infoString += `<span class="info-name">Mode:</span> <span class="info-num">${portable ? 'Port' : prototype ? 'Prot' : 'Turr'}</span>`;
     infoString += `<br>`;
-    infoString += `<span class="info-name">HP:</span> <span class="info-num">${hp}</span> / <span class="info-num">${max_hp}</span> | `;      
-    infoString += `<span class="info-name">DP:</span> <span class="info-num">${dp}</span> | `;    
+    infoString += `<span class="info-name">HP:</span> <span class="info-num">${hp}</span>`; // / <span class="info-num">${max_hp}</span> |       
+    // infoString += `<span class="info-name">DP:</span> <span class="info-num">${dp}</span> | `;    
     infoString += `<span class="info-name">Bytecodes Used:</span> <span class="info-num">${bytecodes}</span>`;
     if (parent !== undefined) infoString += ` | <span class="info-name">Parent:</span> <span class="info-num">${parent}</span>`;
     infoString += `<br><span class="info-name">Indicator String:</span> <span class="info-string"><span class="info-num">${indicatorString}</span></span>`;

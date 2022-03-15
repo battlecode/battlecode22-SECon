@@ -4,7 +4,6 @@ import { AllImages } from '../imageloader';
 import { schema } from 'battlecode-playback';
 import Runner from '../runner';
 import Chart = require('chart.js');
-import { ARCHON } from '../constants';
 
 const hex: Object = {
   1: "#db3627",
@@ -23,8 +22,7 @@ type BuffDisplay = {
 }
 
 type IncomeDisplay = {
-  leadIncome: HTMLSpanElement
-  goldIncome: HTMLSpanElement
+  uraniumIncome: HTMLSpanElement
 }
 
 /**
@@ -238,17 +236,12 @@ export default class Stats {
   private initIncomeDisplays(teamIDs: Array<number>) {
     const incomeDisplays: IncomeDisplay[] = [];
     teamIDs.forEach((id: number) => {
-      const leadIncome = document.createElement("span");
-      const goldIncome = document.createElement("span");
-      leadIncome.style.color = hex[id];
-      leadIncome.style.fontWeight = "bold";
-      leadIncome.textContent = "L: 0";
-      leadIncome.style.padding = "10px";
-      goldIncome.style.color = hex[id];
-      goldIncome.style.fontWeight = "bold";
-      goldIncome.textContent = "G: 0";
-      goldIncome.style.padding = "10px";
-      incomeDisplays[id] = {leadIncome: leadIncome, goldIncome: goldIncome};
+      const uraniumIncome = document.createElement("span");
+      uraniumIncome.style.color = hex[id];
+      uraniumIncome.style.fontWeight = "bold";
+      uraniumIncome.textContent = "L: 0";
+      uraniumIncome.style.padding = "10px";
+      incomeDisplays[id] = {uraniumIncome: uraniumIncome};
     });
     return incomeDisplays;
   }
@@ -266,24 +259,14 @@ export default class Stats {
 
     const row = document.createElement("tr");
 
-    const cellLead = document.createElement("td");
+    const cellUranium = document.createElement("td");
     teamIDs.forEach((id: number) => {
       
       // cell.appendChild(document.createTextNode("1.001"));
       // cell.appendChild(this.buffDisplays[id].numBuffs);
       // cell.appendChild(document.createTextNode(" = "));
-      cellLead.appendChild(this.incomeDisplays[id].leadIncome);
-      row.appendChild(cellLead);
-    });
-
-    const cellGold = document.createElement("td");
-    teamIDs.forEach((id: number) => {
-      
-      // cell.appendChild(document.createTextNode("1.001"));
-      // cell.appendChild(this.buffDisplays[id].numBuffs);
-      // cell.appendChild(document.createTextNode(" = "));
-      cellGold.appendChild(this.incomeDisplays[id].goldIncome);
-      row.appendChild(cellGold);
+      cellUranium.appendChild(this.incomeDisplays[id].uraniumIncome);
+      row.appendChild(cellUranium);
     });
 
     title.appendChild(label);
@@ -618,9 +601,8 @@ export default class Stats {
     else relBar.style.width = String(Math.round(influence * 100 / totalInfluence)) + "%";
   }*/
 
-  setIncome(teamID: number, leadIncome: number, goldIncome: number, turn: number) { // incomes
-    this.incomeDisplays[teamID].leadIncome.textContent = "L: " + String(leadIncome.toFixed(2)); // change incomeDisplays later
-    this.incomeDisplays[teamID].goldIncome.textContent = "G: " + String(goldIncome.toFixed(2));
+  setIncome(teamID: number, uraniumIncome: number, turn: number) { // incomes
+    this.incomeDisplays[teamID].uraniumIncome.textContent = "L: " + String(uraniumIncome.toFixed(2)); // change incomeDisplays later
     if (!this.teamMapToTurnsIncomeSet.has(teamID)) {
       this.teamMapToTurnsIncomeSet.set(teamID, new Set());
     }
@@ -678,26 +660,26 @@ export default class Stats {
     this.tourneyUpload.style.display = this.tourneyUpload.style.display === "none" ? "" : "none";
   }
 
-  resetECs() {
-    while (this.ECs.lastChild) this.ECs.removeChild(this.ECs.lastChild);
-    // console.log(this.ECs);
-    this.ECs.innerHTML = "";
-  }
+//   resetECs() {
+//     while (this.ECs.lastChild) this.ECs.removeChild(this.ECs.lastChild);
+//     // console.log(this.ECs);
+//     this.ECs.innerHTML = "";
+//   }
 
-  addEC(teamID: number, health: number, body_status: number, level: number/*, img: HTMLImageElement */) {
-    const div = document.createElement("div");
-    let size = 1.0/(1 + Math.exp(-(health/100))) + 0.3;
-    div.style.width = (28*size).toString() + "px";
-    div.style.height = (28*size).toString() + "px";
-    div.style.position = 'releative';
-    div.style.top = '50%';
-    div.style.transform  = `translateY(-${50*size - 35}%)`;
-    const img = /* img */this.images.robots.archon[level * 6 + body_status * 2 + teamID].cloneNode() as HTMLImageElement;
-    img.style.width = `${56 * size}px`;
-    img.style.height = `${56 * size}px`; // update dynamically later
-    // img.style.marginTop = `${28*size}px`;
+//   addEC(teamID: number, health: number, body_status: number, level: number/*, img: HTMLImageElement */) {
+//     const div = document.createElement("div");
+//     let size = 1.0/(1 + Math.exp(-(health/100))) + 0.3;
+//     div.style.width = (28*size).toString() + "px";
+//     div.style.height = (28*size).toString() + "px";
+//     div.style.position = 'releative';
+//     div.style.top = '50%';
+//     div.style.transform  = `translateY(-${50*size - 35}%)`;
+//     const img = /* img */this.images.robots.archon[level * 6 + body_status * 2 + teamID].cloneNode() as HTMLImageElement;
+//     img.style.width = `${56 * size}px`;
+//     img.style.height = `${56 * size}px`; // update dynamically later
+//     // img.style.marginTop = `${28*size}px`;
 
-    div.appendChild(img);
-    this.ECs.appendChild(div);
-  }
+//     div.appendChild(img);
+//     this.ECs.appendChild(div);
+//   }
 }

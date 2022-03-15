@@ -134,10 +134,10 @@ export default class MapGenerator {
     // schema.SpawnedBodyTable.addInfluences(builder, influencesVectorB);
     const bodies = schema.SpawnedBodyTable.endSpawnedBodyTable(builder);
 
-    const rubble = schema.GameMap.createRubbleVector(builder, map.rubble);
-    const lead = schema.GameMap.createRubbleVector(builder, map.leadVals);
-    const anomalies = schema.GameMap.createAnomaliesVector(builder, map.anomalies);
-    const anomalyRounds = schema.GameMap.createAnomalyRoundsVector(builder, map.anomalyRounds);
+    // const rubble = schema.GameMap.createRubbleVector(builder, map.rubble);
+    // const lead = schema.GameMap.createRubbleVector(builder, map.leadVals);
+    // const anomalies = schema.GameMap.createAnomaliesVector(builder, map.anomalies);
+    // const anomalyRounds = schema.GameMap.createAnomalyRoundsVector(builder, map.anomalyRounds);
 
     // Create the game map
     let nameP = builder.createString(name);
@@ -148,10 +148,10 @@ export default class MapGenerator {
     schema.GameMap.addSymmetry(builder, map.symmetry);
     schema.GameMap.addBodies(builder, bodies);
     schema.GameMap.addRandomSeed(builder, randomSeed);
-    schema.GameMap.addRubble(builder, rubble);
-    schema.GameMap.addLead(builder, lead);
-    schema.GameMap.addAnomalies(builder, anomalies);
-    schema.GameMap.addAnomalyRounds(builder, anomalyRounds);
+    // schema.GameMap.addRubble(builder, rubble);
+    // schema.GameMap.addLead(builder, lead);
+    // schema.GameMap.addAnomalies(builder, anomalies);
+    // schema.GameMap.addAnomalyRounds(builder, anomalyRounds);
     const gameMap = schema.GameMap.endGameMap(builder);
 
     // Return the game map to write to a file
@@ -216,10 +216,14 @@ export default class MapGenerator {
       name: map.name()!,
       width: maxCorner.x() - minCorner.x(),
       height: maxCorner.y() - minCorner.y(),
-      rubble: Array.from(map.rubbleArray()!),
-      lead: Array.from(map.leadArray()!),
-      anomalies: Array.from(map.anomaliesArray()!),
-      anomalyRounds: Array.from(map.anomalyRoundsArray()!),
+    //   rubble: Array.from(map.rubbleArray()!),
+    //   lead: Array.from(map.leadArray()!),
+    //   anomalies: Array.from(map.anomaliesArray()!),
+    //   anomalyRounds: Array.from(map.anomalyRoundsArray()!),
+    rubble:[],
+    lead:[],
+    anomalies:[],
+    anomalyRounds:[],
       bodies: mapUnits
     };
   }

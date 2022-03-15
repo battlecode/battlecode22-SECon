@@ -13,7 +13,7 @@ export default class AnomalyForm {
   readonly anomaly: HTMLSelectElement;
   readonly round: HTMLInputElement;
 
-  private readonly ANOMALIES = cst.anomalyList;
+  private readonly ANOMALIES = [];
   
   constructor() {
 
@@ -36,7 +36,7 @@ export default class AnomalyForm {
     this.ANOMALIES.forEach((anomaly: schema.Action) => {
       const option = document.createElement("option");
       option.value = String(anomaly);
-      option.appendChild(document.createTextNode(cst.anomalyToString(anomaly)));
+    //   option.appendChild(document.createTextNode(cst.anomalyToString(anomaly)));
       this.anomaly.appendChild(option);
     });
   }

@@ -13,8 +13,8 @@ import AnomalyForm from './forms/anomalies';
 
 import {GameMap} from './form';
 import MapEditorForm from './form';
-import MapEditor from './mapeditor';
+// import MapEditor from './mapeditor';
 
 export {MapGenerator, MapUnit, MapRenderer, MapValidator, UploadedMap}
 export {HeaderForm, RobotForm, Symmetry, SymmetryForm, TileForm, LeadForm, AnomalyForm}
-export {GameMap, MapEditorForm, MapEditor};
+export {GameMap, MapEditorForm/*, MapEditor*/};

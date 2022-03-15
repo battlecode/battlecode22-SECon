@@ -115,7 +115,7 @@ export default class MapRenderer {
     this.ctx.save()
     this.ctx.globalAlpha = 1
 
-    const leadImg = this.imgs.resources.lead
+    const leadImg = this.imgs.resources.uranium
 
     const scale = 1
 

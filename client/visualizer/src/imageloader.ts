@@ -188,7 +188,7 @@ export function loadAll(config: Config, callback: (arg0: AllImages) => void) {
     }
 
 
-    loadImage(result.resources, 'uranium', 'resources/uranium')
+    loadImage(result.resources, 'uranium', 'star')  //resources/uranium
 
     // effects
     // loadImage(result.effects, 'death', 'effects/death/death_empty');
