@@ -251,7 +251,7 @@ export default class Looper {
                 // let conviction = bodies.conviction[index];
                 let hp = bodies.hp[index]; 
                 let bytecodes = bodies.bytecodesUsed[index];
-                let level = bodies.level[index];
+                // let level = bodies.level[index];
                 //let max_hp = level == 1 ? this.meta.types[type].health : level == 2 ? this.meta.types[type].level2Health : this.meta.types[type].level3Health;
                 //let dp = level == 1 ? this.meta.types[type].damage : level == 2 ? this.meta.types[type].level2Damage : this.meta.types[type].level3Damage;
                 let parent = bodies.parent[index];
@@ -259,7 +259,7 @@ export default class Looper {
                 let indicatorString = this.match.current.indicatorStrings[id]
                 // let bid = bodies.bid[index];
 
-                this.controls.setInfoString(id, x, y, hp, cst.bodyTypeToString(type), bytecodes, level, indicatorString, parent !== 0 ? parent : undefined);
+                this.controls.setInfoString(id, x, y, hp, cst.bodyTypeToString(type), bytecodes, indicatorString, parent !== 0 ? parent : undefined);
             }
         }
 

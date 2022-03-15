@@ -10,13 +10,7 @@ let SIZE = 32;
 const maxID = 4096;
 
 const bodyTypeList = [
-  schema.BodyType.MINER,
-  schema.BodyType.ARCHON,
-  schema.BodyType.BUILDER,
-  schema.BodyType.LABORATORY,
-  schema.BodyType.SOLDIER,
-  schema.BodyType.SAGE,
-  schema.BodyType.WATCHTOWER
+  schema.BodyType.ROBOT,
 ];
 
 const bodyVariety = bodyTypeList.length;
@@ -39,11 +33,11 @@ type BodiesType = {
   types: number[],
   xs: number[],
   ys: number[]//,
-  //levels: number[]
+  hps: number[]
 };
 
 type MapType = {
-  rubble: number[],
+  walls: boolean[],
 };
 
 // Class to manage IDs of units
@@ -116,8 +110,8 @@ function makeRandomBodies(manager: IDsManager, unitCount: number): BodiesType{
     teamIDs: Array(unitCount),
     types: Array(unitCount),
     xs: Array(unitCount),
-    ys: Array(unitCount)
-    //levels: Array(unitCount)
+    ys: Array(unitCount),
+    hps: Array(unitCount)
   };
 
   for(let i=0; i<unitCount; i++){
@@ -126,7 +120,7 @@ function makeRandomBodies(manager: IDsManager, unitCount: number): BodiesType{
     bodies.types[i] = bodyTypeList[random(0, bodyVariety-1)];
     bodies.xs[i] = random(0, SIZE-1);
     bodies.ys[i] = random(0, SIZE-1);
-    //bodies.levels[i] = 1; //random(1, 3); TODO: upgrades
+    bodies.hps[i] = 1; //random(1, 3); TODO: upgrades
   }
 
   return bodies;
@@ -136,11 +130,11 @@ function makeRandomBodies(manager: IDsManager, unitCount: number): BodiesType{
 function makeRandomMap(): MapType {
 
   const map: MapType = {
-    rubble: new Array(SIZE*SIZE)
+    walls: new Array(SIZE*SIZE)
   };
   for(let i=0; i<SIZE; i++) for(let j=0; j<SIZE; j++){
     const idxVal = i*SIZE + j;
-    map.rubble[idxVal] = Math.floor(100 * Math.random());
+    map.walls[idxVal] = Math.random() < .1;
   }
 
   return map;
@@ -166,6 +160,7 @@ function createSBTable(builder: flatbuffers.Builder, bodies: BodiesType): flatbu
   const bb_robotIDs = schema.SpawnedBodyTable.createRobotIDsVector(builder, bodies.robotIDs);
   const bb_teamIDs = schema.SpawnedBodyTable.createTeamIDsVector(builder, bodies.teamIDs);
   const bb_types = schema.SpawnedBodyTable.createTypesVector(builder, bodies.types);
+  const bb_healths = schema.SpawnedBodyTable.createHealthsVector(builder, bodies.hps);
   //const bb_influences = schema.SpawnedBodyTable.createInfluencesVector(builder, bodies.influences);
 
   schema.SpawnedBodyTable.startSpawnedBodyTable(builder)
@@ -173,25 +168,29 @@ function createSBTable(builder: flatbuffers.Builder, bodies: BodiesType): flatbu
   schema.SpawnedBodyTable.addRobotIDs(builder, bb_robotIDs);
   schema.SpawnedBodyTable.addTeamIDs(builder, bb_teamIDs);
   schema.SpawnedBodyTable.addTypes(builder, bb_types);
-  //schema.SpawnedBodyTable.addInfluences(builder, bb_influences);
+  schema.SpawnedBodyTable.addHealths(builder, bb_healths);
   return schema.SpawnedBodyTable.endSpawnedBodyTable(builder);
 }
 
 function createMap(builder: flatbuffers.Builder, bodies: number, name: string, map?: MapType): flatbuffers.Offset {
   const bb_name = builder.createString(name);
 
-  let rubble: Array<number>;
-  if (map) rubble = map.rubble;
+  let walls: Array<boolean>;
+  if (map) walls = map.walls;
   else {
-      rubble = new Array(SIZE*SIZE);
-      rubble.fill(0);
+      walls = new Array(SIZE*SIZE);
+      walls.fill(false);
   }
 
   // all values default to zero
-  const bb_rubble = schema.GameMap.createRubbleVector(builder, rubble);
-  const bb_lead = schema.GameMap.createLeadVector(builder, new Array(SIZE*SIZE)); // TODO: interesting lead and anomalies 
-  const bb_anomalies = schema.GameMap.createAnomaliesVector(builder, []);
-  const bb_anomalyRounds = schema.GameMap.createAnomalyRoundsVector(builder, []);
+  const bb_walls = schema.GameMap.createWallsVector(builder, walls);
+  let uranium = new Array(SIZE*SIZE)
+  for(let x = 0; x < SIZE; x++){
+    for(let y = 0; y < SIZE; y++){
+        uranium[x+SIZE*y] = Math.floor(Math.random()*100)
+    }
+  }
+  const bb_uranium = schema.GameMap.createUraniumVector(builder, uranium); // TODO: interesting lead and anomalies 
 
   schema.GameMap.startGameMap(builder);
   schema.GameMap.addName(builder, bb_name);
@@ -202,12 +201,8 @@ function createMap(builder: flatbuffers.Builder, bodies: number, name: string, m
   if(!isNull(bodies)) schema.GameMap.addBodies(builder, bodies);
   schema.GameMap.addRandomSeed(builder, 42);
 
-  schema.GameMap.addRubble(builder, bb_rubble);
-  schema.GameMap.addLead(builder, bb_lead);
-
-  schema.GameMap.addAnomalies(builder, bb_anomalies);
-  schema.GameMap.addAnomalyRounds(builder, bb_anomalyRounds);
-
+  schema.GameMap.addWalls(builder, bb_walls);
+  schema.GameMap.addUranium(builder, bb_uranium);
 
   return schema.GameMap.endGameMap(builder);
 }
@@ -218,7 +213,7 @@ function createGameHeader(builder: flatbuffers.Builder): flatbuffers.Offset {
   // Is there any way to automate this?
   for (const body of bodyTypeList) {
     const btmd = schema.BodyTypeMetadata;
-    if (body in [schema.BodyType.MINER, schema.BodyType.BUILDER, schema.BodyType.SAGE, schema.BodyType.SOLDIER]) {
+    if (body in [schema.BodyType.ROBOT]) {
       var gold_costs = [1]
       var lead_costs = [1]
     }
@@ -226,8 +221,7 @@ function createGameHeader(builder: flatbuffers.Builder): flatbuffers.Offset {
       var gold_costs = [1,2,3]
       var lead_costs = [1,2,3]
     }
-    bodies.push(btmd.createBodyTypeMetadata(builder, body, lead_costs[0], gold_costs[0], lead_costs[1], gold_costs[1], lead_costs[2], gold_costs[2], 
-                                           10, 10, 2, 6, 10, 3, 5, 11, 4, 6, 10000)); //TODO: make robots interesting
+    bodies.push(btmd.createBodyTypeMetadata(builder, body, .1, .005, 10, 10000)); //TODO: make robots interesting
   }
 
   const teams: flatbuffers.Offset[] = [];
@@ -247,7 +241,7 @@ function createGameHeader(builder: flatbuffers.Builder): flatbuffers.Offset {
   
   schema.Constants.startConstants(builder);
   schema.Constants.addIncreasePeriod(builder, 20);
-  schema.Constants.addLeadAdditiveIncease(builder, 5);
+  schema.Constants.addUraniumAdditiveIncease(builder, 5);
   const constants = schema.Constants.endConstants(builder);
 
   schema.GameHeader.startGameHeader(builder);
@@ -347,7 +341,7 @@ function createStandGame(turns: number) {
 
   robotIDs.push(i);
   teamIDs.push(1);
-  types.push(schema.BodyType.SAGE);
+//   types.push(schema.BodyType.SAGE);
   xs[i] = Math.floor(i/2) * 2 + 5;
   ys[i] = 5*(i%2)+5;  
 
@@ -529,7 +523,6 @@ function createWanderGame(turns: number, unitCount: number, doActions: boolean =
   const xs = bodies.xs;
   const ys = bodies.ys;
 
-  let building_types = [schema.BodyType.ARCHON, schema.BodyType.LABORATORY, schema.BodyType.WATCHTOWER];
   for (let i = 1; i < turns+1; i++) {
     let buildings=[]
     // movement
@@ -538,9 +531,7 @@ function createWanderGame(turns: number, unitCount: number, doActions: boolean =
         velxs[j] = random(-1, 1);
         velys[j] = random(-1, 1);
       }
-      if(building_types.indexOf(bodies.types[j]) > -1 ){
-        buildings.push(bodies.robotIDs[j])
-      }
+
       xs[j] = trimEdge(xs[j] + velxs[j], 0, SIZE-1);
       ys[j] = trimEdge(ys[j] + velys[j], 0, SIZE-1);
       if(xs[j] === 0 || xs[j] == SIZE-1) velxs[j] = -velxs[j];
@@ -561,41 +552,26 @@ function createWanderGame(turns: number, unitCount: number, doActions: boolean =
         let actionTarget: number | null = null;
         let possible_actions = []
         switch (bodies.types[j]) {
-            case schema.BodyType.MINER:
-              possible_actions = [schema.Action.MINE_GOLD, schema.Action.MINE_LEAD]; // got rid of spawn unit for now because it causes problems
-              break;
-            case schema.BodyType.ARCHON:
-              possible_actions = [schema.Action.FULLY_REPAIRED, schema.Action.TRANSFORM]; // got rid of spawn unit for now because it causes problems
-              break;
-            case schema.BodyType.SOLDIER:
-              possible_actions = [schema.Action.ATTACK];
-              break;
-            case schema.BodyType.BUILDER:
-              possible_actions = [schema.Action.REPAIR, schema.Action.MUTATE]; // got rid of spawn unit for now because it causes problems
-              break;
-            case schema.BodyType.LABORATORY:
-              possible_actions = [schema.Action.TRANSMUTE, schema.Action.FULLY_REPAIRED, schema.Action.TRANSFORM];
-              break;
-            case schema.BodyType.SAGE:
-              possible_actions = [schema.Action.ATTACK, schema.Action.LOCAL_ABYSS, schema.Action.LOCAL_CHARGE, schema.Action.LOCAL_FURY];
-              break;
-            case schema.BodyType.WATCHTOWER:
-              possible_actions = [schema.Action.ATTACK, schema.Action.LOCAL_CHARGE, schema.Action.LOCAL_FURY];
+            case schema.BodyType.ROBOT:
+              possible_actions = [schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, 
+                schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, 
+                schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, 
+                schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.EXPLODE]; // got rid of spawn unit for now because it causes problems
               break;
             default:
               break;
         }
         action = possible_actions[Math.floor(Math.random() * possible_actions.length)];
-        let building_target_actions = [schema.Action.REPAIR, schema.Action.MUTATE]
-        if (action !== null) {
-          if (building_target_actions.indexOf(action) > -1){
-            actionTarget = buildings[Math.floor(Math.random() * buildings.length)];
-          }
-          actionIDs.push(bodies.robotIDs[j]);
-          actions.push(action);
+        // let building_target_actions = [schema.Action.REPAIR, schema.Action.MUTATE]
+        // if (action !== null) {
+        //   if (building_target_actions.indexOf(action) > -1){
+        //     actionTarget = buildings[Math.floor(Math.random() * buildings.length)];
+        //   }
+        //   actionIDs.push(bodies.robotIDs[j]);
+        //   actions.push(action);
 
-          actionTargets.push(actionTarget);
-        }
+        //   actionTargets.push(actionTarget);
+        // }
       }
     }
 
@@ -603,15 +579,10 @@ function createWanderGame(turns: number, unitCount: number, doActions: boolean =
     const bb_actions = schema.Round.createActionsVector(builder, actions);
     const bb_actionTargets = schema.Round.createActionTargetsVector(builder, actionTargets);
 
-    const goldXs = [Math.floor(SIZE*Math.random())]
-    const goldYs = [Math.floor(SIZE*Math.random())]
-    const goldLocs = createVecTable(builder, goldXs, goldYs);
-    const goldVals = schema.Round.createGoldDropValuesVector(builder, [Math.floor(100*Math.random())]);
-
-    const leadXs = [Math.floor(SIZE*Math.random())]
-    const leadYs = [Math.floor(SIZE*Math.random())]
-    const leadLocs = createVecTable(builder, leadXs, leadYs);
-    const leadVals = schema.Round.createLeadDropValuesVector(builder, [Math.floor(100*Math.random())]);
+    // const uraniumXs = [Math.floor(SIZE*Math.random())]
+    // const uraniumYs = [Math.floor(SIZE*Math.random())]
+    // const uraniumLocs = createVecTable(builder, uraniumXs, uraniumYs);
+    // const uraniumVals = schema.Round.createUraniumDropValuesVector(builder, [Math.floor(100*Math.random())]);
 
     schema.Round.startRound(builder);
     schema.Round.addRoundID(builder, i);
@@ -621,10 +592,8 @@ function createWanderGame(turns: number, unitCount: number, doActions: boolean =
     schema.Round.addActions(builder, bb_actions);
     schema.Round.addActionTargets(builder, bb_actionTargets);
     
-    schema.Round.addGoldDropLocations(builder, goldLocs);
-    schema.Round.addGoldDropValues(builder, goldVals);
-    schema.Round.addLeadDropLocations(builder, leadLocs);
-    schema.Round.addLeadDropValues(builder, leadVals);
+    // schema.Round.addUraniumDropLocations(builder, uraniumLocs);
+    // schema.Round.addUraniumDropValues(builder, uraniumVals);
 
     events.push(createEventWrapper(builder, schema.Round.endRound(builder), schema.Event.Round));
   }

@@ -608,25 +608,25 @@ export default class Stats {
     }
     let teamTurnsIncomeSet = this.teamMapToTurnsIncomeSet.get(teamID);
     
-    if (!teamTurnsIncomeSet!.has(turn)) {
-      //@ts-ignore
-      this.incomeChartLead.data.datasets![teamID - 1].data?.push({y: leadIncome, x: turn});
-      //@ts-ignore
-      this.incomeChartGold.data.datasets![teamID - 1].data?.push({y: goldIncome, x: turn});
-      this.incomeChartLead.data.datasets?.forEach((d) => {
-        d.data?.sort((a, b) => a.x - b.x);
-      });
-      this.incomeChartGold.data.datasets?.forEach((d) => {
-        d.data?.sort((a, b) => a.x - b.x);
-      });
-      teamTurnsIncomeSet?.add(turn);
-      this.incomeChartLead.update();
-      this.incomeChartGold.update();
+//     if (!teamTurnsIncomeSet!.has(turn)) {
+//       //@ts-ignore
+//       this.incomeChartLead.data.datasets![teamID - 1].data?.push({y: uraniumIncome, x: turn});
+//       //@ts-ignore
+//       this.incomeChartGold.data.datasets![teamID - 1].data?.push({y: goldIncome, x: turn});
+//       this.incomeChartLead.data.datasets?.forEach((d) => {
+//         d.data?.sort((a, b) => a.x - b.x);
+//       });
+//       this.incomeChartGold.data.datasets?.forEach((d) => {
+//         d.data?.sort((a, b) => a.x - b.x);
+//       });
+//       teamTurnsIncomeSet?.add(turn);
+//       this.incomeChartLead.update();
+//       this.incomeChartGold.update();
+//     }
+//     // update bars here
+//     //console.log(teamID, count, "fsdfsdf");
+//     //if(robotType === ARCHON) this.updateRelBars(teamID, count);
     }
-    // update bars here
-    //console.log(teamID, count, "fsdfsdf");
-    //if(robotType === ARCHON) this.updateRelBars(teamID, count);
-  }
   
   updateBars(teamLead: Array<number>, teamGold: Array<number>){
     this.updateRelBars(teamLead, teamGold);

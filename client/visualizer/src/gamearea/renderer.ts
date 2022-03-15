@@ -109,8 +109,8 @@ export default class Renderer {
 
 
             //since tiles arent completely opaque
-            if (!this.conf.doingRotate) this.ctx.clearRect(cx, cy, scale + .5, scale + .5)
-            else this.ctx.clearRect(cx, cy, scale + .5, scale + .5)
+            if (!this.conf.doingRotate) this.ctx.clearRect(cx, cy, scale + 1, scale + 1)
+            else this.ctx.clearRect(cx, cy, scale + 1, scale + 1)
 
             // RUBBLE BASED SYSTEM =======================================================================
             // Fetch and draw tile image
@@ -118,12 +118,16 @@ export default class Renderer {
             //   const tileImg = this.imgs.tiles[swampLevel]
 
             //+1 is so that there arent gaps in the map
-            //   if (!this.conf.doingRotate) this.ctx.drawImage(tileImg, cx, cy, scale + .5, scale + .5)
-            //   else this.ctx.drawImage(tileImg, cy, cx, scale + .5, scale + .5)
+            //   if (!this.conf.doingRotate) this.ctx.drawImage(tileImg, cx, cy, scale+ 1, scale+ 1)
+            //   else this.ctx.drawImage(tileImg, cy, cx, scale+ 1, scale+ 1)
             // ===========================================================================================
 
-            if (!this.conf.doingRotate) this.ctx.fillRect(cx, cy, scale + .5, scale + .5)
-            else this.ctx.fillRect(cy, cx, scale + .5, scale + .5)
+            this.ctx.fillStyle = map.walls[idxVal] ? "black" : "white";
+
+            if (!this.conf.doingRotate) this.ctx.fillRect(cx, cy, scale + 1, scale + 1)
+            else this.ctx.fillRect(cy, cx, scale + 1, scale + 1)
+
+
 
             // Draw grid
             if (this.conf.showGrid) {

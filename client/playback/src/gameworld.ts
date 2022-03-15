@@ -600,7 +600,6 @@ export default class GameWorld {
     var teams = bodies.teamIDsArray();
     var types = bodies.typesArray();
     var hps = bodies.healthsArray();
-
     // Update spawn stats
     for (let i = 0; i < bodies.robotIDsLength(); i++) {
       // if(teams[i] == 0) continue;
