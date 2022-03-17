@@ -173,6 +173,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         } catch (GameActionException e) { return false; }
     }
 
+    @Override
+    public boolean isLocationOccupied(MapLocation loc) throws GameActionException {
+        assertCanSenseLocation(loc);
+        return this.gameWorld.getRobot(loc) != null;
+    }
 
     @Override
     public boolean canSenseRobotAtLocation(MapLocation loc) {
@@ -264,26 +269,23 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** READINESS METHODS **********
     // ***********************************
 
-    private void assertIsMovementReady() throws GameActionException {
-        if (!this.robot.getMode().canMove)
-            throw new GameActionException(CANT_DO_THAT,
-                    "This robot is not in a mode that can move.");
-        if (!this.robot.canMoveCooldown())
+    private void assertIsMovementOrActionReady() throws GameActionException {
+        if (!this.robot.canMoveOrActCooldown())
             throw new GameActionException(IS_NOT_READY,
-                    "This robot's movement cooldown has not expired.");
+                    "This robot's cooldown has not expired.");
     }
 
     @Override
-    public boolean isMovementReady() {
+    public boolean isMovementOrActionReady() {
         try {
-            assertIsMovementReady();
+            assertIsMovementOrActionReady();
             return true;
         } catch (GameActionException e) { return false; }
     }
 
     @Override
-    public int getMovementCooldownTurns() {
-        return this.robot.getMovementCooldownTurns();
+    public int getCooldownTurns() {
+        return this.robot.getCooldownTurns();
     }
 
     // ***********************************
@@ -292,14 +294,19 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanMove(Direction dir) throws GameActionException {
         assertNotNull(dir);
-        assertIsMovementReady();
+        assertIsMovementOrActionReady();
         MapLocation loc = adjacentLocation(dir);
         if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
                     "Can only move to locations on the map; " + loc + " is not on the map.");
-        if (isLocationOccupied(loc))
+        if (isLocationOccupied(loc) && this.gameWorld.getRobot(loc).getTeam() == this.robot.getTeam()){
             throw new GameActionException(CANT_MOVE_THERE,
-                    "Cannot move to an occupied location; " + loc + " is occupied.");
+                 "Cannot move to location " + loc " due to friendly robot occupying it.");
+        }
+        if (this.gameWorld.getWall(loc)){
+            throw new GameActionException(CANT_MOVE_THERE,
+                "Cannot move to location " + loc " due to wall occupying it.");
+        }
     }
 
     @Override
@@ -308,17 +315,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
             assertCanMove(dir);
             return true;
         } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public void move(Direction dir) throws GameActionException {
-        assertCanMove(dir);
-        MapLocation center = adjacentLocation(dir);
-        this.gameWorld.moveRobot(getLocation(), center);
-        this.robot.setLocation(center);
-        // this has to happen after robot's location changed because rubble
-        this.robot.addMovementCooldownTurns(getType().movementCooldown);
-        this.gameWorld.getMatchMaker().addMoved(getID(), getLocation());
     }
 
     // ***********************************
@@ -404,26 +400,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot bot = this.gameWorld.getRobot(loc);
         this.robot.attack(bot);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
-    }
-
-    // *****************************
-    // ****** REPAIR METHODS *******
-    // *****************************
-
-    private void assertCanRepair(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        assertCanActLocation(loc);
-        assertIsActionReady();
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        if (bot == null)
-            throw new GameActionException(NO_ROBOT_THERE,
-                    "There is no robot to repair at the target location.");
-        if (!getType().canRepair(bot.getType()))
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is of type " + getType() + " which cannot repair robots of type " + bot.getType() + ".");
-        if (bot.getTeam() != getTeam())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is not on your team so can't be repaired.");
     }
 
     // ***********************

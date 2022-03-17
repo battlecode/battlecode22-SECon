@@ -220,15 +220,14 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * Handles logic regarding a robot that steps on another robot.
      * @param the bot present on the square before
      */
-
     public void collide(InternalRobot bot){
-        if(Math.abs(bot.getHealth() - this.getHealth()) <= GameConstants.COLLISION_EQUALITY_THRESHOLD){
+        if (Math.abs(bot.getHealth() - this.getHealth()) <= GameConstants.COLLISION_EQUALITY_THRESHOLD){
             bot.controller.disintegrate();
             this.controller.disintegrate();
         }
         else {
             int partialDamage = Math.abs(bot.getHealth() - this.getHealth()) + 1;
-            if(this.getHealth() < bot.getHealth()){
+            if (this.getHealth() < bot.getHealth()){
                 this.controller.disintegrate();
                 bot.damageHealth(bot.getHealth() - partialDamage);
             }
@@ -237,6 +236,21 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 this.damageHealth(this.getHealth() - partialDamage);
             }
         }
+    }
+
+    @Override
+    public void move(Direction dir) throws GameActionException {
+        this.controller.assertCanMove(dir);
+        MapLocation center = this.controller.adjacentLocation(dir);
+        this.gameWorld.moveRobot(this.controller.getLocation(), center);
+        this.controller.robot.setLocation(center);
+        // process collisions
+        if (this.controller.isLocationOccupied(loc)){
+            this.collide(this.gameWorld.getRobot(loc));
+        }
+        // this has to happen after robot's location changed because rubble
+        this.robot.resetCooldownTurns();
+        this.gameWorld.getMatchMaker().addMoved(getID(), getLocation());
     }
 
     // *********************************
@@ -259,13 +273,16 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
         // indicator strings!
         this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
-        this.roundsAlive++;
-        this.controller.damageHealth(this.type.healthDecay * this.getHealth());
+
     }
 
     public void processEndOfRound() {
-        if(this.getHealth() < this.type.healthLimit)
+        this.controller.damageHealth(this.type.healthDecay * this.getHealth());
+        if (this.getHealth() < this.type.healthLimit){
             this.controller.disintegrate();
+            return;
+        }
+        this.roundsAlive++;
     }
 
     // *********************************
