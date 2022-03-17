@@ -106,6 +106,9 @@ public class GameConstants {
     public static final double ALCHEMIST_LONELINESS_K_L2 = 0.01;
     public static final double ALCHEMIST_LONELINESS_K_L3 = 0.005;
 
+    /** The threshold for considering two colliding robots to be of equal health. */
+    public static final int COLLISION_EQUALITY_THRESHOLD = 1;
+
     // *********************************
     // ****** GAMEPLAY PROPERTIES ******
     // *********************************

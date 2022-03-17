@@ -28,9 +28,9 @@ public strictfp class GameWorld {
     protected final IDGenerator idGenerator;
     protected final GameStats gameStats;
 
-    private int[] rubble;
-    private int[] lead;
-    private int[] gold;
+    private int[] walls;
+    private int[] uranium;
+    private MapLocation[] spawnLocs;
     private InternalRobot[][] robots;
     private final LiveMap gameMap;
     private final TeamInfo teamInfo;
@@ -44,9 +44,9 @@ public strictfp class GameWorld {
 
     @SuppressWarnings("unchecked")
     public GameWorld(LiveMap gm, RobotControlProvider cp, GameMaker.MatchMaker matchMaker) {
-        this.rubble = gm.getRubbleArray();
-        this.lead = gm.getLeadArray();
-        this.gold = new int[this.lead.length];
+        this.walls = gm.getWallArray();
+        this.uranium = gm.getUraniumArray();
+        this.spawnLocs = gm.getSpawnLocs();
         this.robots = new InternalRobot[gm.getWidth()][gm.getHeight()]; // if represented in cartesian, should be height-width, but this should allow us to index x-y
         this.currentRound = 0;
         this.idGenerator = new IDGenerator(gm.getSeed());
@@ -73,10 +73,8 @@ public strictfp class GameWorld {
         this.teamInfo = new TeamInfo(this);
 
         // Add initial amounts of resource
-        this.teamInfo.addLead(Team.A, GameConstants.INITIAL_LEAD_AMOUNT);
-        this.teamInfo.addLead(Team.B, GameConstants.INITIAL_LEAD_AMOUNT);
-        this.teamInfo.addGold(Team.A, GameConstants.INITIAL_GOLD_AMOUNT);
-        this.teamInfo.addGold(Team.B, GameConstants.INITIAL_GOLD_AMOUNT);
+        this.teamInfo.addUranium(Team.A, GameConstants.INITIAL_URANIUM_AMOUNT);
+        this.teamInfo.addUranium(Team.B, GameConstants.INITIAL_URANIUM_AMOUNT);
 
         // Write match header at beginning of match
         this.matchMaker.makeMatchHeader(this.gameMap);
@@ -104,7 +102,11 @@ public strictfp class GameWorld {
             this.processBeginningOfRound();
             this.controlProvider.roundStarted();
 
-            updateDynamicBodies();
+            int teamIndex = this.getCurrentRound() % 2;
+            Team teamToPlay = Team.values()[teamIndex];
+            // TODO: there may be a safer way to do above because the enum is technically of length 3
+
+            updateDynamicBodies(teamToPlay);
 
             this.controlProvider.roundEnded();
             this.processEndOfRound();
@@ -123,22 +125,26 @@ public strictfp class GameWorld {
         return GameState.RUNNING;
     }
 
-    private void updateDynamicBodies() {
+    private void updateDynamicBodies(Team teamToPlay) {
         objectInfo.eachDynamicBodyByExecOrder((body) -> {
             if (body instanceof InternalRobot) {
-                return updateRobot((InternalRobot) body);
+                return updateRobot((InternalRobot) body, teamToPlay);
             } else {
                 throw new RuntimeException("non-robot body registered as dynamic");
             }
         });
     }
 
-    private boolean updateRobot(InternalRobot robot) {
-        robot.processBeginningOfTurn();
-        this.controlProvider.runRobot(robot);
-        robot.setBytecodesUsed(this.controlProvider.getBytecodesUsed(robot));
-        robot.processEndOfTurn();
+    private boolean updateRobot(InternalRobot robot, Team teamToPlay) {
+        if (robot.getTeam() == teamToPlay) {
+            robot.processBeginningOfTurn();
+            this.controlProvider.runRobot(robot);
+            robot.setBytecodesUsed(this.controlProvider.getBytecodesUsed(robot));
+            robot.processEndOfTurn();
+        }
 
+        // TODO: does below still need to be done, also why is this returning True?
+        
         // If the robot terminates but the death signal has not yet
         // been visited:
         if (this.controlProvider.getTerminated(robot) && objectInfo.getRobotByID(robot.getID()) != null)
@@ -193,20 +199,21 @@ public strictfp class GameWorld {
         return this.currentRound;
     }
 
-    // TODO: ADDED FOR SECON
     public int getWall(MapLocation loc) {
-        return this.wall[locationToIndex(loc)];
+        return this.walls[locationToIndex(loc)];
     }
 
     public int getUranium(MapLocation loc) {
         return this.uranium[locationToIndex(loc)];
     }
 
-     public int setUranium(MapLocation loc) {
-        return this.uranium[locationToIndex(loc)];
+    public void setUranium(MapLocation loc, int amount) {
+        this.uranium[locationToIndex(loc)] = amount;
     }
-    // end functions for SECON
 
+    public MapLocation getSpawnLoc(Team team) {
+        return this.spawnLocs[team.ordinal()];
+    }
 
     /**
      * Helper method that converts a location into an index.
@@ -291,15 +298,6 @@ public strictfp class GameWorld {
         return getAllLocationsWithinRadiusSquared(new MapLocation(0, 0), Integer.MAX_VALUE);
     }
 
-    /**
-     * @param cooldown without multiplier applied
-     * @param location with rubble of interest, if any
-     * @return the cooldown due to rubble
-     */
-    public int getCooldownWithMultiplier(int cooldown, MapLocation location) {
-        return (int) ((1 + getRubble(location) / 10.0) * cooldown);
-    }
-
     // *********************************
     // ****** GAMEPLAY *****************
     // *********************************
@@ -321,75 +319,54 @@ public strictfp class GameWorld {
     }
 
     /**
-     * @return whether a team has more archons
+     * @return whether a team has a greater net Uranium value
      */
-    public boolean setWinnerIfMoreArchons() {
-        int archonCountA = this.objectInfo.getRobotTypeCount(Team.A, RobotType.ARCHON);
-        int archonCountB = this.objectInfo.getRobotTypeCount(Team.B, RobotType.ARCHON);
-
-        if (archonCountA > archonCountB) {
-            setWinner(Team.A, DominationFactor.MORE_ARCHONS);
-            return true;
-        } else if (archonCountA < archonCountB) {
-            setWinner(Team.B, DominationFactor.MORE_ARCHONS);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @return whether a team has a greater net Au value
-     */
-    public boolean setWinnerIfMoreGoldValue() {
-        int[] totalGoldValues = new int[2];
+    public boolean setWinnerIfMoreUraniumValue() {
+        int[] totalUraniumValues = new int[2];
 
         // consider team reserves
-        totalGoldValues[Team.A.ordinal()] += this.teamInfo.getGold(Team.A);
-        totalGoldValues[Team.B.ordinal()] += this.teamInfo.getGold(Team.B);
+        totalUraniumValues[Team.A.ordinal()] += this.teamInfo.getUranium(Team.A);
+        totalUraniumValues[Team.B.ordinal()] += this.teamInfo.getUranium(Team.B);
         
         // sum live robots worth
-        for (InternalRobot robot : objectInfo.robotsArray()) {
-            totalGoldValues[robot.getTeam().ordinal()] += robot.getType().getGoldWorth(robot.getLevel());
-        }
-        if (totalGoldValues[0] > totalGoldValues[1]) {
-            setWinner(Team.A, DominationFactor.MORE_GOLD_NET_WORTH);
+        for (InternalRobot robot : objectInfo.robotsArray())
+            totalUraniumValues[robot.getTeam().ordinal()] += robot.getUraniumWorth();
+        
+        if (totalUraniumValues[0] > totalUraniumValues[1]) {
+            setWinner(Team.A, DominationFactor.MORE_URANIUM_NET_WORTH);
             return true;
-        } else if (totalGoldValues[1] > totalGoldValues[0]) {
-            setWinner(Team.B, DominationFactor.MORE_GOLD_NET_WORTH);
+        } else if (totalUraniumValues[1] > totalUraniumValues[0]) {
+            setWinner(Team.B, DominationFactor.MORE_URANIUM_NET_WORTH);
             return true;
         }
         return false;
     }
 
     /**
-     * @return whether a team has a greater net Pb value
+     * @return whether a team has mined more uranium
      */
-    public boolean setWinnerIfMoreLeadValue() {
-        int[] totalLeadValues = new int[2];
+    public boolean setWinnerIfMoreUraniumMined() {
+        int[] uraniumMined = new int[2];
 
         // consider team reserves
-        totalLeadValues[Team.A.ordinal()] += this.teamInfo.getLead(Team.A);
-        totalLeadValues[Team.B.ordinal()] += this.teamInfo.getLead(Team.B);
-
-        // sum live robot worth
-        for (InternalRobot robot : objectInfo.robotsArray()) {
-            totalLeadValues[robot.getTeam().ordinal()] += robot.getType().getLeadWorth(robot.getLevel());
-        }
-        if (totalLeadValues[0] > totalLeadValues[1]) {
-            setWinner(Team.A, DominationFactor.MORE_LEAD_NET_WORTH);
+        uraniumMined[Team.A.ordinal()] += this.teamInfo.getUraniumMined(Team.A);
+        uraniumMined[Team.B.ordinal()] += this.teamInfo.getUraniumMined(Team.B);
+        
+        if (uraniumMined[0] > uraniumMined[1]) {
+            setWinner(Team.A, DominationFactor.MORE_URANIUM_MINED);
             return true;
-        } else if (totalLeadValues[1] > totalLeadValues[0]) {
-            setWinner(Team.B, DominationFactor.MORE_LEAD_NET_WORTH);
+        } else if (uraniumMined[1] > uraniumMined[0]) {
+            setWinner(Team.B, DominationFactor.MORE_URANIUM_MINED);
             return true;
         }
         return false;
     }
 
     /**
-     * Sets a winner arbitrarily. Hopefully this is actually random.
+     * Sets winner to be Team B (Blue team) since they get second turn.
      */
-    public void setWinnerArbitrary() {
-        setWinner(Math.random() < 0.5 ? Team.A : Team.B, DominationFactor.WON_BY_DUBIOUS_REASONS);
+    public void setWinnerBlue() {
+        setWinner(Team.B, DominationFactor.WON_BY_BEING_BLUE);
     }
 
     public boolean timeLimitReached() {
@@ -397,9 +374,9 @@ public strictfp class GameWorld {
     }
 
     public void processEndOfRound() {
-        // Add lead resources to the team
-        this.teamInfo.addLead(Team.A, GameConstants.PASSIVE_LEAD_INCREASE);
-        this.teamInfo.addLead(Team.B, GameConstants.PASSIVE_LEAD_INCREASE);
+        // Add uranium resources to the team
+        this.teamInfo.addUranium(Team.A, GameConstants.PASSIVE_URANIUM_INCREASE);
+        this.teamInfo.addUranium(Team.B, GameConstants.PASSIVE_URANIUM_INCREASE);
 
         // Process end of each robot's round
         objectInfo.eachRobot((robot) -> {
@@ -407,33 +384,22 @@ public strictfp class GameWorld {
             return true;
         });
 
-        // Trigger any anomalies
-        // note: singularity is handled below in the "check for end of match"
-        AnomalyScheduleEntry nextAnomaly = this.gameMap.viewNextAnomaly();
-        if (nextAnomaly != null && nextAnomaly.roundNumber == this.currentRound) {
-            AnomalyType anomaly = this.gameMap.takeNextAnomaly().anomalyType;
-            if (anomaly == AnomalyType.ABYSS) causeAbyssGlobal();
-            if (anomaly == AnomalyType.CHARGE) causeChargeGlobal();
-            if (anomaly == AnomalyType.FURY) causeFuryGlobal();
-            if (anomaly == AnomalyType.VORTEX) causeVortexGlobal();
-        }
+        // Add uranium resources to the map
+        // TODO: make sure our notion of rounds is consistent with below
+        if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) 
+            for (int i = 0; i < this.uranium.length; i++)
+                if (this.uranium[i] > 0)
+                    this.uranium[i] += GameConstants.ADD_URANIUM;
 
-        // Add lead resources to the map
-        if (this.currentRound % GameConstants.ADD_LEAD_EVERY_ROUNDS == 0)
-            for (int i = 0; i < this.lead.length; i++)
-                if (this.lead[i] > 0)
-                    this.lead[i] += GameConstants.ADD_LEAD;
-
-        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getRoundLeadChange(Team.A), this.teamInfo.getRoundGoldChange(Team.A));
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundLeadChange(Team.B), this.teamInfo.getRoundGoldChange(Team.B));
+        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getRoundUraniumChange(Team.A), this.teamInfo.getRoundUraniumMined(Team.A));
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B));
         this.teamInfo.processEndOfRound();
 
         // Check for end of match
         if (timeLimitReached() && gameStats.getWinner() == null)
-            if (!setWinnerIfMoreArchons())
-                if (!setWinnerIfMoreGoldValue())
-                    if (!setWinnerIfMoreLeadValue())
-                        setWinnerArbitrary();
+            if (!setWinnerIfMoreUraniumValue())
+                if (!setWinnerIfMoreUraniumMined())
+                    setWinnerBlue();
 
         if (gameStats.getWinner() != null)
             running = false;
@@ -443,19 +409,31 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, RobotType type, MapLocation location, Team team) {
-        InternalRobot robot = new InternalRobot(this, ID, type, location, team);
+    public int spawnRobot(int ID, RobotType type, Team team) {
+        MapLocation spawnLoc = getSpawnLoc(team);
+        InternalRobot robot = new InternalRobot(this, ID, type, spawnLoc, team);
         objectInfo.spawnRobot(robot);
-        addRobot(location, robot);
+        addRobot(spawnLoc, robot);
 
         controlProvider.robotSpawned(robot);
         matchMaker.addSpawnedRobot(robot);
         return ID;
     }
 
-    public int spawnRobot(RobotType type, MapLocation location, Team team) {
+    public int spawnRobot(int ID, RobotType type, MapLocation loc, Team team) {
+        InternalRobot robot = new InternalRobot(this, ID, type, loc, team);
+        objectInfo.spawnRobot(robot);
+        addRobot(loc, robot);
+
+        controlProvider.robotSpawned(robot);
+        matchMaker.addSpawnedRobot(robot);
+        return ID;
+    }
+
+    public int spawnRobot(RobotType type, Team team) {
+        MapLocation spawnLoc = getSpawnLoc(team);
         int ID = idGenerator.nextID();
-        return spawnRobot(ID, type, location, team);
+        return spawnRobot(ID, type, spawnLoc, team);
     }
 
     // *********************************
@@ -466,27 +444,19 @@ public strictfp class GameWorld {
         destroyRobot(id, true);
     }
 
-    public void destroyRobot(int id, boolean checkArchonDeath) {
+    public void destroyRobot(int id, boolean checkWin) {
         InternalRobot robot = objectInfo.getRobotByID(id);
         RobotType type = robot.getType();
         Team team = robot.getTeam();
         removeRobot(robot.getLocation());
 
-        int leadDropped = robot.getType().getLeadDropped(robot.getLevel());
-        int goldDropped = robot.getType().getGoldDropped(robot.getLevel());
-
-        this.lead[locationToIndex(robot.getLocation())] += leadDropped;
-        this.gold[locationToIndex(robot.getLocation())] += goldDropped;
-
-        this.matchMaker.addLeadDrop(robot.getLocation(), leadDropped);
-        this.matchMaker.addGoldDrop(robot.getLocation(), goldDropped);
-
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
 
-        if (checkArchonDeath) {
-            // this happens here because both teams' Archons can die in the same round
-            if (type == RobotType.ARCHON && this.objectInfo.getRobotTypeCount(team, RobotType.ARCHON) == 0)
+        if (checkWin) {
+            // TODO: check this, possibly not here, since there is also the other case of running into each other which goes to tiebreaks
+            // this happens here because the last robot can explode itself and kill another robot in the process
+            if (this.objectInfo.getRobotCount(team) == 0)
                 setWinner(team == Team.A ? Team.B : Team.A, DominationFactor.ANNIHILATION);
         }
 
@@ -502,235 +472,5 @@ public strictfp class GameWorld {
             profilerCollections = new HashMap<>();
         }
         profilerCollections.put(team, profilerCollection);
-    }
-
-    // *********************************
-    // ********  ANOMALY  **************
-    // *********************************
-
-    /**
-     * Finds all of the locations that a given Sage can affect with an Anomaly.
-     * @param robot that is causing the anomaly; must be a Sage
-     * @return all of the locations that are within range of this sage
-     */
-    private MapLocation[] getSageActionLocations(InternalRobot robot) {
-        assert robot.getType() == RobotType.SAGE;
-        MapLocation center = robot.getLocation();
-        return getAllLocationsWithinRadiusSquared(center, robot.getType().actionRadiusSquared);
-    }
-
-    /**
-     * Performs the Abyss anomaly. Changes the resources in the squares and the team.
-     * @param reduceFactor associated with anomaly (a decimal percentage)
-     * @param locations that can be affected by the Abyss
-     */
-    private void causeAbyssGridUpdate(float reduceFactor, MapLocation[] locations) {
-        for (int i = 0; i < locations.length; i++) {
-            int currentLead = getLead(locations[i]);
-            int leadUpdate = (int) (reduceFactor * currentLead);
-            setLead(locations[i], currentLead - leadUpdate);
-            if (leadUpdate != 0) this.matchMaker.addLeadDrop(locations[i], -leadUpdate);
-
-            int currentGold = getGold(locations[i]);
-            int goldUpdate = (int) (reduceFactor * currentGold);
-            setGold(locations[i], currentGold - goldUpdate);
-            if (goldUpdate != 0) this.matchMaker.addGoldDrop(locations[i], -goldUpdate);
-        }
-    }
-
-    /**
-     * Mutates state to perform the Sage Abyss anomaly.
-     * @param robot that is the Sage
-     */
-    public void causeAbyssSage(InternalRobot robot) {
-        assert robot.getType() == RobotType.SAGE;
-        // calculate the right effect range
-        this.causeAbyssGridUpdate(AnomalyType.ABYSS.sagePercentage, this.getSageActionLocations(robot));
-    }
-
-    /**
-     * Mutates state to perform the global Abyss anomaly.
-     */
-    public void causeAbyssGlobal() {
-        this.causeAbyssGridUpdate(AnomalyType.ABYSS.globalPercentage, this.getAllLocations());
-        
-        this.teamInfo.addLead(Team.A, (int) (-1 * AnomalyType.ABYSS.globalPercentage * this.teamInfo.getLead(Team.A)));
-        this.teamInfo.addLead(Team.B, (int) (-1 * AnomalyType.ABYSS.globalPercentage * this.teamInfo.getLead(Team.B)));
-
-        this.teamInfo.addGold(Team.A, (int) (-1 * AnomalyType.ABYSS.globalPercentage * this.teamInfo.getGold(Team.A)));
-        this.teamInfo.addGold(Team.B, (int) (-1 * AnomalyType.ABYSS.globalPercentage * this.teamInfo.getGold(Team.B)));
-        this.matchMaker.addAction(-1, Action.ABYSS, -1);
-    }
-
-    /**
-     * Mutates state to perform the Sage Charge.
-     * @param robot performing the Charge, must be a Sage
-     */
-    public void causeChargeSage(InternalRobot robot) {
-        assert robot.getType() == RobotType.SAGE;
-
-        MapLocation[] actionLocations = this.getSageActionLocations(robot);
-        for (int i = 0; i < actionLocations.length; i++) {
-            InternalRobot currentRobot = getRobot(actionLocations[i]);
-            if (currentRobot != null && currentRobot.getTeam() != robot.getTeam() && currentRobot.getMode() == RobotMode.DROID)
-                currentRobot.addHealth((int) (-1 * AnomalyType.CHARGE.sagePercentage * currentRobot.getType().getMaxHealth(currentRobot.getLevel())));
-        }
-    }
-
-    /**
-     * Mutates state to peform the global Charge.
-     */
-    public void causeChargeGlobal() {
-        ArrayList<InternalRobot> droids = new ArrayList<InternalRobot>();
-        for (InternalRobot currentRobot : this.objectInfo.robotsArray()) {
-            if (currentRobot.getMode() == RobotMode.DROID) {
-                droids.add(currentRobot);
-                currentRobot.updateNumVisibleFriendlyRobots();
-            }
-        }
-        Collections.sort(droids, new SortByFriends());
-
-        int affectedDroidsLimit = (int) (AnomalyType.CHARGE.globalPercentage * droids.size());
-        for (int i = 0; i < affectedDroidsLimit; i++) {
-            this.destroyRobot(droids.get(i).getID());
-        }
-        this.matchMaker.addAction(-1, Action.CHARGE, -1);
-    }
-
-    /** Used to sort droids for charge */
-    class SortByFriends implements Comparator<InternalRobot> {
-        public int compare(InternalRobot a, InternalRobot b) {
-            return b.getNumVisibleFriendlyRobots(false) - a.getNumVisibleFriendlyRobots(false);
-        }
-    }
-
-    /**
-     * Performs the Fury anomaly. Changes the health of the relevant robots.
-     * @param reduceFactor associated with anomaly (a decimal percentage)
-     * @param locations that can be affected by the Fury (by radius, not by state of robot)
-     */
-    public void causeFuryUpdate(float reduceFactor, MapLocation[] locations) {
-        for (int i = 0; i < locations.length; i++) {
-            InternalRobot robot = this.getRobot(locations[i]);
-            if (robot != null && robot.getMode() == RobotMode.TURRET) {
-                robot.addHealth((int) (-1 * robot.getType().getMaxHealth(robot.getLevel()) * reduceFactor), false);
-            }
-        }
-
-        boolean teamAEliminated = this.objectInfo.getRobotTypeCount(Team.A, RobotType.ARCHON) == 0;
-        boolean teamBEliminated = this.objectInfo.getRobotTypeCount(Team.B, RobotType.ARCHON) == 0;
-        if (teamAEliminated && teamBEliminated) {
-            // copy pasted from processEndOfRound
-            if (!setWinnerIfMoreGoldValue())
-                if (!setWinnerIfMoreLeadValue())
-                    setWinnerArbitrary();
-        } else if (teamAEliminated) {
-            setWinner(Team.B, DominationFactor.ANNIHILATION);
-        } else if (teamBEliminated) {
-            setWinner(Team.A, DominationFactor.ANNIHILATION);
-        }
-    }
-
-    /**
-     * Mutates state to perform the Sage Fury.
-     * @param robot performing the Fury, must be a Sage
-     */
-    public void causeFurySage(InternalRobot robot) {
-        assert robot.getType() == RobotType.SAGE;
-        this.causeFuryUpdate(AnomalyType.FURY.sagePercentage, this.getSageActionLocations(robot));
-    }
-
-    /**
-     * Mutates state to peform the global Fury.
-     */
-    public void causeFuryGlobal() {
-        this.causeFuryUpdate(AnomalyType.FURY.globalPercentage, this.getAllLocations());
-        this.matchMaker.addAction(-1, Action.FURY, -1);
-    }
-
-    private void rotateRubble() {
-        int n = this.gameMap.getWidth();
-        for (int x = 0; x < n / 2; x++) {
-            for (int y = 0; y < (n + 1) / 2; y++) {
-                int curX = x;
-                int curY = y;
-                int lastRubble = this.rubble[curX + curY * n];
-                for (int i = 0; i < 4; i++) {
-                    int tempX = curX;
-                    curX = curY;
-                    curY = (n - 1) - tempX;
-                    int idx = curX + curY * n;
-                    int tempRubble = this.rubble[idx];
-                    this.rubble[idx] = lastRubble;
-                    lastRubble = tempRubble;
-                }
-            }
-        }
-    }
-
-    private void flipRubbleHorizontally() {
-        int w = this.gameMap.getWidth();
-        int h = this.gameMap.getHeight();
-        for (int x = 0; x < w / 2; x++) {
-            for (int y = 0; y < h; y++) {
-                int idx = x + y * w;
-                int newX = w - 1 - x;
-                int newIdx = newX + y * w;
-                int prevRubble = this.rubble[idx];
-                this.rubble[idx] = this.rubble[newIdx];
-                this.rubble[newIdx] = prevRubble;
-            }
-        }
-    }
-
-    private void flipRubbleVertically() {
-        int w = this.gameMap.getWidth();
-        int h = this.gameMap.getHeight();
-        for (int y = 0; y < h / 2; y++) {
-            for (int x = 0; x < w; x++) {
-                int idx = x + y * w;
-                int newY = h - 1 - y;
-                int newIdx = x + newY * w;
-                int prevRubble = this.rubble[idx];
-                this.rubble[idx] = this.rubble[newIdx];
-                this.rubble[newIdx] = prevRubble;
-            }
-        }
-    }
-
-    /**
-     * Mutates state to peform the global Vortex.
-     * Only mutates the rubble array in this class; doesn't change the LiveMap
-     */
-    public void causeVortexGlobal() {
-        int changeIdx = 0;
-        switch (this.gameMap.getSymmetry()) {
-            case VERTICAL:
-                flipRubbleVertically();
-                changeIdx = 2;
-                break;
-            case HORIZONTAL:
-                flipRubbleHorizontally();
-                changeIdx = 1;
-                break;
-            case ROTATIONAL:
-                // generate random choice of how rotation will occur
-                // can only rotate if it's a square map
-                boolean squareMap = this.gameMap.getWidth() == this.gameMap.getHeight();
-                int randomNumber = this.rand.nextInt(squareMap ? 3 : 2);
-                if (!squareMap) {
-                    randomNumber++;
-                }
-                if (randomNumber == 0) {
-                    rotateRubble();
-                } else if (randomNumber == 1) {
-                    flipRubbleHorizontally();
-                } else if (randomNumber == 2) {
-                    flipRubbleVertically();
-                }
-                changeIdx = randomNumber;
-                break;
-        }
-        this.matchMaker.addAction(-1, Action.VORTEX, changeIdx);
     }
 }
