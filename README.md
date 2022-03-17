@@ -76,16 +76,16 @@ Make sure you have a recent git version (run `git --version` and make sure it's 
 
 As an example, the following steps were taken to port from `battlehack20` to this repo:
 
-First, create a fresh `battlecode21` repo on GitHub. Clone it. Then, starting in that repo:
+First, create a fresh `battlecode23` repo on GitHub. Clone it. Then, starting in that repo:
 
 ```
 cd ..
-git clone https://github.com/battlecode/battlehack20 battlehack20-export
-cd battlehack20-export
-git filter-repo --tag-rename '':'bh20-'
+git clone https://github.com/battlecode/battlecode22 battlecode22-export
+cd battlecode22-export
+git filter-repo --tag-rename '':'bc22-'
 cd ..
-cd battlecode21
-git pull ../battlehack20-export —allow-unrelated-histories
+cd battlecode22
+git pull ../battlecode22-export -allow-unrelated-histories
 ```
 
 (Git filter-repo can do lots of cool things; see its documenation, old examples in our repo, etc. for ideas. For example, renaming directories is possible. )

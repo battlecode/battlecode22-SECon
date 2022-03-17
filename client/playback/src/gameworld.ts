@@ -27,9 +27,6 @@ export type BodiesSchema = {
   targety: Int32Array,
   parent: Int32Array,
   hp: Int32Array,
-  level: Int8Array,
-  portable: Int8Array,
-  prototype: Int8Array
 }
 
 // NOTE: consider changing MapStats to schema to use SOA for better performance, if it has large data
@@ -40,14 +37,10 @@ export type MapStats = {
   bodies: schema.SpawnedBodyTable,
   randomSeed: number,
 
-  rubble: Int32Array, // double
-  leadVals: Int32Array
-  goldVals: Int32Array
+  walls: Int8Array,
+  uraniumVals: Int32Array // double
 
   symmetry: number
-
-  anomalies: Int32Array
-  anomalyRounds: Int32Array
 
   getIdx: (x: number, y: number) => number
   getLoc: (idx: number) => Victor
@@ -55,18 +48,13 @@ export type MapStats = {
 
 export type TeamStats = {
   // An array of numbers corresponding to team stats, which map to RobotTypes
-  // Corresponds to robot type (including NONE. length 5)
-  // First four are droids (guard, wizard, builder, miner), last three are buildings (turret, archon, lab)
-  robots: [number[], number[], number[], number[], number[], number[], number[]],
-  lead: number,
-  gold: number,
-  total_hp: [number[], number[], number[], number[], number[], number[], number[]],
-  leadChange: number,
-  goldChange: number,
-  leadMined: number,
-  goldMined: number,
-  leadMinedHist: number[],
-  goldMinedHist: number[],
+  // Only one type of robot at index 0 of robots
+  robots: [number[]],
+  uranium: number,
+  total_hp: [number[]],
+  uraniumChange: number,
+  uraniumMined: number,
+  uraniumMinedHist: number[],
 }
 
 export type IndicatorDotsSchema = {
@@ -219,9 +207,6 @@ export default class GameWorld {
       targety: new Int32Array(0),
       parent: new Int32Array(0),
       hp: new Int32Array(0),
-      level: new Int8Array(0),
-      portable: new Int8Array(0),
-      prototype: new Int8Array(0)
     }, 'id')
 
     // Instantiate teamStats
@@ -229,16 +214,12 @@ export default class GameWorld {
     for (let team in this.meta.teams) {
       var teamID = this.meta.teams[team].teamID
       this.teamStats.set(teamID, {
-        robots: [[0], [0], [0], [0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        lead: 0,
-        gold: 0,
-        total_hp: [[0], [0], [0], [0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        leadChange: 0,
-        goldChange: 0,
-        leadMined: 0,
-        goldMined: 0,
-        leadMinedHist: [],
-        goldMinedHist: []
+        robots: [[0]],
+        uranium: 0,
+        total_hp: [[0]],
+        uraniumChange: 0,
+        uraniumMined: 0,
+        uraniumMinedHist: [],
       })
     }
 
@@ -250,13 +231,10 @@ export default class GameWorld {
       bodies: new schema.SpawnedBodyTable(),
       randomSeed: 0,
 
-      rubble: new Int32Array(0),
-      leadVals: new Int32Array(0),
-      goldVals: new Int32Array(0),
+      walls: new Int8Array(0),
+      uraniumVals: new Int32Array(0),
 
       symmetry: 0,
-      anomalies: new Int32Array(0),
-      anomalyRounds: new Int32Array(0),
 
       getIdx: (x: number, y: number) => 0,
       getLoc: (idx: number) => new Victor(0, 0)
@@ -319,8 +297,7 @@ export default class GameWorld {
     this.mapStats.maxCorner.x = maxCorner.x()
     this.mapStats.maxCorner.y = maxCorner.y()
 
-    this.mapStats.goldVals = new Int32Array(maxCorner.x() * maxCorner.y())
-    this.mapStats.leadVals = map.leadArray()
+    this.mapStats.uraniumVals = map.uraniumArray()
 
     const bodies = map.bodies(this._bodiesSlot)
     if (bodies && bodies.robotIDsLength) {
@@ -329,7 +306,7 @@ export default class GameWorld {
 
     this.mapStats.randomSeed = map.randomSeed()
 
-    this.mapStats.rubble = map.rubbleArray()
+    this.mapStats.walls = map.wallsArray()
 
     const width = (maxCorner.x() - minCorner.x())
     this.mapStats.getIdx = (x: number, y: number) => (
@@ -340,9 +317,6 @@ export default class GameWorld {
     )
 
     this.mapStats.symmetry = map.symmetry()
-
-    this.mapStats.anomalies = Int32Array.from(map.anomaliesArray())
-    this.mapStats.anomalyRounds = Int32Array.from(map.anomalyRoundsArray())
 
     // Check with header.totalRounds() ?
   }
@@ -390,12 +364,9 @@ export default class GameWorld {
       let teamID = delta.teamIDs(i)
       let statObj = this.teamStats.get(teamID)
 
-      statObj.lead += delta.teamLeadChanges(i)
-      statObj.gold += delta.teamGoldChanges(i)
-      statObj.leadChange = delta.teamLeadChanges(i)
-      statObj.goldChange = delta.teamGoldChanges(i)
-      statObj.leadMined = 0
-      statObj.goldMined = 0
+      statObj.uranium += delta.teamUraniumChanges(i)
+      statObj.uraniumChange = delta.teamUraniumChanges(i)
+      statObj.uraniumMined = 0
 
       this.teamStats.set(teamID, statObj)
     }
@@ -426,31 +397,10 @@ export default class GameWorld {
     this.bidRobots = []
 
     // Map changes
-    const leadLocations = delta.leadDropLocations(this._vecTableSlot1)
-    if (leadLocations) {
-      const xs = leadLocations.xsArray()
-      const ys = leadLocations.ysArray()
-
-      xs.forEach((x, i) => {
-        const y = ys[i]
-        this.mapStats.leadVals[this.mapStats.getIdx(x, y)] += delta.leadDropValues(i)
-      })
-    }
-
-    const goldLocations = delta.goldDropLocations(this._vecTableSlot1)
-    if (goldLocations) {
-      const xs = goldLocations.xsArray()
-      const ys = goldLocations.ysArray()
-      let inst = this
-      xs.forEach((x, i) => {
-        const y = ys[i]
-        inst.mapStats.goldVals[inst.mapStats.getIdx(x, y)] += delta.goldDropValues(i)
-      })
-    }
 
     if (delta.roundID() % this.meta.constants.increasePeriod() == 0) {
-      this.mapStats.leadVals.forEach((x, i) => {
-        this.mapStats.leadVals[i] = x > 0 ? x + this.meta.constants.leadAdditiveIncease() : 0
+      this.mapStats.uraniumVals.forEach((x, i) => {
+        this.mapStats.uraniumVals[i] = x > 0 ? x + this.meta.constants.uraniumAdditiveIncease() : 0
       })
     }
 
@@ -477,127 +427,28 @@ export default class GameWorld {
           // TODO: validate actions?
           // Actions list from battlecode.fbs enum Action
 
-          case schema.Action.ATTACK:
-            setAction(true, true);
-            break;
-          /// Slanderers passively generate influence for the
-          /// Enlightenment Center that created them.
-          /// Target: parent ID
-          case schema.Action.LOCAL_ABYSS:
+          case schema.Action.EXPLODE:
             setAction()
             break
 
-          case schema.Action.LOCAL_CHARGE:
+          case schema.Action.MINE_URANIUM:
             setAction()
+            teamStatsObj.uraniumMined += 1;
             break
 
-          case schema.Action.LOCAL_FURY:
-            setAction()
-            break
-
-          case schema.Action.TRANSMUTE:
-            setAction();
-            teamStatsObj.goldMined += 1;
-            // teamStatsObj.gold += target;
-            // teamStatsObj.lead -= 0;
-            break;
-
-          case schema.Action.TRANSFORM:
-            setAction()
-            this.bodies.alter({ id: robotID, portable: 1 - body.portable })
-            break
-
-          case schema.Action.MINE_LEAD:
-            setAction()
-            teamStatsObj.leadMined += 1;
-            break
-
-          case schema.Action.MINE_GOLD:
-            setAction()
-            teamStatsObj.goldMined += 1;  
-            break
-
-          case schema.Action.MUTATE:
-            const target_body = this.bodies.lookup(target);
-            teamStatsObj.robots[target_body.type][target_body.level - 1] -= 1
-            teamStatsObj.robots[target_body.type][target_body.level + 1 - 1] += 1
-            teamStatsObj.total_hp[target_body.type][target_body.level - 1] -= body.hp
-            teamStatsObj.total_hp[target_body.type][target_body.level + 1 - 1] += body.hp
-            this.bodies.alter({ id: target, level: target_body.level + 1 })
-            break
-
-          /// Builds a unit (enlightent center).
-          /// Target: spawned unit
           case schema.Action.SPAWN_UNIT:
             setAction()
             this.bodies.alter({ id: target, parent: robotID })
             break
 
-          case schema.Action.REPAIR:
-            setAction(true, true);
-            break
-
           case schema.Action.CHANGE_HEALTH:
             this.bodies.alter({ id: robotID, hp: body.hp + target});
-            teamStatsObj.total_hp[body.type][body.level - 1] += target;
-            break;
-
-          case schema.Action.FULLY_REPAIRED:
-            this.bodies.alter({ id: robotID, prototype: 0});
-            //teamStatsObj.total_hp[body.type][body.level] += target;
+            teamStatsObj.total_hp[body.type][0] += target; //second index ([0]) was to specify what level this robot is
             break;
 
           case schema.Action.DIE_EXCEPTION:
             console.log(`Exception occured: robotID(${robotID}), target(${target}`)
             break
-
-          case schema.Action.VORTEX:
-            let w = this.mapStats.maxCorner.x - this.mapStats.minCorner.x;
-            let h = this.mapStats.maxCorner.y - this.mapStats.minCorner.y;
-            switch (target) {
-              case 0:
-                for (let x = 0; x < Math.floor(w / 2); x++) {
-                  for (let y = 0; y < Math.floor((w + 1) / 2); y++) {
-                    let curX = x
-                    let curY = y
-                    let lastRubble = this.mapStats.rubble[curX + curY * w]
-                    for (let i = 0; i < 4; i++) {
-                      let tempX = curX
-                      curX = curY
-                      curY = (w - 1) - tempX
-                      let idx = curX + curY * w
-                      let tempRubble = this.mapStats.rubble[idx]
-                      this.mapStats.rubble[idx] = lastRubble
-                      lastRubble = tempRubble
-                    }
-                  }
-                }
-                break
-              case 1:
-                for (let x = 0; x < Math.floor(w / 2); x++) {
-                  for (let y = 0; y < h; y++) {
-                    let idx = x + y * w
-                    let newX = w - 1 - x
-                    let newIdx = newX + y * w
-                    let prevRubble = this.mapStats.rubble[idx]
-                    this.mapStats.rubble[idx] = this.mapStats.rubble[newIdx]
-                    this.mapStats.rubble[newIdx] = prevRubble
-                  }
-                }
-                break
-              case 2:
-                for (let y = 0; y < Math.floor(h / 2); y++) {
-                  for (let x = 0; x < w; x++) {
-                    let idx = x + y * w
-                    let newY = h - 1 - y
-                    let newIdx = x + newY * w
-                    let prevRubble = this.mapStats.rubble[idx]
-                    this.mapStats.rubble[idx] = this.mapStats.rubble[newIdx]
-                    this.mapStats.rubble[newIdx] = prevRubble
-                  }
-                }
-                break
-            }
 
           default:
             //console.log(`Undefined action: action(${action}), robotID(${robotID}, target(${target}))`);
@@ -610,10 +461,8 @@ export default class GameWorld {
     for (let team in this.meta.teams) {
       let teamID = this.meta.teams[team].teamID;
       let statsObj = this.teamStats.get(teamID) as TeamStats;
-      statsObj.leadMinedHist.push(statsObj.leadMined);
-      if (statsObj.leadMinedHist.length > 100) statsObj.leadMinedHist.shift();
-      statsObj.goldMinedHist.push(statsObj.goldMined);
-      if (statsObj.goldMinedHist.length > 100) statsObj.goldMinedHist.shift();
+      statsObj.uraniumMinedHist.push(statsObj.uraniumMined);
+      if (statsObj.uraniumMinedHist.length > 100) statsObj.uraniumMinedHist.shift();
     }
 
     // income
@@ -671,12 +520,6 @@ export default class GameWorld {
       this.indicatorStrings[bodyID] = delta.indicatorStrings(i)
     }
 
-    // Logs
-    // TODO
-
-    // Message pool
-    // TODO
-
     // Increase the turn count
     this.turn = delta.roundID()
 
@@ -687,18 +530,6 @@ export default class GameWorld {
         bytecodesUsed: delta.bytecodesUsedArray()
       })
     }
-
-    // TODO: process indicator strings
-
-    // // Process logs
-    // if (this.config.processLogs) this.parseLogs(delta.roundID(), delta.logs() ? <string> delta.logs(flatbuffers.Encoding.UTF16_STRING) : "");
-    // else this.logsShift++;
-
-    // while (this.logs.length >= 25) {
-    //   this.logs.shift();
-    //   this.logsShift++;
-    // }
-    // console.log(delta.roundID(), this.logsShift, this.logs[0]);
   }
 
   private insertDiedBodies(delta: schema.Round) {
@@ -768,18 +599,15 @@ export default class GameWorld {
     // Store frequently used arrays
     var teams = bodies.teamIDsArray();
     var types = bodies.typesArray();
-    var hps = new Int32Array(bodies.robotIDsLength());
-    var prototypes = new Int8Array(bodies.robotIDsLength());
+    var hps = bodies.healthsArray();
 
     // Update spawn stats
     for (let i = 0; i < bodies.robotIDsLength(); i++) {
       // if(teams[i] == 0) continue;
       var statObj = this.teamStats.get(teams[i]);
       statObj.robots[types[i]][0] += 1; // TODO: handle level
-      statObj.total_hp[types[i]][0] += this.meta.types[types[i]].health; // TODO: extract meta info
+      statObj.total_hp[types[i]][0] += hps[i]; // TODO: extract meta info
       this.teamStats.set(teams[i], statObj);
-      hps[i] = this.meta.types[types[i]].health;
-      prototypes[i] = (this.meta.buildingTypes.includes(types[i]) && types[i] != schema.BodyType.ARCHON) ? 1 : 0;
     }
 
     const locs = bodies.locs(this._vecTableSlot1)
@@ -803,18 +631,10 @@ export default class GameWorld {
       type: types,
       x: locs.xsArray(),
       y: locs.ysArray(),
-      flag: new Int32Array(bodies.robotIDsLength()),
       bytecodesUsed: new Int32Array(bodies.robotIDsLength()),
       action: (new Int8Array(bodies.robotIDsLength())).fill(-1),
-      target: new Int32Array(bodies.robotIDsLength()),
-      targetx: new Int32Array(bodies.robotIDsLength()),
-      targety: new Int32Array(bodies.robotIDsLength()),
-      bid: new Int32Array(bodies.robotIDsLength()),
       parent: new Int32Array(bodies.robotIDsLength()),
       hp: hps,
-      level: levels,
-      portable: new Int8Array(bodies.robotIDsLength()),
-      prototype: prototypes,
     });
   }
 
