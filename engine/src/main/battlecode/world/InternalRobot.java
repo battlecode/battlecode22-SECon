@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.lang.Math;
 import battlecode.common.*;
 import battlecode.schema.Action;
 
@@ -366,34 +367,15 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // *********************************
 
     /**
-     * Transform from turret to portable mode, or vice versa.
-     * Assumes that cooldown is sufficient.
-     */
-    public void transform() {
-        if (this.mode == RobotMode.TURRET) {
-            this.mode = RobotMode.PORTABLE;
-        } else {
-            this.mode = RobotMode.TURRET;
-        }
-    }
-
-    /**
-     * Mutate a building.
-     */
-    public void mutate() {
-        if (!canMutate()) return;
-        this.level++;
-        int healthIncrease = this.type.getMaxHealth(this.level) - this.type.getMaxHealth(this.level - 1);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.CHANGE_HEALTH, healthIncrease);
-        this.health += healthIncrease;
-    }
-
-    /**
-     * Attacks another robot. Assumes bot is in range.
+     * Explodes, causing robots on 
      * 
      * @param bot the robot to be attacked
      */
-    public void attack(InternalRobot bot) {
+
+    public void explode(InternalRobot bot) {
+        if(Math.abs(bot.getHealth() - this.getHealth()) <= 1){
+            
+        }
         int dmg = this.type.getDamage(this.level);
         bot.addHealth(-dmg);
     }

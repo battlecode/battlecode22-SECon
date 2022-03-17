@@ -113,11 +113,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public RobotMode getMode() {
-        return this.robot.getMode();
-    }
-
-    @Override
     public MapLocation getLocation() {
         return this.robot.getLocation();
     }
@@ -125,11 +120,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public int getHealth() {
         return this.robot.getHealth();
-    }
-
-    @Override
-    public int getLevel() {
-        return this.robot.getLevel();  
     }
 
     private InternalRobot getRobotByID(int id) {
@@ -155,212 +145,40 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return this.gameWorld.getGameMap().onTheMap(loc);
     }
 
-    private void assertCanSenseLocation(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        if (!this.robot.canSenseLocation(loc))
-            throw new GameActionException(CANT_SENSE_THAT,
-                    "Target location not within vision range");
+    @Override
+    public boolean assertOnTheMap(MapLocation loc) throws GameActionException{
         if (!this.gameWorld.getGameMap().onTheMap(loc))
             throw new GameActionException(CANT_SENSE_THAT,
                     "Target location is not on the map");
-    }
-
-    private void assertCanActLocation(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        if (!this.robot.canActLocation(loc))
-            throw new GameActionException(OUT_OF_RANGE,
-                    "Target location not within action range");
-        if (!this.gameWorld.getGameMap().onTheMap(loc))
-            throw new GameActionException(CANT_SENSE_THAT,
-                    "Target location is not on the map");
-    }
-
-    @Override
-    public boolean canSenseLocation(MapLocation loc) {
-        try {
-            assertCanSenseLocation(loc);
-            return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public boolean canSenseRadiusSquared(int radiusSquared) {
-        return this.robot.canSenseRadiusSquared(radiusSquared);
+        return this.gameWorld.getGameMap().onTheMap(loc);
     }
 
     @Override
     public boolean isLocationOccupied(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
+        
         return this.gameWorld.getRobot(loc) != null;
     }
 
-    @Override
-    public boolean canSenseRobotAtLocation(MapLocation loc) {
-        try {
-            return isLocationOccupied(loc);
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public RobotInfo senseRobotAtLocation(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        return bot == null ? null : bot.getRobotInfo();
-    }
-
-    @Override
-    public boolean canSenseRobot(int id) {
-        InternalRobot sensedRobot = getRobotByID(id);
-        return sensedRobot == null ? false : canSenseLocation(sensedRobot.getLocation());
-    }
-
-    @Override
-    public RobotInfo senseRobot(int id) throws GameActionException {
-        if (!canSenseRobot(id))
-            throw new GameActionException(CANT_SENSE_THAT,
-                    "Can't sense given robot; It may be out of vision range or not exist anymore");
-        return getRobotByID(id).getRobotInfo();
-    }
-
-    @Override
-    public RobotInfo[] senseNearbyRobots() {
-        return senseNearbyRobots(-1);
-    }
-
-    @Override
-    public RobotInfo[] senseNearbyRobots(int radiusSquared) {
-        return senseNearbyRobots(radiusSquared, null);
-    }
-
-    @Override
-    public RobotInfo[] senseNearbyRobots(int radiusSquared, Team team) {
-        return senseNearbyRobots(getLocation(), radiusSquared, team);
-    }
-
-    @Override
-    public RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) {
-        assertNotNull(center);
-        int actualRadiusSquared = radiusSquared == -1 ? getType().visionRadiusSquared : Math.min(radiusSquared, getType().visionRadiusSquared);
-        InternalRobot[] allSensedRobots = gameWorld.getAllRobotsWithinRadiusSquared(center, actualRadiusSquared);
-        List<RobotInfo> validSensedRobots = new ArrayList<>();
-        for (InternalRobot sensedRobot : allSensedRobots) {
-            // check if this robot
-            if (sensedRobot.equals(this.robot))
-                continue;
-            // check if can sense
-            if (!canSenseLocation(sensedRobot.getLocation()))
-                continue; 
-            // check if right team
-            if (team != null && sensedRobot.getTeam() != team)
-                continue;
-            validSensedRobots.add(sensedRobot.getRobotInfo());
-        }
-        return validSensedRobots.toArray(new RobotInfo[validSensedRobots.size()]);
-    }
-
+  
     // TODO: ADDED FOR SECON
 
     @Override 
     public int senseUranium(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
+        assertOnTheMap(loc);
         return this.gameWorld.getUranium(loc);
     }
 
     @Override 
     public int senseWall(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
+        assertOnTheMap(loc);
         return this.gameWorld.getWall(loc);
     }
 
     // END TODO
 
-
     @Override
     public MapLocation adjacentLocation(Direction dir) {
         return getLocation().add(dir);
-    }
-
-    @Override
-    public MapLocation[] getAllLocationsWithinRadiusSquared(MapLocation center, int radiusSquared) throws GameActionException {
-        assertNotNull(center);
-        if (radiusSquared < 0)
-            throw new GameActionException(CANT_DO_THAT,
-                    "Radius squared must be non-negative.");
-        return this.gameWorld.getAllLocationsWithinRadiusSquared(center, Math.min(radiusSquared, getType().visionRadiusSquared));
-    }
-
-    // ***********************************
-    // ****** READINESS METHODS **********
-    // ***********************************
-
-    private void assertIsActionReady() throws GameActionException {
-        if (!this.robot.getMode().canAct)
-            throw new GameActionException(CANT_DO_THAT,
-                    "This robot is not in a mode that can act.");
-        if (!this.robot.canActCooldown())
-            throw new GameActionException(IS_NOT_READY,
-                    "This robot's action cooldown has not expired.");
-    }
-
-    @Override
-    public boolean isActionReady() {
-        try {
-            assertIsActionReady();
-            return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public int getActionCooldownTurns() {
-        return this.robot.getActionCooldownTurns();
-    }
-
-    private void assertIsMovementReady() throws GameActionException {
-        if (!this.robot.getMode().canMove)
-            throw new GameActionException(CANT_DO_THAT,
-                    "This robot is not in a mode that can move.");
-        if (!this.robot.canMoveCooldown())
-            throw new GameActionException(IS_NOT_READY,
-                    "This robot's movement cooldown has not expired.");
-    }
-
-    @Override
-    public boolean isMovementReady() {
-        try {
-            assertIsMovementReady();
-            return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public int getMovementCooldownTurns() {
-        return this.robot.getMovementCooldownTurns();
-    }
-
-    private void assertIsTransformReady() throws GameActionException {
-        if (!this.robot.getMode().canTransform)
-            throw new GameActionException(CANT_DO_THAT,
-                    "This robot is not in a mode that can transform.");
-        if (!this.robot.canTransformCooldown())
-            throw new GameActionException(IS_NOT_READY,
-                    "This robot's transform cooldown (either action or movement" +
-                    "cooldown, depending on its current mode) has not expired.");
-    }
-
-    @Override
-    public boolean isTransformReady() {
-        try {
-            assertIsTransformReady();
-            return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
-    public int getTransformCooldownTurns() throws GameActionException {
-        if (!this.robot.getMode().canTransform)
-            throw new GameActionException(CANT_DO_THAT,
-                    "This robot is not in a mode that can transform.");
-        return this.robot.getTransformCooldownTurns();
     }
 
     // ***********************************
