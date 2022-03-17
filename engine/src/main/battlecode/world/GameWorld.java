@@ -28,7 +28,7 @@ public strictfp class GameWorld {
     protected final IDGenerator idGenerator;
     protected final GameStats gameStats;
 
-    private int[] walls;
+    private boolean[] walls;
     private int[] uranium;
     private MapLocation[] spawnLocs;
     private InternalRobot[][] robots;
