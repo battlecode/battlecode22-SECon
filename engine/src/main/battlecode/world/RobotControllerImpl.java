@@ -313,52 +313,39 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** BUILDING/SPAWNING **********
     // ***********************************
 
-    private void assertCanBuildRobot(RobotType type, Direction dir) throws GameActionException {
-        assertNotNull(type);
-        assertNotNull(dir);
-        assertIsActionReady();
-        if (!getType().canBuild(type))
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is of type " + getType() + " which cannot build robots of type " + type + ".");
-
+    private void assertCanBuildRobot(int cost, MapLocation loc) throws GameActionException {
         Team team = getTeam();
-        if (this.gameWorld.getTeamInfo().getLead(team) < type.buildCostLead)
+        if (this.gameWorld.getTeamInfo().getUranium(team) < cost)
             throw new GameActionException(NOT_ENOUGH_RESOURCE,
-                    "Insufficient amount of lead.");
-        if (this.gameWorld.getTeamInfo().getGold(team) < type.buildCostGold)
-            throw new GameActionException(NOT_ENOUGH_RESOURCE,
-                    "Insufficient amount of gold.");
+                    "Insufficient amount of uranium.");
 
-        MapLocation spawnLoc = adjacentLocation(dir);
-        if (!onTheMap(spawnLoc))
+        if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
-                    "Can only spawn to locations on the map; " + spawnLoc + " is not on the map.");
-        if (isLocationOccupied(spawnLoc))
+                    "Can only spawn to locations on the map; " + loc + " is not on the map.");
+        if (loc.equals(this.gameWorld.getSpawnLoc(this.getTeam())))
             throw new GameActionException(CANT_MOVE_THERE,
-                    "Cannot spawn to an occupied location; " + spawnLoc + " is occupied.");
+                    "Cannot spawn to location " + loc + " that is not your spawning location.");
     }
 
     @Override
-    public boolean canBuildRobot(RobotType type, Direction dir) {
+    public boolean canBuildRobot(int cost, MapLocation loc) {
         try {
-            assertCanBuildRobot(type, dir);
+            assertCanBuildRobot(cost, loc);
             return true;
         } catch (GameActionException e) { return false; }
     }
 
     @Override
-    public void buildRobot(RobotType type, Direction dir) throws GameActionException {
-        assertCanBuildRobot(type, dir);
-        this.robot.addActionCooldownTurns(getType().actionCooldown);
+    public void buildRobot(int cost, MapLocation loc) throws GameActionException {
+        assertCanBuildRobot(cost, loc);
         Team team = getTeam();
-        this.gameWorld.getTeamInfo().addLead(team, -type.buildCostLead);
-        this.gameWorld.getTeamInfo().addGold(team, -type.buildCostGold);
-        int newId = this.gameWorld.spawnRobot(type, adjacentLocation(dir), team);
+        this.gameWorld.getTeamInfo().addUranium(team, -cost);
+        int newId = this.gameWorld.spawnRobot(type, adjacentLocation(dir), cost, team);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
     }
 
     // *****************************
-    // **** COMBAT UNIT METHODS **** 
+    // ****** EXPLODE METHODS ******
     // *****************************
 
     private void assertCanExplode() throws GameActionException {
