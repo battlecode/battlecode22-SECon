@@ -240,9 +240,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return validSensedRobots.toArray(new RobotInfo[validSensedRobots.size()]);
     }
 
-  
-    // TODO: ADDED FOR SECON
-
     @Override 
     public int senseUranium(MapLocation loc) throws GameActionException {
         assertOnTheMap(loc);
@@ -255,8 +252,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return this.gameWorld.getWall(loc);
     }
 
-    // END TODO
-
     @Override
     public MapLocation adjacentLocation(Direction dir) {
         return getLocation().add(dir);
@@ -266,16 +261,16 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** READINESS METHODS **********
     // ***********************************
 
-    private void assertIsMovementOrActionReady() throws GameActionException {
+    private void assertIsReady() throws GameActionException {
         if (!this.robot.canMoveOrActCooldown())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's cooldown has not expired.");
     }
 
     @Override
-    public boolean isMovementOrActionReady() {
+    public boolean isReady() {
         try {
-            assertIsMovementOrActionReady();
+            assertIsReady();
             return true;
         } catch (GameActionException e) { return false; }
     }
@@ -394,200 +389,33 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     // ***********************
-    // **** MINER METHODS **** 
+    // **** MINING METHODS *** 
     // ***********************
 
-    private void assertCanMineLead(MapLocation loc) throws GameActionException {
+    private void assertCanMine(MapLocation loc) throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc);
-        assertIsActionReady();
-        if (!getType().canMine())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is of type " + getType() + " which cannot mine.");
-        if (this.gameWorld.getLead(loc) < 1)
+        assertIsReady();
+        if (this.gameWorld.getUranium(loc) < 1)
             throw new GameActionException(CANT_DO_THAT, 
-                    "Lead amount must be positive to be mined.");
+                    "Uranium amount must be positive to be mined.");
     }
 
     @Override
-    public boolean canMineLead(MapLocation loc) {
+    public boolean canMine(MapLocation loc) {
         try {
-            assertCanMineLead(loc);
+            assertCanMine(loc);
             return true;
         } catch (GameActionException e) { return false; }  
     }
 
     @Override
-    public void mineLead(MapLocation loc) throws GameActionException {
-        assertCanMineLead(loc);
-        this.robot.addActionCooldownTurns(getType().actionCooldown);
-        this.gameWorld.setLead(loc, this.gameWorld.getLead(loc) - 1);
-        this.gameWorld.getTeamInfo().addLead(getTeam(), 1);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.MINE_LEAD, locationToInt(loc));
-        this.gameWorld.getMatchMaker().addLeadDrop(loc, -1);
-    }
-
-    private void assertCanMineGold(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        assertCanActLocation(loc);
-        assertIsActionReady();
-        if (!getType().canMine())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is of type " + getType() + " which cannot mine.");
-        if (this.gameWorld.getGold(loc) < 1)
-            throw new GameActionException(CANT_DO_THAT, 
-                    "Gold amount must be positive to be mined.");
-    }
-
-    @Override
-    public boolean canMineGold(MapLocation loc) {
-        try {
-            assertCanMineGold(loc);
-            return true;
-        } catch (GameActionException e) { return false; }  
-    }
-
-    @Override
-    public void mineGold(MapLocation loc) throws GameActionException {
-        assertCanMineGold(loc);
-        this.robot.addActionCooldownTurns(getType().actionCooldown);
-        this.gameWorld.setGold(loc, this.gameWorld.getGold(loc) - 1);
-        this.gameWorld.getTeamInfo().addGold(getTeam(), 1);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.MINE_GOLD, locationToInt(loc));
-        this.gameWorld.getMatchMaker().addGoldDrop(loc, -1);
-    }
-
-    // *************************
-    // **** MUTATE METHODS **** 
-    // *************************
-
-    private void assertCanMutate(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        assertCanActLocation(loc);
-        assertIsActionReady();
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        if (bot == null)
-            throw new GameActionException(NO_ROBOT_THERE,
-                    "There is no robot to mutate at the target location.");
-        if (!getType().canMutate(bot.getType()))
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is of type " + getType() + " which cannot mutate robots of type " + bot.getType() + ".");
-        if (bot.getTeam() != getTeam())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is not on your team so can't be mutated.");
-        if (!bot.canMutate())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is either not in a mutable mode, or already at max level.");
-        if (gameWorld.getTeamInfo().getLead(getTeam()) < bot.getLeadMutateCost())
-            throw new GameActionException(NOT_ENOUGH_RESOURCE,
-                    "You don't have enough lead to mutate this robot.");
-        if (gameWorld.getTeamInfo().getGold(getTeam()) < bot.getGoldMutateCost())
-            throw new GameActionException(NOT_ENOUGH_RESOURCE,
-                    "You don't have enough gold to mutate this robot.");
-    }
-
-    @Override
-    public boolean canMutate(MapLocation loc) {
-        try {
-            assertCanMutate(loc);
-            return true;
-        } catch (GameActionException e) { return false; }  
-    }
-
-    @Override
-    public void mutate(MapLocation loc) throws GameActionException {
-        assertCanMutate(loc);
-        this.robot.addActionCooldownTurns(getType().actionCooldown);
-        Team team = getTeam();
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        int leadNeeded = bot.getLeadMutateCost();
-        int goldNeeded = bot.getGoldMutateCost();
-        this.gameWorld.getTeamInfo().addLead(team, -leadNeeded);
-        this.gameWorld.getTeamInfo().addGold(team, -goldNeeded);
-        bot.mutate();
-        bot.addActionCooldownTurns(GameConstants.MUTATE_COOLDOWN);
-        bot.addMovementCooldownTurns(GameConstants.MUTATE_COOLDOWN);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.MUTATE, bot.getID());
-    }
-
-    // ***************************
-    // **** TRANSMUTE METHODS **** 
-    // ***************************
-
-    @Override
-    public int getTransmutationRate() {
-        if (getType() != RobotType.LABORATORY) {
-            return 0;
-        }
-        return getTransmutationRate(getLevel());
-    }
-
-    @Override
-    public int getTransmutationRate(int laboratory_level) {
-        final double alchemist_loneliness_k;
-        switch (laboratory_level) {
-            case 1: alchemist_loneliness_k = GameConstants.ALCHEMIST_LONELINESS_K_L1; break;
-            case 2: alchemist_loneliness_k = GameConstants.ALCHEMIST_LONELINESS_K_L2; break;
-            case 3: alchemist_loneliness_k = GameConstants.ALCHEMIST_LONELINESS_K_L3; break;
-            default: return 0;
-        }
-        return (int) (GameConstants.ALCHEMIST_LONELINESS_A - GameConstants.ALCHEMIST_LONELINESS_B *
-                      Math.exp(-alchemist_loneliness_k * this.robot.getNumVisibleFriendlyRobots(true)));
-    }
-
-    private void assertCanTransmute() throws GameActionException {
-        assertIsActionReady();
-        if (!getType().canTransmute())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is of type " + getType() + " which cannot transmute lead to gold.");
-        if (this.gameWorld.getTeamInfo().getLead(getTeam()) < getTransmutationRate())
-            throw new GameActionException(NOT_ENOUGH_RESOURCE,
-                    "You don't have enough lead to transmute to gold.");
-    }
-
-    @Override
-    public boolean canTransmute() {
-        try {
-            assertCanTransmute();
-            return true;
-        } catch (GameActionException e) { return false; }  
-    }
-
-    @Override
-    public void transmute() throws GameActionException {
-        assertCanTransmute();
-        this.robot.addActionCooldownTurns(getType().actionCooldown);
-        Team team = getTeam();
-        this.gameWorld.getTeamInfo().addLead(team, -getTransmutationRate());
-        this.gameWorld.getTeamInfo().addGold(team, 1);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.TRANSMUTE, -1);
-    }
-
-    // ***************************
-    // **** TRANSFORM METHODS **** 
-    // ***************************
-
-    private void assertCanTransform() throws GameActionException {
-        assertIsTransformReady();
-    }
-
-    @Override
-    public boolean canTransform() {
-        try {
-            assertCanTransform();
-            return true;
-        } catch (GameActionException e) { return false; }  
-    }
-
-    @Override
-    public void transform() throws GameActionException {
-        assertCanTransform();
-        this.robot.transform();
-        if (this.robot.getMode() == RobotMode.TURRET)
-            this.robot.addActionCooldownTurns(GameConstants.TRANSFORM_COOLDOWN);
-        else
-            this.robot.addMovementCooldownTurns(GameConstants.TRANSFORM_COOLDOWN);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.TRANSFORM, -1);
+    public void mine(MapLocation loc) throws GameActionException {
+        assertCanMine(loc);
+        this.robot.resetCooldownTurns();
+        this.gameWorld.setUranium(loc, this.gameWorld.getUranium(loc) - 1);
+        this.gameWorld.getTeamInfo().addUranium(getTeam(), 1);
+        this.gameWorld.getMatchMaker().addAction(getID(), Action.MINE_URANIUM, locationToInt(loc));
     }
 
     // ***********************************
@@ -621,11 +449,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
     // ****** OTHER ACTION METHODS *******
     // ***********************************
-
-    @Override
-    public AnomalyScheduleEntry[] getAnomalySchedule() {
-        return this.gameWorld.getAnomalySchedule();
-    }
 
     @Override
     public void disintegrate() {
