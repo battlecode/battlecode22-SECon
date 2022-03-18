@@ -303,14 +303,19 @@ public strictfp class GameWorld {
     // *********************************
 
     public void processBeginningOfRound() {
+        // Robots only see a round every 2 rounds, so on even rounds they start their perceived round
+        boolean perceivedStartOfRound = (currentRound % 2 == 0);
+
         // Increment round counter
         currentRound++;
 
-        // Process beginning of each robot's round
-        objectInfo.eachRobot((robot) -> {
-            robot.processBeginningOfRound();
-            return true;
-        });
+        if (perceivedStartOfRound) {
+            // Process beginning of each robot's round
+            objectInfo.eachRobot((robot) -> {
+                robot.processBeginningOfRound();
+                return true;
+            });
+        }
     }
 
     public void setWinner(Team t, DominationFactor d) {
@@ -378,15 +383,19 @@ public strictfp class GameWorld {
         this.teamInfo.addUranium(Team.A, GameConstants.PASSIVE_URANIUM_INCREASE);
         this.teamInfo.addUranium(Team.B, GameConstants.PASSIVE_URANIUM_INCREASE);
 
-        // Process end of each robot's round
-        objectInfo.eachRobot((robot) -> {
-            robot.processEndOfRound();
-            return true;
-        });
+        // Robots only see a round every 2 rounds, so on odd rounds they end their perceived round
+        boolean perceivedEndOfRound = this.currentRound % 2 != 0;
+
+        if (perceivedEndOfRound) {
+            // Process end of each robot's round
+            objectInfo.eachRobot((robot) -> {
+                robot.processEndOfRound();
+                return true;
+            });
+        }
 
         // Add uranium resources to the map
-        // TODO: make sure our notion of rounds is consistent with below
-        if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) 
+        if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == GameConstants.ROUND_TO_UPDATE_URANIUM) 
             for (int i = 0; i < this.uranium.length; i++)
                 if (this.uranium[i] > 0)
                     this.uranium[i] += GameConstants.ADD_URANIUM;
@@ -395,14 +404,17 @@ public strictfp class GameWorld {
         this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B));
         this.teamInfo.processEndOfRound();
 
-        // Check for end of match
-        if (timeLimitReached() && gameStats.getWinner() == null)
-            if (!setWinnerIfMoreUraniumValue())
-                if (!setWinnerIfMoreUraniumMined())
-                    setWinnerBlue();
 
-        if (gameStats.getWinner() != null)
-            running = false;
+        if (perceivedEndOfRound) {
+            // Check for end of match
+            if (timeLimitReached() && gameStats.getWinner() == null)
+                if (!setWinnerIfMoreUraniumValue())
+                    if (!setWinnerIfMoreUraniumMined())
+                        setWinnerBlue();
+
+            if (gameStats.getWinner() != null)
+                running = false;
+        }
     }
 
     // *********************************
