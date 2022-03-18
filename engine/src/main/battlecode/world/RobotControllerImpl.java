@@ -157,9 +157,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanActLocation(MapLocation loc) throws GameActionException {
         assertNotNull(loc);
-        if (!this.robot.canActLocation(loc))
-            throw new GameActionException(OUT_OF_RANGE,
-                    "Target location not within action range");
         if (!this.gameWorld.getGameMap().onTheMap(loc))
             throw new GameActionException(CANT_SENSE_THAT,
                     "Target location is not on the map");
@@ -369,37 +366,31 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // **** COMBAT UNIT METHODS **** 
     // *****************************
 
-    private void assertCanExplode(MapLocation loc) throws GameActionException {
+    private void assertCanExplode() throws GameActionException {
         assertNotNull(loc);
         assertCanActLocation(loc);
-        assertIsActionReady();
-        if (!getType().canAttack())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is of type " + getType() + " which cannot attack.");
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        if (bot == null)
-            throw new GameActionException(NO_ROBOT_THERE,
-                    "There is no robot to attack at the target location.");
-        if (bot.getTeam() == getTeam())
-            throw new GameActionException(CANT_DO_THAT,
-                    "Robot is not on the enemy team.");
+        assertIsMoveOrActionReady();
     }
 
     @Override
-    public boolean canExplode(MapLocation loc) {
+    public boolean canExplode() {
         try {
-            assertCanExplode(loc);
+            assertCanExplode();
             return true;
         } catch (GameActionException e) { return false; }  
     }
 
     @Override
-    public void explode(MapLocation loc) throws GameActionException {
-        assertCanAttack(loc);
-        this.robot.addActionCooldownTurns(getType().actionCooldown);
-        InternalRobot bot = this.gameWorld.getRobot(loc);
-        this.robot.attack(bot);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
+    public void explode() throws GameActionException {
+        assertCanExplode(loc);
+        this.robot.resetCooldownTurns();
+        MapLocation currentLocation = 
+        for(Direction dir : Direction.cardinalDirections()){
+            MapLocation loc = this.robot.getLocation().adjacentLocation(dir);
+            InternalRobot bot = this.gameWorld.getRobot(loc);
+            this.robot.attack(bot);
+            this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
+        }
     }
 
     // ***********************
