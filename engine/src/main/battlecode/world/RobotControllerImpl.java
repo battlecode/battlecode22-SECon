@@ -214,7 +214,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     public boolean senseWall(MapLocation loc) throws GameActionException {
         assertOnTheMap(loc);
         // TO DO: confirm with Engine that this is how wall is functioning (1 = wall, 0 = no wall)
-        return this.gameWorld.getWall(loc) == 1;
+        return this.gameWorld.getWall(loc);
     }
 
     @Override 
