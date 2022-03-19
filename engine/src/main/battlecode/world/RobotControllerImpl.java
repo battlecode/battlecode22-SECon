@@ -295,7 +295,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         } catch (GameActionException e) { return false; }
     }
 
-    @Override
     public int getCooldownTurns() {
         return this.robot.getCooldownTurns();
     }
@@ -375,7 +374,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanBuildRobot(cost, loc);
         Team team = getTeam();
         this.gameWorld.getTeamInfo().addUranium(team, -cost);
-        int newId = this.gameWorld.spawnRobot(this.type, this.adjacentLocation(dir), cost, team);
+        int newId = this.gameWorld.spawnRobot(this.robot.getType(), loc, cost, team);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
     }
 
@@ -384,7 +383,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // *****************************
 
     private void assertCanExplode() throws GameActionException {
-        loc = this.robot.getLocation();
+        MapLocation loc = this.robot.getLocation();
         assertNotNull(loc);
         assertCanActLocation(loc);
         assertIsReady();
@@ -403,7 +402,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanExplode();
         this.robot.resetCooldownTurns();
         for (Direction dir : Direction.cardinalDirections()){
-            MapLocation loc = this.robot.adjacentLocation(dir);
+            MapLocation loc = this.adjacentLocation(dir);
             InternalRobot bot = this.gameWorld.getRobot(loc);
             bot.damageHealth(this.robot.getHealth() / 2);
             this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
