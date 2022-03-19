@@ -49,9 +49,6 @@ public class GameConstants {
     /** The number of rounds between adding uranium resources to the map. */
     public static final int ADD_URANIUM_EVERY_ROUNDS = 20;
 
-    /** The round number at which the uranium needs to be added - weird due to perceived rounds being done */
-    public static final int ROUND_TO_UPDATE_URANIUM = 19;
-
     /** The amount of uranium to add each round that uranium is added. */
     public static final int ADD_URANIUM = 5;
     
