@@ -102,7 +102,7 @@ public strictfp class GameWorld {
             this.processBeginningOfRound();
             this.controlProvider.roundStarted();
 
-            int teamIndex = this.getCurrentRound() % 2;
+            int teamIndex = (this.getCurrentRound() - 1) % 2; // since first round is actually round 1, subtract to make team A go first
             Team teamToPlay = Team.values()[teamIndex];
             // TODO: there may be a safer way to do above because the enum is technically of length 3
 
@@ -303,11 +303,11 @@ public strictfp class GameWorld {
     // *********************************
 
     public void processBeginningOfRound() {
-        // Robots only see a round every 2 rounds, so on even rounds they start their perceived round
-        boolean perceivedStartOfRound = (currentRound % 2 == 0);
-
         // Increment round counter
         currentRound++;
+
+        // Robots only see a round every 2 rounds, so on odd rounds they start their perceived round
+        boolean perceivedStartOfRound = (currentRound % 2 != 0);
 
         if (perceivedStartOfRound) {
             // Process beginning of each robot's round
@@ -383,8 +383,8 @@ public strictfp class GameWorld {
         this.teamInfo.addUranium(Team.A, GameConstants.PASSIVE_URANIUM_INCREASE);
         this.teamInfo.addUranium(Team.B, GameConstants.PASSIVE_URANIUM_INCREASE);
 
-        // Robots only see a round every 2 rounds, so on odd rounds they end their perceived round
-        boolean perceivedEndOfRound = this.currentRound % 2 != 0;
+        // Robots only see a round every 2 rounds, so on even rounds they end their perceived round
+        boolean perceivedEndOfRound = this.currentRound % 2 == 0;
 
         if (perceivedEndOfRound) {
             // Process end of each robot's round
@@ -395,7 +395,7 @@ public strictfp class GameWorld {
         }
 
         // Add uranium resources to the map
-        if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == GameConstants.ROUND_TO_UPDATE_URANIUM) 
+        if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) 
             for (int i = 0; i < this.uranium.length; i++)
                 if (this.uranium[i] > 0)
                     this.uranium[i] += GameConstants.ADD_URANIUM;
