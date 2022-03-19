@@ -10,8 +10,8 @@ import java.util.List;
 public class TestMapBuilder {
     private MapBuilder mapBuilder;
 
-    public TestMapBuilder(String name, int oX, int oY, int width, int height, int seed) {
-        this.mapBuilder = new MapBuilder(name, width, height, oX, oY, seed);
+    public TestMapBuilder(String name, int oX, int oY, int width, int height, int seed, int spawnLoc1X, int spawnLoc1Y, int spawnLoc2X, int spawnLoc2Y) {
+        this.mapBuilder = new MapBuilder(name, width, height, oX, oY, seed, spawnLoc1X, spawnLoc1Y, spawnLoc2X, spawnLoc2Y);
     }
 
     public TestMapBuilder addArchon(int id, Team team, MapLocation loc) {

@@ -19,11 +19,12 @@ public class MapBuilder {
     private MapSymmetry symmetry;
     private boolean[] wallArray;
     private int[] uraniumArray;
+    private MapLocation[] spawnLocs;
     private int idCounter;
 
     private List<RobotInfo> bodies;
 
-    public MapBuilder(String name, int width, int height, int originX, int originY, int seed) {
+    public MapBuilder(String name, int width, int height, int originX, int originY, int seed, int spawnLoc1X, int spawnLoc1Y, int spawnLoc2X, int spawnLoc2Y) {
         this.name = name;
         this.width = width;
         this.height = height;
@@ -37,6 +38,9 @@ public class MapBuilder {
         this.wallArray = new boolean[width * height];
         Arrays.fill(this.wallArray, false); // default is there is no wall
         this.uraniumArray = new int[width * height];
+        this.spawnLocs = new MapLocation[2];
+        this.spawnLocs[0] = new MapLocation(spawnLoc1X, spawnLoc1Y);
+        this.spawnLocs[1] = new MapLocation(spawnLoc2X, spawnLoc2Y);
     }
 
     // ********************
@@ -153,7 +157,7 @@ public class MapBuilder {
 
     public LiveMap build() {
         return new LiveMap(width, height, origin, seed, GameConstants.GAME_MAX_NUMBER_OF_ROUNDS, name,
-                symmetry, bodies.toArray(new RobotInfo[bodies.size()]), wallArray, uraniumArray);
+                symmetry, bodies.toArray(new RobotInfo[bodies.size()]), wallArray, uraniumArray, spawnLocs);
     }
 
     /**
@@ -225,6 +229,15 @@ public class MapBuilder {
         possible.add(MapSymmetry.ROTATIONAL);
         possible.add(MapSymmetry.HORIZONTAL);
         possible.add(MapSymmetry.VERTICAL);
+
+        MapLocation spawnLoc1 = spawnLocs[0];
+        for (int i = possible.size() - 1; i >= 0; i--) {
+            MapSymmetry symmetry = possible.get(i);
+            MapLocation symmSpawnLoc1 = new MapLocation(symmetricX(spawnLoc1.x, symmetry), symmetricY(spawnLoc1.y, symmetry));
+            if (symmSpawnLoc1 != spawnLocs[1]) {
+                possible.remove(symmetry);
+            }
+        }
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
