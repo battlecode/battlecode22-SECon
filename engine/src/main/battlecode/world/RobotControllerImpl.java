@@ -92,6 +92,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return this.gameWorld.getObjectInfo().getRobotCount(getTeam());
     }
 
+    @Override
+    public int getTeamUraniumAmount(Team team) {
+        return this.gameWorld.teamInfo.getUranium(team);
+    }
 
     // *********************************
     // ****** UNIT QUERY METHODS *******
@@ -108,17 +112,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public RobotType getType() {
-        return this.robot.getType();
-    }
-
-    @Override
     public MapLocation getLocation() {
         return this.robot.getLocation();
     }
  
     @Override
-    public int getHealth() {
+    public float getHealth() {
         return this.robot.getHealth();
     }
 
@@ -139,17 +138,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public boolean onTheMap(MapLocation loc) throws GameActionException {
         assertNotNull(loc);
-        if (!this.robot.canSenseLocation(loc))
-            throw new GameActionException(CANT_SENSE_THAT,
-                    "Target location not within vision range");
         return this.gameWorld.getGameMap().onTheMap(loc);
     }
 
-    private void assertCanSenseLocation(MapLocation loc) throws GameActionException {
+    private void assertOnTheMap(MapLocation loc) throws GameActionException {
         assertNotNull(loc);
-        if (!this.robot.canSenseLocation(loc))
-            throw new GameActionException(CANT_SENSE_THAT,
-                    "Target location not within vision range");
         if (!this.gameWorld.getGameMap().onTheMap(loc))
             throw new GameActionException(CANT_SENSE_THAT,
                     "Target location is not on the map");
@@ -163,16 +156,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canSenseLocation(MapLocation loc) {
-        try {
-            assertCanSenseLocation(loc);
-            return true;
-        } catch (GameActionException e) { return false; }
-    }
-
-    @Override
     public boolean isLocationOccupied(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
+        assertOnTheMap(loc);
         return this.gameWorld.getRobot(loc) != null;
     }
 
@@ -185,7 +170,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotInfo senseRobotAtLocation(MapLocation loc) throws GameActionException {
-        assertCanSenseLocation(loc);
+        assertOnTheMap(loc);
         InternalRobot bot = this.gameWorld.getRobot(loc);
         return bot == null ? null : bot.getRobotInfo();
     }
@@ -193,45 +178,31 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public boolean canSenseRobot(int id) {
         InternalRobot sensedRobot = getRobotByID(id);
-        return sensedRobot == null ? false : canSenseLocation(sensedRobot.getLocation());
+        return (sensedRobot == null);
     }
 
     @Override
     public RobotInfo senseRobot(int id) throws GameActionException {
         if (!canSenseRobot(id))
             throw new GameActionException(CANT_SENSE_THAT,
-                    "Can't sense given robot; It may be out of vision range or not exist anymore");
+                    "Can't sense given robot; It may not exist anymore");
         return getRobotByID(id).getRobotInfo();
-    }
+    }    }
 
     @Override
     public RobotInfo[] senseNearbyRobots() {
-        return senseNearbyRobots(-1);
+        return senseNearbyRobots(null);
     }
 
     @Override
-    public RobotInfo[] senseNearbyRobots(int radiusSquared) {
-        return senseNearbyRobots(radiusSquared, null);
-    }
-
-    @Override
-    public RobotInfo[] senseNearbyRobots(int radiusSquared, Team team) {
-        return senseNearbyRobots(getLocation(), radiusSquared, team);
-    }
-
-    @Override
-    public RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) {
+    public RobotInfo[] senseNearbyRobots(Team team) {
         assertNotNull(center);
-        int actualRadiusSquared = radiusSquared == -1 ? getType().visionRadiusSquared : Math.min(radiusSquared, getType().visionRadiusSquared);
-        InternalRobot[] allSensedRobots = gameWorld.getAllRobotsWithinRadiusSquared(center, actualRadiusSquared);
+        InternalRobot[] allSensedRobots = gameWorld.getAllRobots();
         List<RobotInfo> validSensedRobots = new ArrayList<>();
         for (InternalRobot sensedRobot : allSensedRobots) {
             // check if this robot
             if (sensedRobot.equals(this.robot))
                 continue;
-            // check if can sense
-            if (!canSenseLocation(sensedRobot.getLocation()))
-                continue; 
             // check if right team
             if (team != null && sensedRobot.getTeam() != team)
                 continue;
@@ -241,20 +212,69 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override 
-    public int senseUranium(MapLocation loc) throws GameActionException {
-        assertOnTheMap(loc);
-        return this.gameWorld.getUranium(loc);
-    }
-
-    @Override 
     public int senseWall(MapLocation loc) throws GameActionException {
         assertOnTheMap(loc);
         return this.gameWorld.getWall(loc);
     }
 
+    @Override 
+    public int senseUranium(MapLocation loc) throws GameActionException {
+        assertOnTheMap(loc);
+        return this.gameWorld.getUranium(loc);
+    }
+
+    @Override
+    public int senseNearbyLocationsWithUranium() {
+        try {
+            return senseNearbyLocationsWithUranium(getLocation(), -1, 1);
+        } catch (GameActionException willNeverHappen) {
+            throw new RuntimeException("impossible", willNeverHappen);
+        }
+    }
+
+    @Override
+    public int senseNearbyLocationsWithUranium(int radiusSquared) throws GameActionException {
+        return senseNearbyLocationsWithLead(getLocation(), radiusSquared, 1);
+    }
+
+    @Override
+    public int senseNearbyLocationsWithUranium(MapLocation center, int radiusSquared) throws GameActionException {
+        return senseNearbyLocationsWithLead(center, radiusSquared, 1);
+    }
+
+    @Override
+    public MapLocation[] senseNearbyLocationsWithUranium(int radiusSquared, int minUranium) throws GameActionException {
+        return senseNearbyLocationsWithLead(getLocation(), radiusSquared, minLead);
+    }
+
+    @Override
+    public MapLocation[] senseNearbyLocationsWithUranium(MapLocation center, int radiusSquared, int minUranium) throws GameActionException {
+        radiusSquared = (radiusSquared == -1) ? Integer.MAX_VALUE : radiusSquared;
+        if (radiusSquared < 0)
+            throw new GameActionException(CANT_DO_THAT,
+                    "Radius squared must be non-negative.");
+        ArrayList<MapLocation> locations = new ArrayList<>();
+        for (MapLocation loc : this.gameWorld.getAllLocationsWithinRadiusSquared(center, radiusSquared)) {
+            if (this.gameWorld.getLead(loc) >= minLead && onTheMap(loc)) {
+                locations.add(loc);
+            }
+        }
+        MapLocation[] result = new MapLocation[locations.size()];
+        return locations.toArray(result);
+    }
+
     @Override
     public MapLocation adjacentLocation(Direction dir) {
         return getLocation().add(dir);
+    }
+
+     @Override
+    public MapLocation[] getAllLocationsWithinRadiusSquared(MapLocation center, int radiusSquared) throws GameActionException {
+        assertNotNull(center);
+        if (radiusSquared < 0)
+            throw new GameActionException(CANT_DO_THAT,
+                    "Radius squared must be non-negative.");
+        return this.gameWorld.getAllLocationsWithinRadiusSquared(center, radiusSquared);
     }
 
     // ***********************************
@@ -286,7 +306,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanMove(Direction dir) throws GameActionException {
         assertNotNull(dir);
-        assertIsMovementOrActionReady();
+        assertIsReady();
         MapLocation loc = adjacentLocation(dir);
         if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
@@ -307,6 +327,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
             assertCanMove(dir);
             return true;
         } catch (GameActionException e) { return false; }
+    }
+
+    @Override
+    public void move(Direction dir) throws GameActionException {
+        assertCanMove(dir);
+        MapLocation center = adjacentLocation(dir);
+        this.gameWorld.moveRobot(getLocation(), center);
+        this.robot.setLocation(center);
+        // this has to happen after robot's location changed because rubble
+        this.robot.resetCooldownTurns();
+        this.gameWorld.getMatchMaker().addMoved(getID(), getLocation());
     }
 
     // ***********************************

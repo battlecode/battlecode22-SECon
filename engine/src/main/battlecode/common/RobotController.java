@@ -103,7 +103,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    int getHealth();
+    float getHealth();
 
     // ***********************************
     // ****** GENERAL VISION METHODS *****
@@ -185,46 +185,15 @@ public strictfp interface RobotController {
     RobotInfo[] senseNearbyRobots();
 
     /**
-     * Returns all robots that can be sensed within a certain distance of this
-     * robot. The objects are returned in no particular order.
+     * Returns all robots of a given team. The objects are returned in no particular order.
      *
-     * @param radiusSquared return robots this distance away from the center of
-     * this robot; if -1 is passed, all robots are returned
-     * @return array of RobotInfo objects of all the robots you saw
-     *
-     * @battlecode.doc.costlymethod
-     */
-    RobotInfo[] senseNearbyRobots(int radiusSquared);
-
-    /**
-     * Returns all robots of a given team that can be sensed within a certain
-     * distance of this robot. The objects are returned in no particular order.
-     *
-     * @param radiusSquared return robots this distance away from the center of
-     * this robot; if -1 is passed, all robots are returned
      * @param team filter game objects by the given team; if null is passed,
      * robots from any team are returned
      * @return array of RobotInfo objects of all the robots you saw
      *
      * @battlecode.doc.costlymethod
      */
-    RobotInfo[] senseNearbyRobots(int radiusSquared, Team team);
-
-    /**
-     * Returns all robots of a given team that can be sensed within a certain
-     * radius of a specified location. The objects are returned in no particular
-     * order.
-     *
-     * @param center center of the given search radius
-     * @param radiusSquared return robots this distance away from the center of
-     * this robot; if -1 is passed, all robots are returned
-     * @param team filter game objects by the given team; if null is passed,
-     * objects from all teams are returned
-     * @return sorted array of RobotInfo objects of the robots you saw
-     *
-     * @battlecode.doc.costlymethod
-     */
-    RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team);
+    RobotInfo[] senseNearbyRobots(Team team);
 
     /**
      * Given a location, returns whether a wall is at that location.
@@ -342,13 +311,13 @@ public strictfp interface RobotController {
     // ***********************************
 
     /**
-     * Tests whether the robot can act.
+     * Tests whether the robot can do one of move, act, or mine.
      * 
-     * @return true if the robot can act
+     * @return true if the robot can move, act, or mine.
      *
      * @battlecode.doc.costlymethod
      */
-    boolean isActionReady();
+    boolean isReady();
 
     // ***********************************
     // ****** MOVEMENT METHODS ***********

@@ -144,15 +144,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         return this.actionCooldownTurns < GameConstants.COOLDOWN_LIMIT;
     }
 
-    /**
-     * Returns whether this robot can sense the given location.
-     * 
-     * @param toSense the MapLocation to sense
-     */
-    public boolean canSenseLocation(MapLocation toSense) {
-        return this.location.distanceSquaredTo(toSense) <= getVisionRadiusSquared();
-    }
-
     // ******************************************
     // ****** UPDATE METHODS ********************
     // ******************************************

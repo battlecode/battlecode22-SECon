@@ -255,27 +255,23 @@ public strictfp class GameWorld {
         this.robots[loc.x - this.gameMap.getOrigin().x][loc.y - this.gameMap.getOrigin().y] = null;
     }
 
-    public InternalRobot[] getAllRobotsWithinRadiusSquared(MapLocation center, int radiusSquared) {
+    public InternalRobots[] getAllRobots(){
         ArrayList<InternalRobot> returnRobots = new ArrayList<InternalRobot>();
-        for (MapLocation newLocation : getAllLocationsWithinRadiusSquared(center, radiusSquared))
-            if (getRobot(newLocation) != null)
-                returnRobots.add(getRobot(newLocation));
+        for (int i = 0; i < this.robot.length; i++)
+            for (int j = 0; j < this.robot[0].length; j++)
+                if (getRobot(new MapLocation(i, j)) != null)
+                    returnRobots.add(getRobot(newLocation));
         return returnRobots.toArray(new InternalRobot[returnRobots.size()]);
     }
 
     public MapLocation[] getAllLocationsWithinRadiusSquared(MapLocation center, int radiusSquared) {
-        return getAllLocationsWithinRadiusSquaredWithoutMap(
-            this.gameMap.getOrigin(),
-            this.gameMap.getWidth(),
-            this.gameMap.getHeight(),
-            center, radiusSquared
-        );
-    }
 
-    public static MapLocation[] getAllLocationsWithinRadiusSquaredWithoutMap(MapLocation origin,
-                                                                            int width, int height,
-                                                                            MapLocation center, int radiusSquared) {
         ArrayList<MapLocation> returnLocations = new ArrayList<MapLocation>();
+
+        MapLocation origin = this.gameMap.getOrigin();
+        int width = this.gameMap.getWidth();
+        int height = this.gameMap.getHeight();
+        
         int ceiledRadius = (int) Math.ceil(Math.sqrt(radiusSquared)) + 1; // add +1 just to be safe
         int minX = Math.max(center.x - ceiledRadius, origin.x);
         int minY = Math.max(center.y - ceiledRadius, origin.y);
@@ -291,12 +287,7 @@ public strictfp class GameWorld {
         return returnLocations.toArray(new MapLocation[returnLocations.size()]);
     }
 
-    /**
-     * @return all of the locations on the grid
-     */
-    private MapLocation[] getAllLocations() {
-        return getAllLocationsWithinRadiusSquared(new MapLocation(0, 0), Integer.MAX_VALUE);
-    }
+
 
     // *********************************
     // ****** GAMEPLAY *****************
