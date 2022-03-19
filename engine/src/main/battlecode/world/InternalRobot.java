@@ -57,7 +57,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.type = type;
         this.location = loc;
 
-        this.health = (float) health;
+        this.health = health;
 
         this.controlBits = 0;
         this.currentBytecodeLimit = type.bytecodeLimit;

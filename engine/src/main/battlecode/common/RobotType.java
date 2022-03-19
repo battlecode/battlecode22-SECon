@@ -46,6 +46,6 @@ public enum RobotType {
         this.actionCooldown                 = actionCooldown;
         this.healthDecay                    = healthDecay;
         this.healthLimit                    = healthLimit;
-        this.bytecodeLimit                  = bytecodeLimit
+        this.bytecodeLimit                  = bytecodeLimit;
     }
 }

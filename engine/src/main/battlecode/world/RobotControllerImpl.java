@@ -213,7 +213,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override 
     public boolean senseWall(MapLocation loc) throws GameActionException {
         assertOnTheMap(loc);
-        return this.gameWorld.getWall(loc);
+        // TO DO: confirm with Engine that this is how wall is functioning (1 = wall, 0 = no wall)
+        return this.gameWorld.getWall(loc) == 1;
     }
 
     @Override 
@@ -314,7 +315,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_MOVE_THERE,
                  "Cannot move to location " + loc +" due to friendly robot occupying it.");
         }
-        if (this.gameWorld.getWall(loc)){
+        if (this.senseWall(loc)){
             throw new GameActionException(CANT_MOVE_THERE,
                 "Cannot move to location " + loc +" due to wall occupying it.");
         }
@@ -331,9 +332,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public void move(Direction dir) throws GameActionException {
         this.assertCanMove(dir);
-        MapLocation center = thisadjacentLocation(dir);
+        MapLocation center = this.adjacentLocation(dir);
         this.gameWorld.moveRobot(this.getLocation(), center);
-        this.setLocation(center);
+        this.robot.setLocation(center);
         // process collisions
         if (this.isLocationOccupied(center)){
             this.robot.collide(this.gameWorld.getRobot(center));
@@ -374,7 +375,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanBuildRobot(cost, loc);
         Team team = getTeam();
         this.gameWorld.getTeamInfo().addUranium(team, -cost);
-        int newId = this.gameWorld.spawnRobot(type, adjacentLocation(dir), cost, team);
+        int newId = this.gameWorld.spawnRobot(this.type, this.adjacentLocation(dir), cost, team);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
     }
 
@@ -383,9 +384,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // *****************************
 
     private void assertCanExplode() throws GameActionException {
+        loc = this.robot.getLocation();
         assertNotNull(loc);
         assertCanActLocation(loc);
-        assertIsMoveOrActionReady();
+        assertIsReady();
     }
 
     @Override
@@ -398,12 +400,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public void explode() throws GameActionException {
-        assertCanExplode(loc);
+        assertCanExplode();
         this.robot.resetCooldownTurns();
         for (Direction dir : Direction.cardinalDirections()){
-            MapLocation loc = this.robot.getLocation().adjacentLocation(dir);
+            MapLocation loc = this.robot.adjacentLocation(dir);
             InternalRobot bot = this.gameWorld.getRobot(loc);
-            this.robot.attack(bot);
+            bot.damageHealth(this.robot.getHealth() / 2);
             this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
         }
     }
@@ -422,16 +424,16 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public boolean canMine(MapLocation loc) {
+    public boolean canMine() {
         try {
-            assertCanMine(loc);
+            assertCanMine(this.robot.getLocation());
             return true;
         } catch (GameActionException e) { return false; }  
     }
 
     @Override
     public void mine() throws GameActionException {
-        loc = this.robot.getLocation();
+        MapLocation loc = this.robot.getLocation();
         assertCanMine(loc);
         this.robot.resetCooldownTurns();
         this.gameWorld.setUranium(loc, this.gameWorld.getUranium(loc) - 1);
@@ -454,13 +456,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 "as it is not within the range of allowable values: [0, " + GameConstants.MAX_SHARED_ARRAY_VALUE + "].");
     }
 
-    @Override
     public int readSharedArray(int index) throws GameActionException {
         assertValidIndex(index);
         return this.gameWorld.getTeamInfo().readSharedArray(getTeam(), index);
     }
 
-    @Override
     public void writeSharedArray(int index, int value) throws GameActionException {
         assertValidIndex(index);
         assertValidValue(value);
@@ -471,7 +471,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** OTHER ACTION METHODS *******
     // ***********************************
 
-    @Override
     public void disintegrate() {
         throw new RobotDeathException();
     }
