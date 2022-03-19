@@ -184,13 +184,6 @@ public strictfp class GameWorld {
         return this.gameStats.getWinner();
     }
 
-    /**
-     * Defensively copied at the level of LiveMap.
-     */
-    public AnomalyScheduleEntry[] getAnomalySchedule() {
-        return this.gameMap.getAnomalySchedule();
-    }
-
     public boolean isRunning() {
         return this.running;
     }
@@ -199,7 +192,7 @@ public strictfp class GameWorld {
         return this.currentRound;
     }
 
-    public int getWall(MapLocation loc) {
+    public boolean getWall(MapLocation loc) {
         return this.walls[locationToIndex(loc)];
     }
 
