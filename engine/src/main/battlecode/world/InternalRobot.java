@@ -57,7 +57,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.type = type;
         this.location = loc;
 
-        this.health = health;
+        this.health = (float) health;
 
         this.controlBits = 0;
         this.currentBytecodeLimit = type.bytecodeLimit;
@@ -129,7 +129,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             return cachedRobotInfo;
         }
 
-        this.cachedRobotInfo = new RobotInfo(ID, team, type, mode, level, health, location);
+        this.cachedRobotInfo = new RobotInfo(ID, team, type, health, location);
         return this.cachedRobotInfo;
     }
 
@@ -141,7 +141,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * Returns whether the robot can either move or act based on cooldown.
      */
     public boolean canMoveOrActCooldown() {
-        return this.actionCooldownTurns < GameConstants.COOLDOWN_LIMIT;
+        return this.cooldownTurns < GameConstants.COOLDOWN_LIMIT;
     }
 
     // ******************************************
@@ -184,7 +184,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void damageHealth(float healthAmount) {
-        addHealth(healthAmount, true);
+        damageHealth(healthAmount, true);
     }
 
     /**
@@ -217,7 +217,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
             this.controller.disintegrate();
         }
         else {
-            int partialDamage = Math.abs(bot.getHealth() - this.getHealth()) + 1;
+            float partialDamage = Math.abs(bot.getHealth() - this.getHealth()) + 1;
             if (this.getHealth() < bot.getHealth()){
                 this.controller.disintegrate();
                 bot.damageHealth(bot.getHealth() - partialDamage);
@@ -227,21 +227,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
                 this.damageHealth(this.getHealth() - partialDamage);
             }
         }
-    }
-
-    @Override
-    public void move(Direction dir) throws GameActionException {
-        this.controller.assertCanMove(dir);
-        MapLocation center = this.controller.adjacentLocation(dir);
-        this.gameWorld.moveRobot(this.controller.getLocation(), center);
-        this.controller.robot.setLocation(center);
-        // process collisions
-        if (this.controller.isLocationOccupied(loc)){
-            this.collide(this.gameWorld.getRobot(loc));
-        }
-        // this has to happen after robot's location changed because rubble
-        this.robot.resetCooldownTurns();
-        this.gameWorld.getMatchMaker().addMoved(getID(), getLocation());
     }
 
     // *********************************
@@ -254,8 +239,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void processBeginningOfTurn() {
-        this.actionCooldownTurns = Math.max(0, this.actionCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
-        this.movementCooldownTurns = Math.max(0, this.movementCooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
+        this.cooldownTurns = Math.max(0, this.cooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
         this.currentBytecodeLimit = getType().bytecodeLimit;
     }
 
@@ -268,7 +252,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     public void processEndOfRound() {
-        this.controller.damageHealth(this.type.healthDecay * this.getHealth());
+        this.damageHealth(this.type.healthDecay * this.getHealth());
         if (this.getHealth() < this.type.healthLimit){
             this.controller.disintegrate();
             return;

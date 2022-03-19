@@ -255,12 +255,14 @@ public strictfp class GameWorld {
         this.robots[loc.x - this.gameMap.getOrigin().x][loc.y - this.gameMap.getOrigin().y] = null;
     }
 
-    public InternalRobots[] getAllRobots(){
+    public InternalRobot[] getAllRobots(){
         ArrayList<InternalRobot> returnRobots = new ArrayList<InternalRobot>();
-        for (int i = 0; i < this.robot.length; i++)
-            for (int j = 0; j < this.robot[0].length; j++)
-                if (getRobot(new MapLocation(i, j)) != null)
+        for (int i = 0; i < this.robots.length; i++)
+            for (int j = 0; j < this.robots[0].length; j++){
+                MapLocation newLocation = new MapLocation(i, j);
+                if (getRobot() != null)
                     returnRobots.add(getRobot(newLocation));
+            }
         return returnRobots.toArray(new InternalRobot[returnRobots.size()]);
     }
 

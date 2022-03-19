@@ -118,7 +118,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean onTheMap(MapLocation loc);
+    boolean onTheMap(MapLocation loc) throws GameActionException;
 
     /**
      * Checks whether a robot is at a given location. Assumes the location is valid.
