@@ -18,8 +18,8 @@ public enum RobotType {
      *
      * @battlecode.doc.robottype
      */
-    ROBOT (  10, 0.0007f, 0.1f, 100000),
-    //       AC    HD     HL    BCL
+    ROBOT (  10, 0.0007f, 0.1f),
+    //       AC    HD     HL
     ;
 
     /**
@@ -37,15 +37,9 @@ public enum RobotType {
      */
     public final float healthLimit;
 
-    /**
-     * The bytecode limit.
-     */
-    public final int bytecodeLimit;
-
-    RobotType(int actionCooldown, float healthDecay, float healthLimit, int bytecodeLimit) {
+    RobotType(int actionCooldown, float healthDecay, float healthLimit) {
         this.actionCooldown                 = actionCooldown;
         this.healthDecay                    = healthDecay;
         this.healthLimit                    = healthLimit;
-        this.bytecodeLimit                  = bytecodeLimit;
     }
 }

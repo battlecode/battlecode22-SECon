@@ -23,7 +23,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     private Team team;
     private RobotType type;
     private MapLocation location;
-    private int health;
+    private float health;
 
     private long controlBits;
     private int currentBytecodeLimit;
@@ -60,7 +60,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health = health;
 
         this.controlBits = 0;
-        this.currentBytecodeLimit = type.bytecodeLimit;
+        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
         this.bytecodesUsed = 0;
 
         this.roundsAlive = 0;
@@ -140,7 +140,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     /**
      * Returns whether the robot can either move or act based on cooldown.
      */
-    public boolean canMoveOrActCooldown() {
+    public boolean isReady() {
         return this.cooldownTurns < GameConstants.COOLDOWN_LIMIT;
     }
 
@@ -194,7 +194,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param checkWin whether to end the game if the last robot dies
      */
     public void damageHealth(float healthAmount, boolean checkWin) {
-        int oldHealth = this.health;
+        float oldHealth = this.health;
         this.health -= healthAmount;
         if (this.health <= 0) {
             this.gameWorld.destroyRobot(this.ID, checkWin);
@@ -213,18 +213,18 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      */
     public void collide(InternalRobot bot){
         if (Math.abs(bot.getHealth() - this.getHealth()) <= GameConstants.COLLISION_EQUALITY_THRESHOLD){
-            bot.controller.disintegrate();
-            this.controller.disintegrate();
+            this.gw.destroyRobot(bot.getID());
+            this.gw.destroyRobot(this.robot.getID());
         }
         else {
-            float partialDamage = Math.abs(bot.getHealth() - this.getHealth()) + 1;
+            float newHealth = Math.abs(bot.getHealth() - this.getHealth()) + 1;
             if (this.getHealth() < bot.getHealth()){
-                this.controller.disintegrate();
-                bot.damageHealth(bot.getHealth() - partialDamage);
+                this.gw.destroyRobot(this.robot.getID());
+                bot.damageHealth(bot.getHealth() - newHealth);
             }
             else {
-                bot.controller.disintegrate();
-                this.damageHealth(this.getHealth() - partialDamage);
+                this.gw.destroyRobot(bot.getID());
+                this.damageHealth(this.getHealth() - newHealth);
             }
         }
     }
@@ -240,7 +240,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void processBeginningOfTurn() {
         this.cooldownTurns = Math.max(0, this.cooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
-        this.currentBytecodeLimit = getType().bytecodeLimit;
+        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
     }
 
     public void processEndOfTurn() {

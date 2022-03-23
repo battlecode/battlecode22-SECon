@@ -148,13 +148,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
                     "Target location is not on the map");
     }
 
-    private void assertCanActLocation(MapLocation loc) throws GameActionException {
-        assertNotNull(loc);
-        if (!this.gameWorld.getGameMap().onTheMap(loc))
-            throw new GameActionException(CANT_SENSE_THAT,
-                    "Target location is not on the map");
-    }
-
     @Override
     public boolean isLocationOccupied(MapLocation loc) throws GameActionException {
         assertOnTheMap(loc);
@@ -282,7 +275,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     private void assertIsReady() throws GameActionException {
-        if (!this.robot.canMoveOrActCooldown())
+        if (!this.robot.isReady())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's cooldown has not expired.");
     }
@@ -334,47 +327,47 @@ public final strictfp class RobotControllerImpl implements RobotController {
         MapLocation center = this.adjacentLocation(dir);
         this.gameWorld.moveRobot(this.getLocation(), center);
         this.robot.setLocation(center);
+        this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), this.robot.getLocation());
+
         // process collisions
         if (this.isLocationOccupied(center)){
             this.robot.collide(this.gameWorld.getRobot(center));
         }
         // this has to happen after robot's location changed because rubble
         this.robot.resetCooldownTurns();
-        this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), this.robot.getLocation());
+        
     }
 
     // ***********************************
     // ****** BUILDING/SPAWNING **********
     // ***********************************
 
-    private void assertCanBuildRobot(int cost, MapLocation loc) throws GameActionException {
+    private void assertCanBuildRobot(int health) throws GameActionException {
         Team team = getTeam();
-        if (this.gameWorld.getTeamInfo().getUranium(team) < cost)
+        if (this.gameWorld.getTeamInfo().getUranium(team) < health)
             throw new GameActionException(NOT_ENOUGH_RESOURCE,
                     "Insufficient amount of uranium.");
-
+        loc = this.gameWorld.getSpawnLoc(this.getTeam());
         if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
                     "Can only spawn to locations on the map; " + loc + " is not on the map.");
-        if (loc.equals(this.gameWorld.getSpawnLoc(this.getTeam())))
-            throw new GameActionException(CANT_MOVE_THERE,
-                    "Cannot spawn to location " + loc + " that is not your spawning location.");
     }
 
     @Override
-    public boolean canBuildRobot(int cost, MapLocation loc) {
+    public boolean canBuildRobot(int health) {
         try {
-            assertCanBuildRobot(cost, loc);
+            assertCanBuildRobot(health);
             return true;
         } catch (GameActionException e) { return false; }
     }
 
     @Override
-    public void buildRobot(int cost, MapLocation loc) throws GameActionException {
-        assertCanBuildRobot(cost, loc);
+    public void buildRobot(int health) throws GameActionException {
+        assertCanBuildRobot(health);
         Team team = getTeam();
-        this.gameWorld.getTeamInfo().addUranium(team, -cost);
-        int newId = this.gameWorld.spawnRobot(this.robot.getType(), loc, cost, team);
+        this.gameWorld.getTeamInfo().addUranium(team, -health);
+        loc = this.gameWorld.getSpawnLoc(this.getTeam());
+        int newId = this.gameWorld.spawnRobot(this.robot.getType(), loc, health, team);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
     }
 
@@ -383,9 +376,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // *****************************
 
     private void assertCanExplode() throws GameActionException {
-        MapLocation loc = this.robot.getLocation();
-        assertNotNull(loc);
-        assertCanActLocation(loc);
         assertIsReady();
     }
 
@@ -404,6 +394,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         for (Direction dir : Direction.cardinalDirections()){
             MapLocation loc = this.adjacentLocation(dir);
             InternalRobot bot = this.gameWorld.getRobot(loc);
+            if (bot == null) continue;
+            // Don't damage friendly robots.
+            if(bot.getTeam() == this.robot.getTeam())
+                continue;
             bot.damageHealth(this.robot.getHealth() / 2);
             this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
         }
@@ -415,7 +409,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanMine(MapLocation loc) throws GameActionException {
         assertNotNull(loc);
-        assertCanActLocation(loc);
+        assertOnTheMap(loc);
         assertIsReady();
         if (this.gameWorld.getUranium(loc) < 1)
             throw new GameActionException(CANT_DO_THAT, 
@@ -453,17 +447,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (value < 0 || value > GameConstants.MAX_SHARED_ARRAY_VALUE)
             throw new GameActionException(CANT_DO_THAT, "You can't write this value to the shared array " +
                 "as it is not within the range of allowable values: [0, " + GameConstants.MAX_SHARED_ARRAY_VALUE + "].");
-    }
-
-    public int readSharedArray(int index) throws GameActionException {
-        assertValidIndex(index);
-        return this.gameWorld.getTeamInfo().readSharedArray(getTeam(), index);
-    }
-
-    public void writeSharedArray(int index, int value) throws GameActionException {
-        assertValidIndex(index);
-        assertValidValue(value);
-        this.gameWorld.getTeamInfo().writeSharedArray(getTeam(), index, value);
     }
 
     // ***********************************

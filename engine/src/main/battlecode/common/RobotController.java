@@ -311,9 +311,9 @@ public strictfp interface RobotController {
     // ***********************************
 
     /**
-     * Tests whether the robot can do one of move, act, or mine.
+     * Tests whether the robot can do one and any of move, act, or mine.
      * 
-     * @return true if the robot can move, act, or mine.
+     * @return true if the robot can do one and any of move, act, or mine.
      *
      * @battlecode.doc.costlymethod
      */
@@ -361,30 +361,26 @@ public strictfp interface RobotController {
     /**
      * Tests whether a robot can be built at the target location. Checks that the
      * target location is on the map, that the target location is not occupied, 
-     * that the robot has the amount of uranium it's trying to spend, and that there are no
-     * cooldown turns remaining.
+     * that the robot has the amount of uranium it's trying to spend.
      *
-     * @param cost the amount of uranium to spend on the robot; the amount of health it has
-     * @param dir the direction to build in
-     * @return whether it is possible to build a robot of the given type in the
-     * given direction
+     * @param health, the health of the robot to build
+     * @return whether it is possible to build a robot of this cost in your spawn location.
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canBuildRobot(int cost, MapLocation loc);
+    boolean canBuildRobot(int health);
 
     /**
      * Builds a robot at the given location. The robot has the specified health specified 
      * by its cost
      *
-     * @param cost the amount of uranium to spend on the robot; the amount of health it has
-     * @param loc the location to spawn the unit
-     * @throws GameActionException if the conditions of <code>canBuildRobot</code>
+     * @param health, the health of the robot to build
+     * @throws GameActionException if the conditions of canBuildRobot
      * are not all satisfied
      *
      * @battlecode.doc.costlymethod
      */
-    void buildRobot(int cost, MapLocation loc) throws GameActionException;
+    void buildRobot(int health) throws GameActionException;
 
     // *****************************
     // **** COMBAT UNIT METHODS **** 
@@ -418,7 +414,7 @@ public strictfp interface RobotController {
     /**
      * Tests whether the robot can mine.
      * 
-     * Checks that no cooldown turns remain.
+     * Checks that no cooldown turns remain and there is at least 1 uranium to mine at that square.
      *
      * @return whether it is possible to mine at the current location
      *
