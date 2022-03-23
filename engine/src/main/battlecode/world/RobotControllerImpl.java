@@ -408,8 +408,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
             if(bot.getTeam() == this.robot.getTeam())
                 continue;
             bot.damageHealth(this.robot.getHealth() / 2);
-            this.gameWorld.getMatchMaker().addAction(getID(), Action.ATTACK, bot.getID());
         }
+        this.gameWorld.getMatchMaker().addAction(getID(), Action.EXPLODE, -1);
     }
 
     // ***********************
