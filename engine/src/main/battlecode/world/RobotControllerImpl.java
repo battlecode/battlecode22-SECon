@@ -371,12 +371,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
         Team team = getTeam();
         this.gameWorld.getTeamInfo().addUranium(team, -health);
         MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam());
-        int newId = this.gameWorld.spawnRobot(this.robot.getType(), loc, health, team);
+        int newId = this.gameWorld.spawnRobot(this.robot.getType(), health, team);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
 
         // process collisions (auto-collision with enemy)
         if (this.isLocationOccupied(loc)){
-            this.getRobot(loc).collide(this.gameWorld.getRobot(loc));
+            this.gameWorld.getRobot(loc).collide(this.gameWorld.getRobot(loc));
         }
     }
 
