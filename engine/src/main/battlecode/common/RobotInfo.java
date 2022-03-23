@@ -35,14 +35,14 @@ public class RobotInfo {
     /**
      * The health of the robot.
      */
-    public final int health;
+    public final float health;
 
     /**
      * The current location of the robot.
      */
     public final MapLocation location;
 
-    public RobotInfo(int ID, Team team, RobotType type, RobotMode mode, int level, int health, MapLocation location) {
+    public RobotInfo(int ID, Team team, RobotType type, RobotMode mode, int level, float health, MapLocation location) {
         super();
         this.ID = ID;
         this.team = team;
@@ -103,7 +103,7 @@ public class RobotInfo {
      *
      * @return the health of this robot
      */
-    public int getHealth() {
+    public float getHealth() {
         return health;
     }
 
@@ -128,7 +128,7 @@ public class RobotInfo {
         if (type != robotInfo.type) return false;
         if (mode != robotInfo.mode) return false;
         if (level != robotInfo.level) return false;
-        if (health != robotInfo.health) return false;
+        if ( (int) health != (int) robotInfo.health) return false;
         return location.equals(robotInfo.location);
     }
 
@@ -140,7 +140,6 @@ public class RobotInfo {
         result = 31 * result + type.ordinal();
         result = 31 * result + mode.ordinal();
         result = 31 * result + level;
-        result = 31 * result + health;
         result = 31 * result + location.hashCode();
         return result;
     }

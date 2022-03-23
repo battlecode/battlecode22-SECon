@@ -331,8 +331,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
         // this has to happen after robot's location changed because rubble
 
         // process collisions
-        if (this.controller.isLocationOccupied(center)){
-            this.collide(this.gameWorld.getRobot(center));
+        if (this.isLocationOccupied(center)){
+            this.robot.collide(this.gameWorld.getRobot(center));
         }
         this.robot.resetCooldownTurns();
         
@@ -347,7 +347,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (this.gameWorld.getTeamInfo().getUranium(team) < health)
             throw new GameActionException(NOT_ENOUGH_RESOURCE,
                     "Insufficient amount of uranium.");
-        loc = this.gameWorld.getSpawnLoc(this.getTeam());
+        MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam());
         if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
                     "Can only spawn to locations on the map; " + loc + " is not on the map.");
@@ -370,12 +370,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanBuildRobot(health);
         Team team = getTeam();
         this.gameWorld.getTeamInfo().addUranium(team, -health);
-        loc = this.gameWorld.getSpawnLoc(this.getTeam());
+        MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam());
         int newId = this.gameWorld.spawnRobot(this.robot.getType(), loc, health, team);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
 
         // process collisions (auto-collision with enemy)
-        if (this.controller.isLocationOccupied(loc)){
+        if (this.isLocationOccupied(loc)){
             this.getRobot(loc).collide(this.gameWorld.getRobot(loc));
         }
     }
