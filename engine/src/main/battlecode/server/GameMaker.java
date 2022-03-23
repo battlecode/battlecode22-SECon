@@ -265,8 +265,8 @@ public strictfp class GameMaker {
             int bodyTypeMetadataOffset = makeBodyTypeMetadata(builder);
 
             Constants.startConstants(builder);
-            Constants.addIncreasePeriod(builder, GameConstants.ADD_LEAD_EVERY_ROUNDS);
-            Constants.addLeadAdditiveIncease(builder, GameConstants.ADD_LEAD);
+            Constants.addIncreasePeriod(builder, GameConstants.ADD_URANIUM_EVERY_ROUNDS);
+            Constants.addUraniumAdditiveIncease(builder, GameConstants.ADD_URANIUM);
             int constantsOffset = Constants.endConstants(builder);
 
             GameHeader.startGameHeader(builder);
@@ -287,23 +287,10 @@ public strictfp class GameMaker {
         for (RobotType type : RobotType.values()) {
             BodyTypeMetadata.startBodyTypeMetadata(builder);
             BodyTypeMetadata.addType(builder, robotTypeToBodyType(type));
-            BodyTypeMetadata.addBuildCostLead(builder, type.buildCostLead);
-            BodyTypeMetadata.addBuildCostGold(builder, type.buildCostGold);
-            BodyTypeMetadata.addLevel2CostLead(builder, type.getLeadMutateCost(2));
-            BodyTypeMetadata.addLevel2CostGold(builder, type.getGoldMutateCost(2));
-            BodyTypeMetadata.addLevel3CostLead(builder, type.getLeadMutateCost(3));
-            BodyTypeMetadata.addLevel3CostGold(builder, type.getGoldMutateCost(3));
             BodyTypeMetadata.addActionCooldown(builder, type.actionCooldown);
-            BodyTypeMetadata.addMovementCooldown(builder, type.movementCooldown);
-            BodyTypeMetadata.addHealth(builder, type.health);
-            BodyTypeMetadata.addLevel2Health(builder, type.getMaxHealth(2));
-            BodyTypeMetadata.addLevel3Health(builder, type.getMaxHealth(3));
-            BodyTypeMetadata.addDamage(builder, type.damage);
-            BodyTypeMetadata.addLevel2Damage(builder, type.getDamage(2));
-            BodyTypeMetadata.addLevel3Damage(builder, type.getDamage(3));
-            BodyTypeMetadata.addActionRadiusSquared(builder, type.actionRadiusSquared);
-            BodyTypeMetadata.addVisionRadiusSquared(builder, type.visionRadiusSquared);
-            BodyTypeMetadata.addBytecodeLimit(builder, type.bytecodeLimit);
+            BodyTypeMetadata.addHealthDecay(builder, type.healthDecay);
+            BodyTypeMetadata.addHealthLimit(builder, type.healthLimit);
+
             bodyTypeMetadataOffsets.add(BodyTypeMetadata.endBodyTypeMetadata(builder));
         }
 
@@ -312,13 +299,7 @@ public strictfp class GameMaker {
     }
 
     private byte robotTypeToBodyType(RobotType type) {
-        if (type == RobotType.ARCHON) return BodyType.ARCHON;
-        if (type == RobotType.LABORATORY) return BodyType.LABORATORY;
-        if (type == RobotType.WATCHTOWER) return BodyType.WATCHTOWER;
-        if (type == RobotType.MINER) return BodyType.MINER;
-        if (type == RobotType.BUILDER) return BodyType.BUILDER;
-        if (type == RobotType.SOLDIER) return BodyType.SOLDIER;
-        if (type == RobotType.SAGE) return BodyType.SAGE;
+        if (type == RobotType.ROBOT) return BodyType.ROBOT;
         return Byte.MIN_VALUE;
     }
 
@@ -356,18 +337,10 @@ public strictfp class GameMaker {
         private TByteArrayList actions; // Actions
         private TIntArrayList actionTargets; // ints (IDs)
 
-        private TIntArrayList leadDropLocsX;
-        private TIntArrayList leadDropLocsY;
-        private TIntArrayList leadDropValues;
-
-        private TIntArrayList goldDropLocsX;
-        private TIntArrayList goldDropLocsY;
-        private TIntArrayList goldDropValues;
-
         // Round statistics
         private TIntArrayList teamIDs;
-        private TIntArrayList teamLeadChanges;
-        private TIntArrayList teamGoldChanges;
+        private TIntArrayList teamUraniumChanges;
+        private TIntArrayList teamUraniumMined;
 
         private TIntArrayList indicatorStringIDs;
         private ArrayList<String> indicatorStrings;
@@ -410,15 +383,9 @@ public strictfp class GameMaker {
             this.actionIDs = new TIntArrayList();
             this.actions = new TByteArrayList();
             this.actionTargets = new TIntArrayList();
-            this.leadDropLocsX = new TIntArrayList();
-            this.leadDropLocsY = new TIntArrayList();
-            this.leadDropValues = new TIntArrayList();
-            this.goldDropLocsX = new TIntArrayList();
-            this.goldDropLocsY = new TIntArrayList();
-            this.goldDropValues = new TIntArrayList();
             this.teamIDs = new TIntArrayList();
-            this.teamLeadChanges = new TIntArrayList();
-            this.teamGoldChanges = new TIntArrayList();
+            this.teamUraniumChanges = new TIntArrayList();
+            this.teamUraniumMined = new TIntArrayList();
             this.indicatorStringIDs = new TIntArrayList();
             this.indicatorStrings = new ArrayList<>();
             this.indicatorDotIDs = new TIntArrayList();
@@ -530,8 +497,8 @@ public strictfp class GameMaker {
 
                 // Round statistics
                 int teamIDsP = Round.createTeamIDsVector(builder, teamIDs.toArray());
-                int teamLeadChangesP = Round.createTeamLeadChangesVector(builder, teamLeadChanges.toArray());
-                int teamGoldChangesP = Round.createTeamGoldChangesVector(builder, teamGoldChanges.toArray());
+                int teamUraniumChangesP = Round.createTeamUraniumChangesVector(builder, teamUraniumChanges.toArray());
+                int teamUraniumMinedP = Round.createTeamUraniumMinedVector(builder, teamUraniumMined.toArray());
 
                 // The bodies that moved
                 int movedIDsP = Round.createMovedIDsVector(builder, movedIDs.toArray());
@@ -544,12 +511,6 @@ public strictfp class GameMaker {
                 int actionIDsP = Round.createActionIDsVector(builder, actionIDs.toArray());
                 int actionsP = Round.createActionsVector(builder, actions.toArray());
                 int actionTargetsP = Round.createActionTargetsVector(builder, actionTargets.toArray());
-
-                // The lead and gold dropped
-                int leadDropLocsP = createVecTable(builder, leadDropLocsX, leadDropLocsY);
-                int leadDropValuesP = Round.createLeadDropValuesVector(builder, leadDropValues.toArray());
-                int goldDropLocsP = createVecTable(builder, goldDropLocsX, goldDropLocsY);
-                int goldDropValuesP = Round.createGoldDropValuesVector(builder, goldDropValues.toArray());
 
                 // The indicator strings that were set
                 int indicatorStringIDsP = Round.createIndicatorStringIDsVector(builder, indicatorStringIDs.toArray());
@@ -570,14 +531,10 @@ public strictfp class GameMaker {
                 int indicatorLineEndLocsP = createVecTable(builder, indicatorLineEndLocsX, indicatorLineEndLocsY);
                 int indicatorLineRGBsP = createRGBTable(builder, indicatorLineRGBsRed, indicatorLineRGBsGreen, indicatorLineRGBsBlue);
 
-                // The bytecode usage
-                int bytecodeIDsP = Round.createBytecodeIDsVector(builder, bytecodeIDs.toArray());
-                int bytecodesUsedP = Round.createBytecodesUsedVector(builder, bytecodesUsed.toArray());
-
                 Round.startRound(builder);
                 Round.addTeamIDs(builder, teamIDsP);
-                Round.addTeamLeadChanges(builder, teamLeadChangesP);
-                Round.addTeamGoldChanges(builder, teamGoldChangesP);
+                Round.addTeamUraniumChanges(builder, teamUraniumChangesP);
+                Round.addTeamUraniumMined(builder, teamUraniumMinedP);
                 Round.addMovedIDs(builder, movedIDsP);
                 Round.addMovedLocs(builder, movedLocsP);
                 Round.addSpawnedBodies(builder, spawnedBodiesP);
@@ -585,10 +542,6 @@ public strictfp class GameMaker {
                 Round.addActionIDs(builder, actionIDsP);
                 Round.addActions(builder, actionsP);
                 Round.addActionTargets(builder, actionTargetsP);
-                Round.addLeadDropLocations(builder, leadDropLocsP);
-                Round.addLeadDropValues(builder, leadDropValuesP);
-                Round.addGoldDropLocations(builder, goldDropLocsP);
-                Round.addGoldDropValues(builder, goldDropValuesP);
                 Round.addIndicatorStringIDs(builder, indicatorStringIDsP);
                 Round.addIndicatorStrings(builder, indicatorStringsP);
                 Round.addIndicatorDotIDs(builder, indicatorDotIDsP);
@@ -599,8 +552,6 @@ public strictfp class GameMaker {
                 Round.addIndicatorLineEndLocs(builder, indicatorLineEndLocsP);
                 Round.addIndicatorLineRGBs(builder, indicatorLineRGBsP);
                 Round.addRoundID(builder, roundNum);
-                Round.addBytecodeIDs(builder, bytecodeIDsP);
-                Round.addBytecodesUsed(builder, bytecodesUsedP);
                 int round = Round.endRound(builder);
                 return EventWrapper.createEventWrapper(builder, Event.Round, round);
             });
@@ -631,22 +582,10 @@ public strictfp class GameMaker {
             actionTargets.add(targetID);
         }
 
-        public void addLeadDrop(MapLocation location, int value) {
-            leadDropLocsX.add(location.x);
-            leadDropLocsY.add(location.y);
-            leadDropValues.add(value);
-        }
-
-        public void addGoldDrop(MapLocation location, int value) {
-            goldDropLocsX.add(location.x);
-            goldDropLocsY.add(location.y);
-            goldDropValues.add(value);
-        }
-
-        public void addTeamInfo(Team team, int leadChange, int goldChange) {
+        public void addTeamInfo(Team team, int uraniumChange, int uraniumMined) {
             teamIDs.add(TeamMapping.id(team));
-            teamLeadChanges.add(leadChange);
-            teamGoldChanges.add(goldChange);
+            teamUraniumChanges.add(uraniumChange);
+            teamUraniumMined.add(uraniumMined);
         }
 
         public void addIndicatorString(int id, String string) {
@@ -709,15 +648,9 @@ public strictfp class GameMaker {
             actionIDs.clear();
             actions.clear();
             actionTargets.clear();
-            leadDropLocsX.clear();
-            leadDropLocsY.clear();
-            leadDropValues.clear();
-            goldDropLocsX.clear();
-            goldDropLocsY.clear();
-            goldDropValues.clear();
             teamIDs.clear();
-            teamLeadChanges.clear();
-            teamGoldChanges.clear();
+            teamUraniumChanges.clear();
+            teamUraniumMined.clear();
             indicatorStringIDs.clear();
             indicatorStrings.clear();
             indicatorDotIDs.clear();
