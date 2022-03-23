@@ -64,6 +64,8 @@ table GameMap {
     walls: [bool];
     /// The uranium on the map.
     uranium: [int];
+    /// The spawn locations.
+    spawnLocation: [int];
 }
 
 /// Actions that can be performed.
@@ -91,9 +93,9 @@ enum Action : byte {
 /// Metadata about all bodies of a particular type.
 table BodyTypeMetadata {
     type: BodyType;
-    deathThreshold: float;
-    cooldown: int;
-    healthDecayPercentage: int;
+    actionCooldown: int;
+    healthDecay: float;
+    healthLimit: float;
 }
 
 /// Data relevant to a particular team.
@@ -104,8 +106,8 @@ table TeamData {
     packageName: string;
     /// The ID of the team this data pertains to.
     teamID: byte;
-
-    
+    /// The bytecode limit of the team
+    bytecodeLimit: int;
 }
 
 // Profiler tables
@@ -268,9 +270,7 @@ table Round {
     /// It should increase by one for each following round.
     roundID: int;
 
-    /// The IDs of player bodies.
-    bytecodeIDs: [int];
-    /// The bytecodes used by the player bodies.
+    /// The bytecodes used by the teams.
     bytecodesUsed: [int];
 }
 
