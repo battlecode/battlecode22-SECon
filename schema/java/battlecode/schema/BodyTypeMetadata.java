@@ -7,14 +7,15 @@ import java.lang.*;
 import java.util.*;
 import com.google.flatbuffers.*;
 
-@SuppressWarnings("unused")
 /**
  * Metadata about all bodies of a particular type.
  */
+@SuppressWarnings("unused")
 public final class BodyTypeMetadata extends Table {
+  public static void ValidateVersion() { Constants.FLATBUFFERS_2_0_0(); }
   public static BodyTypeMetadata getRootAsBodyTypeMetadata(ByteBuffer _bb) { return getRootAsBodyTypeMetadata(_bb, new BodyTypeMetadata()); }
   public static BodyTypeMetadata getRootAsBodyTypeMetadata(ByteBuffer _bb, BodyTypeMetadata obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; vtable_start = bb_pos - bb.getInt(bb_pos); vtable_size = bb.getShort(vtable_start); }
+  public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public BodyTypeMetadata __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public byte type() { int o = __offset(4); return o != 0 ? bb.get(o + bb_pos) : 0; }
@@ -29,7 +30,7 @@ public final class BodyTypeMetadata extends Table {
       int healthDecayPercentage,
       int actionRadiusSquared,
       int bytecodeLimit) {
-    builder.startObject(5);
+    builder.startTable(5);
     BodyTypeMetadata.addBytecodeLimit(builder, bytecodeLimit);
     BodyTypeMetadata.addActionRadiusSquared(builder, actionRadiusSquared);
     BodyTypeMetadata.addHealthDecayPercentage(builder, healthDecayPercentage);
@@ -38,15 +39,22 @@ public final class BodyTypeMetadata extends Table {
     return BodyTypeMetadata.endBodyTypeMetadata(builder);
   }
 
-  public static void startBodyTypeMetadata(FlatBufferBuilder builder) { builder.startObject(5); }
+  public static void startBodyTypeMetadata(FlatBufferBuilder builder) { builder.startTable(5); }
   public static void addType(FlatBufferBuilder builder, byte type) { builder.addByte(0, type, 0); }
   public static void addDeathThreshold(FlatBufferBuilder builder, float deathThreshold) { builder.addFloat(1, deathThreshold, 0.0f); }
   public static void addHealthDecayPercentage(FlatBufferBuilder builder, int healthDecayPercentage) { builder.addInt(2, healthDecayPercentage, 0); }
   public static void addActionRadiusSquared(FlatBufferBuilder builder, int actionRadiusSquared) { builder.addInt(3, actionRadiusSquared, 0); }
   public static void addBytecodeLimit(FlatBufferBuilder builder, int bytecodeLimit) { builder.addInt(4, bytecodeLimit, 0); }
   public static int endBodyTypeMetadata(FlatBufferBuilder builder) {
-    int o = builder.endObject();
+    int o = builder.endTable();
     return o;
+  }
+
+  public static final class Vector extends BaseVector {
+    public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }
+
+    public BodyTypeMetadata get(int j) { return get(new BodyTypeMetadata(), j); }
+    public BodyTypeMetadata get(BodyTypeMetadata obj, int j) {  return obj.__assign(__indirect(__element(j), bb), bb); }
   }
 }
 
