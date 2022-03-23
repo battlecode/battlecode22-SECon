@@ -1,8 +1,7 @@
 package battlecode.world;
 
-import battlecode.common.*;
-import java.util.ArrayList;
-import java.util.List;
+import battlecode.common.MapLocation;
+import battlecode.common.Team;
 
 /**
  * Lets maps be built easily, for testing purposes.
@@ -10,27 +9,22 @@ import java.util.List;
 public class TestMapBuilder {
     private MapBuilder mapBuilder;
 
-    public TestMapBuilder(String name, int oX, int oY, int width, int height, int seed, int spawnLoc1X, int spawnLoc1Y, int spawnLoc2X, int spawnLoc2Y) {
-        this.mapBuilder = new MapBuilder(name, width, height, oX, oY, seed, spawnLoc1X, spawnLoc1Y, spawnLoc2X, spawnLoc2Y);
+    public TestMapBuilder(String name, int oX, int oY, int width, int height, int seed) {
+        this.mapBuilder = new MapBuilder(name, width, height, oX, oY, seed);
     }
 
-    public TestMapBuilder addArchon(int id, Team team, MapLocation loc) {
-        this.mapBuilder.addArchon(id, team, loc);
+    public TestMapBuilder addSpawnLoc(Team team, MapLocation loc) {
+        this.mapBuilder.addSpawnLoc(team, loc);
         return this;
     }
     
-    public TestMapBuilder setRubble(int x, int y, int value) {
-        this.mapBuilder.setRubble(x, y, value);
+    public TestMapBuilder setWall(int x, int y, boolean value) {
+        this.mapBuilder.setWall(x, y, value);
         return this;
     }
 
-    public TestMapBuilder setLead(int x, int y, int value) {
-        this.mapBuilder.setLead(x, y, value);
-        return this;
-    }
-
-    public TestMapBuilder addAnomalyScheduleEntry(int round, AnomalyType anomaly) {
-        this.mapBuilder.addAnomalyScheduleEntry(round, anomaly);
+    public TestMapBuilder setUranium(int x, int y, int value) {
+        this.mapBuilder.setUranium(x, y, value);
         return this;
     }
 
