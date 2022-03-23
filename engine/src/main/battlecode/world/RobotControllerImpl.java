@@ -328,12 +328,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.gameWorld.moveRobot(this.getLocation(), center);
         this.robot.setLocation(center);
         this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), this.robot.getLocation());
+        // this has to happen after robot's location changed because rubble
 
         // process collisions
-        if (this.isLocationOccupied(center)){
-            this.robot.collide(this.gameWorld.getRobot(center));
+        if (this.controller.isLocationOccupied(center)){
+            this.collide(this.gameWorld.getRobot(center));
         }
-        // this has to happen after robot's location changed because rubble
         this.robot.resetCooldownTurns();
         
     }
@@ -351,7 +351,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
                     "Can only spawn to locations on the map; " + loc + " is not on the map.");
-    }
+        if ( this.isLocationOccupied(loc) && this.gameWorld.getRobot(loc).getTeam() == this.getTeam()){
+            throw new GameActionException(FRIENDLY_ROBOT_PRESENT,
+                    "Can't spawn if a friendly robot is on your spawn square.");
+        }
+    } 
 
     @Override
     public boolean canBuildRobot(int health) {
@@ -369,6 +373,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         loc = this.gameWorld.getSpawnLoc(this.getTeam());
         int newId = this.gameWorld.spawnRobot(this.robot.getType(), loc, health, team);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
+
+        // process collisions (auto-collision with enemy)
+        if (this.controller.isLocationOccupied(loc)){
+            this.getRobot(loc).collide(this.gameWorld.getRobot(loc));
+        }
     }
 
     // *****************************

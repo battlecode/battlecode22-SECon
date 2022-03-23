@@ -248,7 +248,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
         // indicator strings!
         this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
-
     }
 
     public void processEndOfRound() {
