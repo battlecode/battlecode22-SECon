@@ -1,10 +1,16 @@
 package battlecode.world;
 
-import battlecode.common.*;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import battlecode.common.GameConstants;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
+import battlecode.common.Team;
 
 /**
  * Build and validate maps easily.
@@ -24,7 +30,7 @@ public class MapBuilder {
 
     private List<RobotInfo> bodies;
 
-    public MapBuilder(String name, int width, int height, int originX, int originY, int seed, int spawnLoc1X, int spawnLoc1Y, int spawnLoc2X, int spawnLoc2Y) {
+    public MapBuilder(String name, int width, int height, int originX, int originY, int seed) {
         this.name = name;
         this.width = width;
         this.height = height;
@@ -39,8 +45,6 @@ public class MapBuilder {
         Arrays.fill(this.wallArray, false); // default is there is no wall
         this.uraniumArray = new int[width * height];
         this.spawnLocs = new MapLocation[2];
-        this.spawnLocs[0] = new MapLocation(spawnLoc1X, spawnLoc1Y);
-        this.spawnLocs[1] = new MapLocation(spawnLoc2X, spawnLoc2Y);
     }
 
     // ********************
@@ -55,6 +59,17 @@ public class MapBuilder {
      */
     private int locationToIndex(int x, int y) {
         return x + y * width;
+    }
+
+    public void addSpawnLoc(Team team, MapLocation loc) {
+        spawnLocs[team.ordinal()] = loc;
+    }
+
+    public void addSpawnLoc(int x, int y, Team team) {
+        addSpawnLoc(
+                team,
+                new MapLocation(x, y)
+        );
     }
 
     public void addRobot(int id, Team team, MapLocation loc) {
@@ -129,6 +144,16 @@ public class MapBuilder {
 
     public MapLocation symmetryLocation(MapLocation p) {
         return new MapLocation(symmetricX(p.x), symmetricY(p.y));
+    }
+
+    /**
+     * Add team A spawn location to (x,y) and team B spawn location to symmetric position.
+     * @param x x position
+     * @param y y position
+     */
+    public void addSymmetricSpawnLoc(int x, int y) {
+        addSpawnLoc(x, y, Team.A);
+        addSpawnLoc(symmetricX(x), symmetricY(y), Team.B);
     }
 
     /**
