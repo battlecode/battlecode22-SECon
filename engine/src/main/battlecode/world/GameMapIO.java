@@ -233,6 +233,7 @@ public final strictfp class GameMapIO {
             final int width = (int) (raw.maxCorner().x() - raw.minCorner().x());
             final int height = (int) (raw.maxCorner().y() - raw.minCorner().y());
             final MapLocation origin = new MapLocation((int) raw.minCorner().x(), (int) raw.minCorner().y());
+            final MapSymmetry symmetry = MapSymmetry.values()[raw.symmetry()];
             final int seed = raw.randomSeed();
             final int rounds = GameConstants.GAME_MAX_NUMBER_OF_ROUNDS;
             final String mapName = raw.name();
@@ -253,7 +254,7 @@ public final strictfp class GameMapIO {
             spawnLocs[1] = raw.spawnLocs(1);
 
             return new LiveMap(
-                width, height, origin, seed, rounds, mapName, initialBodies, wallArray, uraniumArray, spwanLocs
+                width, height, origin, seed, rounds, mapName, symmetry, initialBodies, wallArray, uraniumArray, spawnLocs
             );
         }
 
@@ -270,18 +271,22 @@ public final strictfp class GameMapIO {
             int randomSeed = gameMap.getSeed();
             boolean[] wallArray = gameMap.getWallArray();
             int[] uraniumArray = gameMap.getUraniumArray();
+            MapLocation[] spawnLocs = gameMap.getSpawnLocs();
             // Make body tables
             ArrayList<Integer> bodyIDs = new ArrayList<>();
             ArrayList<Byte> bodyTeamIDs = new ArrayList<>();
             ArrayList<Byte> bodyTypes = new ArrayList<>();
             ArrayList<Integer> bodyLocsXs = new ArrayList<>();
             ArrayList<Integer> bodyLocsYs = new ArrayList<>();
-            ArrayList<Boolean> wallArrayList = new ArrayList<>();
+            ArrayList<Boolean> wallsArrayList = new ArrayList<>();
             ArrayList<Integer> uraniumArrayList = new ArrayList<>();
-            // ArrayList<Integer> spawnLocList = new ArrayList<>(); //TODO: how should this be added
+            ArrayList<Integer> spawnLocList = new ArrayList<>();
+
+            spawnLocList.add(Vec.createVec(builder, spawnLocs[0].x, spawnLocs[0].y));
+            spawnLocList.add(Vec.createVec(builder, spawnLocs[1].x, spawnLocs[1].y));
 
             for (int i = 0; i < gameMap.getWidth() * gameMap.getHeight(); i++) {
-                wallArrayList.add(wallArray[i]);
+                wallsArrayList.add(wallArray[i]);
                 uraniumArrayList.add(uraniumArray[i]);
             }
 
@@ -305,10 +310,9 @@ public final strictfp class GameMapIO {
             SpawnedBodyTable.addTypes(builder, types);
             SpawnedBodyTable.addLocs(builder, locs);
             int bodies = SpawnedBodyTable.endSpawnedBodyTable(builder);
-            int rubbleArrayInt = battlecode.schema.GameMap.createRubbleVector(builder, ArrayUtils.toPrimitive(rubbleArrayList.toArray(new Integer[rubbleArrayList.size()])));
-            int leadArrayInt = battlecode.schema.GameMap.createLeadVector(builder, ArrayUtils.toPrimitive(leadArrayList.toArray(new Integer[leadArrayList.size()])));
-            int anomaliesArrayInt = battlecode.schema.GameMap.createAnomaliesVector(builder, ArrayUtils.toPrimitive(anomaliesArrayList.toArray(new Integer[anomaliesArrayList.size()])));
-            int anomalyRoundsArrayInt = battlecode.schema.GameMap.createAnomalyRoundsVector(builder, ArrayUtils.toPrimitive(anomalyRoundsArrayList.toArray(new Integer[anomalyRoundsArrayList.size()])));
+            int wallsArrayBool = battlecode.schema.GameMap.createWallsVector(builder, ArrayUtils.toPrimitive(wallsArrayList.toArray(new Boolean[wallsArrayList.size()])));
+            int uraniumArrayInt = battlecode.schema.GameMap.createUraniumVector(builder, ArrayUtils.toPrimitive(uraniumArrayList.toArray(new Integer[uraniumArrayList.size()])));
+            int spawnLocArrayInt = battlecode.schema.GameMap.createSpawnLocationVector(builder, ArrayUtils.toPrimitive(spawnLocList.toArray(new Integer[spawnLocList.size()])));
             // Build LiveMap for flatbuffer
             battlecode.schema.GameMap.startGameMap(builder);
             battlecode.schema.GameMap.addName(builder, name);
@@ -318,10 +322,10 @@ public final strictfp class GameMapIO {
             battlecode.schema.GameMap.addSymmetry(builder, gameMap.getSymmetry().ordinal());
             battlecode.schema.GameMap.addBodies(builder, bodies);
             battlecode.schema.GameMap.addRandomSeed(builder, randomSeed);
-            battlecode.schema.GameMap.addRubble(builder, rubbleArrayInt);
-            battlecode.schema.GameMap.addLead(builder, leadArrayInt);
-            battlecode.schema.GameMap.addAnomalies(builder, anomaliesArrayInt);
-            battlecode.schema.GameMap.addAnomalyRounds(builder, anomalyRoundsArrayInt);
+            battlecode.schema.GameMap.addWalls(builder, wallsArrayBool);
+            battlecode.schema.GameMap.addUranium(builder, uraniumArrayInt);
+            battlecode.schema.GameMap.addSpawnLocation(builder, spawnLocArrayInt);
+
             return battlecode.schema.GameMap.endGameMap(builder);
         }
     }

@@ -871,11 +871,11 @@ randomSeed():number {
  * The walls on the map.
  *
  * @param number index
- * @returns number
+ * @returns boolean
  */
-walls(index: number):number|null {
+walls(index: number):boolean|null {
   var offset = this.bb!.__offset(this.bb_pos, 16);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+  return offset ? !!this.bb!.readInt8(this.bb!.__vector(this.bb_pos + offset) + index) : false;
 };
 
 /**
@@ -887,11 +887,11 @@ wallsLength():number {
 };
 
 /**
- * @returns Int32Array
+ * @returns Int8Array
  */
-wallsArray():Int32Array|null {
+wallsArray():Int8Array|null {
   var offset = this.bb!.__offset(this.bb_pos, 16);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+  return offset ? new Int8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 };
 
 /**
@@ -925,11 +925,12 @@ uraniumArray():Int32Array|null {
  * The spawn locations.
  *
  * @param number index
- * @returns number
+ * @param battlecode.schema.Vec= obj
+ * @returns battlecode.schema.Vec
  */
-spawnLocation(index: number):number|null {
+spawnLocation(index: number, obj?:battlecode.schema.Vec):battlecode.schema.Vec|null {
   var offset = this.bb!.__offset(this.bb_pos, 20);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+  return offset ? (obj || new battlecode.schema.Vec).__init(this.bb!.__vector(this.bb_pos + offset) + index * 8, this.bb!) : null;
 };
 
 /**
@@ -938,14 +939,6 @@ spawnLocation(index: number):number|null {
 spawnLocationLength():number {
   var offset = this.bb!.__offset(this.bb_pos, 20);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns Int32Array
- */
-spawnLocationArray():Int32Array|null {
-  var offset = this.bb!.__offset(this.bb_pos, 20);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 };
 
 /**
@@ -1013,13 +1006,13 @@ static addWalls(builder:flatbuffers.Builder, wallsOffset:flatbuffers.Offset) {
 
 /**
  * @param flatbuffers.Builder builder
- * @param Array.<number> data
+ * @param Array.<boolean> data
  * @returns flatbuffers.Offset
  */
-static createWallsVector(builder:flatbuffers.Builder, data:number[] | Uint8Array):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
+static createWallsVector(builder:flatbuffers.Builder, data:boolean[]):flatbuffers.Offset {
+  builder.startVector(1, data.length, 1);
   for (var i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]);
+    builder.addInt8(+data[i]);
   }
   return builder.endVector();
 };
@@ -1029,7 +1022,7 @@ static createWallsVector(builder:flatbuffers.Builder, data:number[] | Uint8Array
  * @param number numElems
  */
 static startWallsVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
+  builder.startVector(1, numElems, 1);
 };
 
 /**
@@ -1071,23 +1064,10 @@ static addSpawnLocation(builder:flatbuffers.Builder, spawnLocationOffset:flatbuf
 
 /**
  * @param flatbuffers.Builder builder
- * @param Array.<number> data
- * @returns flatbuffers.Offset
- */
-static createSpawnLocationVector(builder:flatbuffers.Builder, data:number[] | Uint8Array):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (var i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]);
-  }
-  return builder.endVector();
-};
-
-/**
- * @param flatbuffers.Builder builder
  * @param number numElems
  */
 static startSpawnLocationVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
+  builder.startVector(8, numElems, 4);
 };
 
 /**

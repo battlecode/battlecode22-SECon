@@ -61,11 +61,11 @@ table GameMap {
     /// The random seed of the map.
     randomSeed: int;
     /// The walls on the map.
-    walls: [int];
+    walls: [bool];
     /// The uranium on the map.
     uranium: [int];
     /// The spawn locations.
-    spawnLocation: [int];
+    spawnLocation: [Vec];
 }
 
 /// Actions that can be performed.
