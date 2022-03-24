@@ -50,12 +50,12 @@ public final class GameMap extends Table {
   /**
    * The walls on the map.
    */
-  public boolean walls(int j) { int o = __offset(16); return o != 0 ? 0!=bb.get(__vector(o) + j * 1) : false; }
+  public int walls(int j) { int o = __offset(16); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
   public int wallsLength() { int o = __offset(16); return o != 0 ? __vector_len(o) : 0; }
-  public BooleanVector wallsVector() { return wallsVector(new BooleanVector()); }
-  public BooleanVector wallsVector(BooleanVector obj) { int o = __offset(16); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer wallsAsByteBuffer() { return __vector_as_bytebuffer(16, 1); }
-  public ByteBuffer wallsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 16, 1); }
+  public IntVector wallsVector() { return wallsVector(new IntVector()); }
+  public IntVector wallsVector(IntVector obj) { int o = __offset(16); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
+  public ByteBuffer wallsAsByteBuffer() { return __vector_as_bytebuffer(16, 4); }
+  public ByteBuffer wallsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 16, 4); }
   /**
    * The uranium on the map.
    */
@@ -83,8 +83,8 @@ public final class GameMap extends Table {
   public static void addBodies(FlatBufferBuilder builder, int bodiesOffset) { builder.addOffset(4, bodiesOffset, 0); }
   public static void addRandomSeed(FlatBufferBuilder builder, int randomSeed) { builder.addInt(5, randomSeed, 0); }
   public static void addWalls(FlatBufferBuilder builder, int wallsOffset) { builder.addOffset(6, wallsOffset, 0); }
-  public static int createWallsVector(FlatBufferBuilder builder, boolean[] data) { builder.startVector(1, data.length, 1); for (int i = data.length - 1; i >= 0; i--) builder.addBoolean(data[i]); return builder.endVector(); }
-  public static void startWallsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(1, numElems, 1); }
+  public static int createWallsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
+  public static void startWallsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static void addUranium(FlatBufferBuilder builder, int uraniumOffset) { builder.addOffset(7, uraniumOffset, 0); }
   public static int createUraniumVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startUraniumVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }

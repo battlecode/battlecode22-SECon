@@ -80,9 +80,9 @@ randomSeed():number {
 /**
  * The walls on the map.
  */
-walls(index: number):boolean|null {
+walls(index: number):number|null {
   const offset = this.bb!.__offset(this.bb_pos, 16);
-  return offset ? !!this.bb!.readInt8(this.bb!.__vector(this.bb_pos + offset) + index) : false;
+  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
 }
 
 wallsLength():number {
@@ -90,9 +90,9 @@ wallsLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-wallsArray():Int8Array|null {
+wallsArray():Int32Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 16);
-  return offset ? new Int8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
 /**
@@ -163,16 +163,21 @@ static addWalls(builder:flatbuffers.Builder, wallsOffset:flatbuffers.Offset) {
   builder.addFieldOffset(6, wallsOffset, 0);
 }
 
-static createWallsVector(builder:flatbuffers.Builder, data:boolean[]):flatbuffers.Offset {
-  builder.startVector(1, data.length, 1);
+static createWallsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
+/**
+ * @deprecated This Uint8Array overload will be removed in the future.
+ */
+static createWallsVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
+static createWallsVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
   for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt8(+data[i]!);
+    builder.addInt32(data[i]!);
   }
   return builder.endVector();
 }
 
 static startWallsVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(1, numElems, 1);
+  builder.startVector(4, numElems, 4);
 }
 
 static addUranium(builder:flatbuffers.Builder, uraniumOffset:flatbuffers.Offset) {

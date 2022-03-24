@@ -63,7 +63,7 @@ table GameMap {
     /// The random seed of the map.
     randomSeed: int;
     /// The walls on the map.
-    walls: [bool];
+    walls: [int];
     /// The uranium on the map.
     uranium: [int];
     /// The spawn locations.
