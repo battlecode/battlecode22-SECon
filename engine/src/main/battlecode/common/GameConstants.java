@@ -19,13 +19,13 @@ public class GameConstants {
     public static final int MAP_MIN_HEIGHT = 20;
 
     /** The maximum possible map height. */
-    public static final int MAP_MAX_HEIGHT = 60;
+    public static final int MAP_MAX_HEIGHT = 40;
 
     /** The minimum possible map width. */
     public static final int MAP_MIN_WIDTH = 20;
 
     /** The maximum possible map width. */
-    public static final int MAP_MAX_WIDTH = 60;
+    public static final int MAP_MAX_WIDTH = 40;
 
     /** The minimum number of starting Archons per team. */
     public static final int MIN_STARTING_ARCHONS = 1;
@@ -54,6 +54,9 @@ public class GameConstants {
 
     /** The bytecode penalty that is imposed each time an exception is thrown. */
     public static final int EXCEPTION_BYTECODE_PENALTY = 500;
+
+    /** The bytecode cost per round. */
+    public static final int BYTECODE_LIMIT = 100000;
 
     /** The initial amount of lead each team starts with. */
     public static final int INITIAL_LEAD_AMOUNT = 200;
@@ -106,6 +109,12 @@ public class GameConstants {
     public static final double ALCHEMIST_LONELINESS_K_L2 = 0.01;
     public static final double ALCHEMIST_LONELINESS_K_L3 = 0.005;
 
+    /** The threshold for considering two colliding robots to be of equal health. */
+    public static final int COLLISION_EQUALITY_THRESHOLD = 1;
+
+    /** The threshold for considering two colliding robots to be of equal health. */
+    public static final float FLOAT_EQUALITY_THRESHOLD = 0.00001f;
+
     // *********************************
     // ****** GAMEPLAY PROPERTIES ******
     // *********************************
@@ -114,5 +123,5 @@ public class GameConstants {
     public static final int GAME_DEFAULT_SEED = 6370;
 
     /** The maximum number of rounds in a game.  **/
-    public static final int GAME_MAX_NUMBER_OF_ROUNDS = 2000;
+    public static final int GAME_MAX_NUMBER_OF_ROUNDS = 6000;
 }
