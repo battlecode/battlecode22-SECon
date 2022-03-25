@@ -199,7 +199,7 @@ export default class Stats {
     labelleft.innerText = 'Uranium';
 
     const frameleft = document.createElement("div");
-    frameleft.style.width = "100%";
+    frameleft.style.width = "200%";
 
     frameleft.appendChild(this.relativeBars[0]);
     frameleft.appendChild(this.relativeBars[1]);
@@ -278,9 +278,10 @@ export default class Stats {
     return table;
   }
 
-  private getIncomeLeadGraph() {
+  private getIncomeUraniumGraph() {
     const canvas = document.createElement("canvas");
-    canvas.id = "leadGraph";
+    //canvas.id = "leadGraph";
+    canvas.id = "uraniumGraph";
     canvas.className = "graph";
     return canvas;
   }
@@ -434,17 +435,17 @@ export default class Stats {
     const graphs = document.createElement("div");
     graphs.style.display = 'flex';
     const leadWrapper = document.createElement("div");
-    leadWrapper.style.width = "50%";
-    leadWrapper.style.float = "left";
-    const canvasElementLead = this.getIncomeLeadGraph();
+    leadWrapper.style.width = "75%";
+    leadWrapper.style.float = "inherit";
+    const canvasElementLead = this.getIncomeUraniumGraph();
     leadWrapper.appendChild(canvasElementLead);    
     graphs.appendChild(leadWrapper);
-    const goldWrapper = document.createElement("div");
-    goldWrapper.style.width = "50%";
-    goldWrapper.style.float = "right";
-    const canvasElementGold = this.getIncomeGoldGraph();
-    goldWrapper.appendChild(canvasElementGold);    
-    graphs.appendChild(goldWrapper);
+    //const goldWrapper = document.createElement("div");
+    //goldWrapper.style.width = "50%";
+    //goldWrapper.style.float = "right";
+    //const canvasElementGold = this.getIncomeGoldGraph();
+    //goldWrapper.appendChild(canvasElementGold);    
+    //graphs.appendChild(goldWrapper);
     this.div.appendChild(graphs);
 
     this.incomeChartUranium = new Chart(canvasElementLead, {
@@ -612,23 +613,22 @@ export default class Stats {
     }
     let teamTurnsIncomeSet = this.teamMapToTurnsIncomeSet.get(teamID);
     
-//     if (!teamTurnsIncomeSet!.has(turn)) {
-//       //@ts-ignore
-//       this.incomeChartLead.data.datasets![teamID - 1].data?.push({y: uraniumIncome, x: turn});
-//       //@ts-ignore
-//       this.incomeChartGold.data.datasets![teamID - 1].data?.push({y: goldIncome, x: turn});
-//       this.incomeChartLead.data.datasets?.forEach((d) => {
-//         d.data?.sort((a, b) => a.x - b.x);
-//       });
+     if (!teamTurnsIncomeSet!.has(turn)) {
+       //@ts-ignore
+       this.incomeChartUranium.data.datasets![teamID - 1].data?.push({y: uraniumIncome, x: turn});
+       //@ts-ignore
+       this.incomeChartUranium.data.datasets?.forEach((d) => {
+         d.data?.sort((a, b) => a.x - b.x);
+       });
 //       this.incomeChartGold.data.datasets?.forEach((d) => {
 //         d.data?.sort((a, b) => a.x - b.x);
 //       });
-//       teamTurnsIncomeSet?.add(turn);
-//       this.incomeChartLead.update();
+       teamTurnsIncomeSet?.add(turn);
+       this.incomeChartUranium.update();
 //       this.incomeChartGold.update();
-//     }
+     }
 //     // update bars here
-//     //console.log(teamID, count, "fsdfsdf");
+      //console.log(teamID, count, "fsdfsdf");
 //     //if(robotType === ARCHON) this.updateRelBars(teamID, count);
     }
   
