@@ -345,8 +345,7 @@ export default class Looper {
         //     }
         // }
 
-        let teamLead: number[] = [];
-        let teamGold: number[] = [];
+        let teamUranium: number[] = [];
         for (let team in meta.teams) {
             let teamID = meta.teams[team].teamID;
             let teamStats = world.teamStats.get(teamID) as TeamStats;
@@ -384,14 +383,10 @@ export default class Looper {
 
         for(var a = 0; a < teamIDs.length; a++){
             //@ts-ignore
-            teamLead.push(world.teamStats.get(teamIDs[a]).lead);
-            //@ts-ignore
-            teamGold.push(world.teamStats.get(teamIDs[a]).gold);
-            //@ts-ignore
-            //console.log(world.teamStats.get(teamIDs[a]).lead, world.teamStats.get(teamIDs[a]).gold, teamIDs[a]);
+            teamUranium.push(world.teamStats.get(teamIDs[a]).uranium);
         }
     
-        this.stats.updateBars(teamLead, teamGold);
+        this.stats.updateBars(teamUranium);
         // this.stats.resetECs();
         const hps = world.bodies.arrays.hp;
         const teams = world.bodies.arrays.team;

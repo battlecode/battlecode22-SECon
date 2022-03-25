@@ -228,14 +228,10 @@ export default class Stats {
     return [divleft];
   }
 
-  private updateRelBars(teamLead: Array<number>, teamGold: Array<number>){
-    for(var a = 0; a < teamGold.length; a++){
-      this.relativeBars[a].innerHTML = teamGold[a].toString();
-      this.relativeBars[a].style.width = (Math.max(teamGold[0], teamGold[1]) === 0 ? 90:(90.0*teamGold[a]/Math.max(teamGold[0], teamGold[1]))).toString() + "%";
-    }
-    for(var a = 0; a < teamLead.length; a++){
-      this.relativeBars[a+2].innerHTML = teamLead[a].toString();
-      this.relativeBars[a+2].style.width = (Math.max(teamLead[0], teamLead[1]) === 0 ? 90:(90.0*teamLead[a]/Math.max(teamLead[0], teamLead[1]))).toString() + "%";
+  private updateRelBars(teamUranium: Array<number>){
+    for(var a = 0; a < teamUranium.length; a++){
+      this.relativeBars[a].innerHTML = teamUranium[a].toString();
+      this.relativeBars[a].style.width = (Math.max(teamUranium[0], teamUranium[1]) === 0 ? 90:(90.0*teamUranium[a]/Math.max(teamUranium[0], teamUranium[1]))).toString() + "%";
     }
   }
 
@@ -636,8 +632,8 @@ export default class Stats {
 //     //if(robotType === ARCHON) this.updateRelBars(teamID, count);
     }
   
-  updateBars(teamLead: Array<number>, teamGold: Array<number>){
-    this.updateRelBars(teamLead, teamGold);
+  updateBars(teamUranium: Array<number>){
+    this.updateRelBars(teamUranium);
   }
 
   setWinner(teamID: number, teamNames: Array<string>, teamIDs: Array<number>) {
