@@ -1,9 +1,5 @@
 package battlecode.world;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.lang.Math;
 import battlecode.common.*;
 import battlecode.schema.Action;
@@ -168,38 +164,41 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     }
 
     /**
-     * Resets the action cooldown.
+     * Resets the cooldown.
      */
     public void resetCooldownTurns() {
-        setCooldownTurns(GameConstants.COOLDOWN_LIMIT);
+        addCooldownTurns(GameConstants.COOLDOWN_LIMIT);;
+    }
+
+    /**
+     * Adds to the cooldown.
+     */
+    public void addCooldownTurns(int numCooldownToAdd) {
+        setCooldownTurns(this.cooldownTurns + numCooldownToAdd);
     }
 
     /**
      * Sets the cooldown given the number of turns.
      * 
-     * @param newTurns the number of cooldown turns
+     * @param newActionTurns the number of cooldown turns
      */
     public void setCooldownTurns(int newTurns) {
         this.cooldownTurns = newTurns;
     }
 
-    public void damageHealth(float healthAmount) {
-        damageHealth(healthAmount, true);
-    }
-
     /**
-     * Adds health to a robot. Input can be negative to subtract health.
+     * Subtracts health from a robot. Input can be positive to add health.
      * 
      * @param healthAmount the amount to damage by
      * @param checkWin whether to end the game if the last robot dies
      */
-    public void damageHealth(float healthAmount, boolean checkWin) {
+    public void damageHealth(float healthAmount) {
         float oldHealth = this.health;
         this.health -= healthAmount;
         if (this.health <= 0) {
-            this.gameWorld.destroyRobot(this.ID, checkWin);
+            this.gameWorld.destroyRobot(this.ID);
         } else if (this.health != oldHealth) {
-            this.gameWorld.getMatchMaker().addAction(getID(), Action.CHANGE_HEALTH, this.health - oldHealth);
+            this.gameWorld.getMatchMaker().addAction(getID(), Action.CHANGE_HEALTH, (int)(this.health - oldHealth));
         }
     }
 
@@ -240,7 +239,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void processBeginningOfTurn() {
         this.cooldownTurns = Math.max(0, this.cooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
-        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
+        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT; //TODO: move from here
     }
 
     public void processEndOfTurn() {
@@ -253,7 +252,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     public void processEndOfRound() {
         this.damageHealth(this.type.healthDecay * this.getHealth());
         if (this.getHealth() < this.type.healthLimit){
-            this.controller.disintegrate();
+            this.gameWorld.destroyRobot(getID());
             return;
         }
         this.roundsAlive++;
