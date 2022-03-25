@@ -1,10 +1,16 @@
 package battlecode.world;
 
-import battlecode.common.*;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import battlecode.common.GameConstants;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
+import battlecode.common.Team;
 
 /**
  * Build and validate maps easily.
@@ -17,9 +23,9 @@ public class MapBuilder {
     public MapLocation origin;
     public int seed;
     private MapSymmetry symmetry;
-    private int[] rubbleArray;
-    private int[] leadArray;
-    private ArrayList<AnomalyScheduleEntry> anomalySchedule;
+    private boolean[] wallArray;
+    private int[] uraniumArray;
+    private MapLocation[] spawnLocs;
     private int idCounter;
 
     private List<RobotInfo> bodies;
@@ -35,10 +41,10 @@ public class MapBuilder {
         // default values
         this.symmetry = MapSymmetry.ROTATIONAL;
         this.idCounter = 0;
-        this.rubbleArray = new int[width * height];
-        Arrays.fill(this.rubbleArray, 1); // default cooldown factor is 1
-        this.leadArray = new int[width * height];
-        this.anomalySchedule = new ArrayList<>();
+        this.wallArray = new boolean[width * height];
+        Arrays.fill(this.wallArray, false); // default is there is no wall
+        this.uraniumArray = new int[width * height];
+        this.spawnLocs = new MapLocation[2];
     }
 
     // ********************
@@ -55,7 +61,18 @@ public class MapBuilder {
         return x + y * width;
     }
 
-    public void addArchon(int id, Team team, MapLocation loc) {
+    public void addSpawnLoc(Team team, MapLocation loc) {
+        spawnLocs[team.ordinal()] = loc;
+    }
+
+    public void addSpawnLoc(int x, int y, Team team) {
+        addSpawnLoc(
+                team,
+                new MapLocation(x, y)
+        );
+    }
+
+    public void addRobot(int id, Team team, MapLocation loc) {
         // check if something already exists here, if so shout
         for (RobotInfo r : bodies) {
             if (r.location.equals(loc)) {
@@ -65,32 +82,26 @@ public class MapBuilder {
         bodies.add(new RobotInfo(
                 id,
                 team,
-                RobotType.ARCHON,
-                RobotMode.TURRET,
-                1,
-                RobotType.ARCHON.health,
+                RobotType.ROBOT,
+                GameConstants.ROBOT_INITIAL_HEALTH,
                 loc
         ));
     }
 
-    public void addArchon(int x, int y, Team team) {
-        addArchon(
+    public void addRobot(int x, int y, Team team) {
+        addRobot(
                 idCounter++,
                 team,
                 new MapLocation(x, y)
         );
     }
 
-    public void setRubble(int x, int y, int value) {
-        this.rubbleArray[locationToIndex(x, y)] = value;
+    public void setWall(int x, int y, boolean value) {
+        this.wallArray[locationToIndex(x, y)] = value;
     }
 
-    public void setLead(int x, int y, int value) {
-        this.leadArray[locationToIndex(x, y)] = value;
-    }
-
-    public void addAnomalyScheduleEntry(int round, AnomalyType anomaly) {
-        this.anomalySchedule.add(new AnomalyScheduleEntry(round, anomaly));
+    public void setUranium(int x, int y, int value) {
+        this.uraniumArray[locationToIndex(x, y)] = value;
     }
 
     public void setSymmetry(MapSymmetry symmetry) {
@@ -136,23 +147,33 @@ public class MapBuilder {
     }
 
     /**
-     * Add team A Archon to (x,y) and team B Archon to symmetric position.
+     * Add team A spawn location to (x,y) and team B spawn location to symmetric position.
      * @param x x position
      * @param y y position
      */
-    public void addSymmetricArchon(int x, int y) {
-        addArchon(x, y, Team.A);
-        addArchon(symmetricX(x), symmetricY(y), Team.B);
+    public void addSymmetricSpawnLoc(int x, int y) {
+        addSpawnLoc(x, y, Team.A);
+        addSpawnLoc(symmetricX(x), symmetricY(y), Team.B);
     }
 
-    public void setSymmetricRubble(int x, int y, int value) {
-        this.rubbleArray[locationToIndex(x, y)] = value;
-        this.rubbleArray[locationToIndex(symmetricX(x), symmetricY(y))] = value;
+    /**
+     * Add team A Robot to (x,y) and team B Robot to symmetric position.
+     * @param x x position
+     * @param y y position
+     */
+    public void addSymmetricRobot(int x, int y) {
+        addRobot(x, y, Team.A);
+        addRobot(symmetricX(x), symmetricY(y), Team.B);
     }
 
-    public void setSymmetricLead(int x, int y, int value) {
-        this.leadArray[locationToIndex(x, y)] = value;
-        this.leadArray[locationToIndex(symmetricX(x), symmetricY(y))] = value;
+    public void setSymmetricWall(int x, int y, boolean value) {
+        setWall(x, y, value);
+        setWall(symmetricX(x), symmetricY(y), value);
+    }
+
+    public void setSymmetricUranium(int x, int y, int value) {
+        setUranium(x, y, value);
+        setUranium(symmetricX(x), symmetricY(y), value);
     }
 
     // ********************
@@ -161,8 +182,7 @@ public class MapBuilder {
 
     public LiveMap build() {
         return new LiveMap(width, height, origin, seed, GameConstants.GAME_MAX_NUMBER_OF_ROUNDS, name,
-                symmetry, bodies.toArray(new RobotInfo[bodies.size()]), rubbleArray, leadArray,
-                anomalySchedule.toArray(new AnomalyScheduleEntry[anomalySchedule.size()]));
+                symmetry, bodies.toArray(new RobotInfo[bodies.size()]), wallArray, uraniumArray, spawnLocs);
     }
 
     /**
@@ -197,57 +217,23 @@ public class MapBuilder {
                                        GameConstants.MAP_MIN_HEIGHT + " and " + GameConstants.MAP_MAX_WIDTH + "x" +
                                        GameConstants.MAP_MAX_HEIGHT + ", inclusive");
 
-        // checks between 1 and 4 Archons (inclusive) of each team
-        // only needs to check the Archons of Team A, because symmetry is checked
+        // checks just 1 robot on each team
+        // only needs to check the robots of Team A, because symmetry is checked
         int numTeamARobots = 0;
         for (RobotInfo r : bodies) {
             if (r.getTeam() == Team.A) {
                 numTeamARobots++;
             }
         }
-        if (numTeamARobots < GameConstants.MIN_STARTING_ARCHONS ||
-            numTeamARobots > GameConstants.MAX_STARTING_ARCHONS) {
-            throw new RuntimeException("Map must have between " + GameConstants.MIN_STARTING_ARCHONS +
-                                       "and " + GameConstants.MAX_STARTING_ARCHONS + " starting Archons of each team");
+        if (numTeamARobots != GameConstants.NUM_STARTING_ROBOTS) {
+            throw new RuntimeException("Map must have " + GameConstants.NUM_STARTING_ROBOTS + " starting robots of each team");
         }
 
-        for (int i = 0; i < rubbleArray.length; i++) {
-            if (rubbleArray[i] < GameConstants.MIN_RUBBLE || rubbleArray[i] > GameConstants.MAX_RUBBLE) {
-                throw new RuntimeException("Map rubble must be between " + GameConstants.MIN_RUBBLE +
-                                           " and " + GameConstants.MAX_RUBBLE);
-            }
-        }
-
-        // assert rubble, lead, and Archon symmetry
+        // assert wall, uranium, and inital robot symmetry
         ArrayList<MapSymmetry> allMapSymmetries = getSymmetry(robots);
         System.out.println("This map has the following symmetries: " + allMapSymmetries);
         if (!allMapSymmetries.contains(this.symmetry)) {
-            throw new RuntimeException("Rubble, lead, and Archons must be symmetric");
-        }
-
-        // assert that at least one lead deposit inside vision range of at least one Archon
-
-        boolean[] hasVisibleLead = new boolean[2];
-
-        for (RobotInfo r : bodies) {
-            if (r.getType() != RobotType.ARCHON) continue;
-            if (hasVisibleLead[r.getTeam().ordinal()]) continue;
-
-            MapLocation[] visibleLocations = GameWorld.getAllLocationsWithinRadiusSquaredWithoutMap(
-                this.origin,
-                this.width,
-                this.height,
-                r.getLocation(),
-                r.getType().visionRadiusSquared
-            );
-
-            for (MapLocation location : visibleLocations)
-                if (this.leadArray[locationToIndex(location.x, location.y)] > 0)
-                    hasVisibleLead[r.getTeam().ordinal()] = true;
-        }
-
-        if (!(hasVisibleLead[0] && hasVisibleLead[1])) {
-            throw new RuntimeException("Teams must have at least one lead deposit visible to an Archon.");
+            throw new RuntimeException("Walls, uranium and initial robots must be symmetric");
         }
     }
 
@@ -269,6 +255,15 @@ public class MapBuilder {
         possible.add(MapSymmetry.HORIZONTAL);
         possible.add(MapSymmetry.VERTICAL);
 
+        MapLocation spawnLoc1 = spawnLocs[0];
+        for (int i = possible.size() - 1; i >= 0; i--) {
+            MapSymmetry symmetry = possible.get(i);
+            MapLocation symmSpawnLoc1 = new MapLocation(symmetricX(spawnLoc1.x, symmetry), symmetricY(spawnLoc1.y, symmetry));
+            if (symmSpawnLoc1 != spawnLocs[1]) {
+                possible.remove(symmetry);
+            }
+        }
+
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 MapLocation current = new MapLocation(x, y);
@@ -278,9 +273,9 @@ public class MapBuilder {
                     MapSymmetry symmetry = possible.get(i);
                     MapLocation symm = new MapLocation(symmetricX(x, symmetry), symmetricY(y, symmetry));
                     int symIdx = locationToIndex(symm.x, symm.y);
-                    if (rubbleArray[curIdx] != rubbleArray[symIdx])
+                    if (wallArray[curIdx] != wallArray[symIdx])
                         possible.remove(symmetry);
-                    else if (leadArray[curIdx] != leadArray[symIdx])
+                    else if (uraniumArray[curIdx] != uraniumArray[symIdx])
                         possible.remove(symmetry);
                     else {
                         RobotInfo sri = robots[locationToIndex(symm.x, symm.y)];
