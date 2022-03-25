@@ -287,7 +287,7 @@ export default class Renderer {
             //this.drawBot(effectImg, x, y, 0)
         }
 
-        this.ctx.lineWidth = 1
+        this.ctx.lineWidth = cst.SIGHT_RADIUS_LINE_WIDTH
         this.ctx.globalAlpha = 1
 
         const renderBot = (i: number) => {
@@ -298,19 +298,22 @@ export default class Renderer {
 
             if (actions[i] == schema.Action.MINE_URANIUM){
                 this.ctx.beginPath()
-                this.ctx.arc(realXs[i] + 0.2, realYs[i] + 0.2, 1, 0, 2 * Math.PI, false)
-                this.ctx.strokeStyle = 'green'
+                this.ctx.arc(realXs[i] + 0.5, realYs[i] + 0.5, .45, 0, 2 * Math.PI, false)
+                this.ctx.fillStyle = 'green'
                 this.ctx.fill()
             }
+
+            this.ctx.save()
 
             let max_hp = 10 //TODO keep track of spawn health or something
             this.drawBot(img, realXs[i], realYs[i], hps[i], hps[i] / max_hp, cst.bodyTypeToSize(types[i]))
 
             this.drawSightRadii(realXs[i], realYs[i], types[i], ids[i] === this.lastSelectedID)
 
+            this.ctx.restore()
+
             // draw effect
             if (actions[i] == schema.Action.EXPLODE) {
-                this.ctx.globalAlpha = 1
                 this.ctx.beginPath()
                 this.ctx.arc(realXs[i] + 0.5, realYs[i] + 0.5, 1, 0, 2 * Math.PI, false)
                 this.ctx.strokeStyle = teams[i] == 1 ? 'red' : 'blue'

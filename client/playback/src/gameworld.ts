@@ -500,10 +500,9 @@ export default class GameWorld {
           let type = this.bodies.arrays.type[index];
           let statObj = this.teamStats.get(team);
           if(!statObj) {continue;} // In case this is a neutral bot
-          statObj.robots[type][this.bodies.arrays.level[index] - 1] -= 1;
+          statObj.robots[type][0] -= 1;
           let hp = this.bodies.arrays.hp[index];
-          let level = this.bodies.arrays.level[index];
-          statObj.total_hp[type][level - 1] -= hp;
+          statObj.total_hp[type][0] -= hp;
           this.teamStats.set(team, statObj);
       }
 
