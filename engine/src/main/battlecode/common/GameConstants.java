@@ -112,6 +112,9 @@ public class GameConstants {
     /** The threshold for considering two colliding robots to be of equal health. */
     public static final int COLLISION_EQUALITY_THRESHOLD = 1;
 
+    /** The threshold for considering two colliding robots to be of equal health. */
+    public static final float FLOAT_EQUALITY_THRESHOLD = 0.00001f;
+
     // *********************************
     // ****** GAMEPLAY PROPERTIES ******
     // *********************************

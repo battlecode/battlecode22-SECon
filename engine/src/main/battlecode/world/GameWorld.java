@@ -315,7 +315,7 @@ public strictfp class GameWorld {
      * @return whether a team has a greater net Uranium value
      */
     public boolean setWinnerIfMoreUraniumValue() {
-        int[] totalUraniumValues = new int[2];
+        float[] totalUraniumValues = new float[2];
 
         // consider team reserves
         totalUraniumValues[Team.A.ordinal()] += this.teamInfo.getUranium(Team.A);
@@ -323,16 +323,17 @@ public strictfp class GameWorld {
         
         // sum live robots worth
         for (InternalRobot robot : objectInfo.robotsArray())
-            totalUraniumValues[robot.getTeam().ordinal()] += robot.getUraniumWorth();
+            totalUraniumValues[robot.getTeam().ordinal()] += robot.getHealth();
         
-        if (totalUraniumValues[0] > totalUraniumValues[1]) {
+        if (Math.abs(totalUraniumValues[0] - totalUraniumValues[1]) < GameConstants.FLOAT_EQUALITY_THRESHOLD) {
+            return false;
+        } else if (totalUraniumValues[0] > totalUraniumValues[1]) {
             setWinner(Team.A, DominationFactor.MORE_URANIUM_NET_WORTH);
             return true;
         } else if (totalUraniumValues[1] > totalUraniumValues[0]) {
             setWinner(Team.B, DominationFactor.MORE_URANIUM_NET_WORTH);
             return true;
         }
-        return false;
     }
 
     /**
@@ -424,10 +425,6 @@ public strictfp class GameWorld {
     // *********************************
 
     public void destroyRobot(int id) {
-        destroyRobot(id, true);
-    }
-
-    public void destroyRobot(int id, boolean checkWin) {
         InternalRobot robot = objectInfo.getRobotByID(id);
         RobotType type = robot.getType();
         Team team = robot.getTeam();
@@ -435,13 +432,6 @@ public strictfp class GameWorld {
 
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
-
-        if (checkWin) {
-            // TODO: check this, possibly not here, since there is also the other case of running into each other which goes to tiebreaks
-            // this happens here because the last robot can explode itself and kill another robot in the process
-            if (this.objectInfo.getRobotCount(team) == 0)
-                setWinner(team == Team.A ? Team.B : Team.A, DominationFactor.ANNIHILATION);
-        }
 
         matchMaker.addDied(id);
     }
