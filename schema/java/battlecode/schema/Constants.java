@@ -15,20 +15,20 @@ public final class Constants extends Table {
   public Constants __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int increasePeriod() { int o = __offset(4); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int uraniumAdditiveIncease() { int o = __offset(6); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
+  public int uraniumAdditiveIncrease() { int o = __offset(6); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
 
   public static int createConstants(FlatBufferBuilder builder,
       int increasePeriod,
-      int uraniumAdditiveIncease) {
+      int uraniumAdditiveIncrease) {
     builder.startObject(2);
-    Constants.addUraniumAdditiveIncease(builder, uraniumAdditiveIncease);
+    Constants.addUraniumAdditiveIncrease(builder, uraniumAdditiveIncrease);
     Constants.addIncreasePeriod(builder, increasePeriod);
     return Constants.endConstants(builder);
   }
 
   public static void startConstants(FlatBufferBuilder builder) { builder.startObject(2); }
   public static void addIncreasePeriod(FlatBufferBuilder builder, int increasePeriod) { builder.addInt(0, increasePeriod, 0); }
-  public static void addUraniumAdditiveIncease(FlatBufferBuilder builder, int uraniumAdditiveIncease) { builder.addInt(1, uraniumAdditiveIncease, 0); }
+  public static void addUraniumAdditiveIncrease(FlatBufferBuilder builder, int uraniumAdditiveIncrease) { builder.addInt(1, uraniumAdditiveIncrease, 0); }
   public static int endConstants(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

@@ -102,7 +102,7 @@ public strictfp class GameWorld {
             this.processBeginningOfRound();
             this.controlProvider.roundStarted();
 
-            int teamIndex = this.getCurrentRound() % 2;
+            int teamIndex = (this.getCurrentRound() - 1) % 2; // since first round is actually round 1, subtract to make team A go first
             Team teamToPlay = Team.values()[teamIndex];
             // TODO: there may be a safer way to do above because the enum is technically of length 3
 
@@ -289,8 +289,7 @@ public strictfp class GameWorld {
         return returnLocations.toArray(new MapLocation[returnLocations.size()]);
     }
 
-
-
+  
     // *********************************
     // ****** GAMEPLAY *****************
     // *********************************
@@ -299,11 +298,16 @@ public strictfp class GameWorld {
         // Increment round counter
         currentRound++;
 
-        // Process beginning of each robot's round
-        objectInfo.eachRobot((robot) -> {
-            robot.processBeginningOfRound();
-            return true;
-        });
+        // Robots only see a round every 2 rounds, so on odd rounds they start their perceived round
+        boolean perceivedStartOfRound = (currentRound % 2 != 0);
+
+        if (perceivedStartOfRound) {
+            // Process beginning of each robot's round
+            objectInfo.eachRobot((robot) -> {
+                robot.processBeginningOfRound();
+                return true;
+            });
+        }
     }
 
     public void setWinner(Team t, DominationFactor d) {
@@ -315,6 +319,7 @@ public strictfp class GameWorld {
      * @return whether a team has a greater net Uranium value
      */
     public boolean setWinnerIfMoreUraniumValue() {
+
         float[] totalUraniumValues = new float[2];
 
         // consider team reserves
@@ -372,14 +377,18 @@ public strictfp class GameWorld {
         this.teamInfo.addUranium(Team.A, GameConstants.PASSIVE_URANIUM_INCREASE);
         this.teamInfo.addUranium(Team.B, GameConstants.PASSIVE_URANIUM_INCREASE);
 
-        // Process end of each robot's round
-        objectInfo.eachRobot((robot) -> {
-            robot.processEndOfRound();
-            return true;
-        });
+        // Robots only see a round every 2 rounds, so on even rounds they end their perceived round
+        boolean perceivedEndOfRound = this.currentRound % 2 == 0;
+
+        if (perceivedEndOfRound) {
+            // Process end of each robot's round
+            objectInfo.eachRobot((robot) -> {
+                robot.processEndOfRound();
+                return true;
+            });
+        }
 
         // Add uranium resources to the map
-        // TODO: make sure our notion of rounds is consistent with below
         if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) 
             for (int i = 0; i < this.uranium.length; i++)
                 if (this.uranium[i] > 0)
@@ -389,23 +398,25 @@ public strictfp class GameWorld {
         this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B));
         this.teamInfo.processEndOfRound();
 
-        // Check for end of match
-        if (timeLimitReached() && gameStats.getWinner() == null)
-            if (!setWinnerIfMoreUraniumValue())
-                if (!setWinnerIfMoreUraniumMined())
-                    setWinnerBlue();
+        if (perceivedEndOfRound) {
+            // Check for end of match
+            if (timeLimitReached() && gameStats.getWinner() == null)
+                if (!setWinnerIfMoreUraniumValue())
+                    if (!setWinnerIfMoreUraniumMined())
+                        setWinnerBlue();
 
-        if (gameStats.getWinner() != null)
-            running = false;
+            if (gameStats.getWinner() != null)
+                running = false;
+        }
     }
 
     // *********************************
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, RobotType type, int health, Team team) {
+    public int spawnRobot(int ID, RobotType type, Team team) {
         MapLocation spawnLoc = getSpawnLoc(team);
-        InternalRobot robot = new InternalRobot(this, ID, type, spawnLoc, health, team);
+        InternalRobot robot = new InternalRobot(this, ID, type, spawnLoc, team);
         objectInfo.spawnRobot(robot);
         addRobot(spawnLoc, robot);
 
@@ -414,10 +425,19 @@ public strictfp class GameWorld {
         return ID;
     }
 
-    public int spawnRobot(RobotType type, int health, Team team) {
+    public int spawnRobot(int ID, RobotType type, MapLocation loc, Team team) {
+        InternalRobot robot = new InternalRobot(this, ID, type, loc, team);
+        objectInfo.spawnRobot(robot);
+        addRobot(loc, robot);
+        controlProvider.robotSpawned(robot);
+        matchMaker.addSpawnedRobot(robot);
+        return ID;
+    }
+
+    public int spawnRobot(RobotType type, Team team) {
         MapLocation spawnLoc = getSpawnLoc(team);
         int ID = idGenerator.nextID();
-        return spawnRobot(ID, type, spawnLoc, health, GameConstants.ROBOT_INITIAL_HEALTH, team);
+        return spawnRobot(ID, type, spawnLoc, team);
     }
 
     // *********************************

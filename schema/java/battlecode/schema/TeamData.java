@@ -33,22 +33,29 @@ public final class TeamData extends Table {
    * The ID of the team this data pertains to.
    */
   public byte teamID() { int o = __offset(8); return o != 0 ? bb.get(o + bb_pos) : 0; }
+  /**
+   * The bytecode limit of the team
+   */
+  public int bytecodeLimit() { int o = __offset(10); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
 
   public static int createTeamData(FlatBufferBuilder builder,
       int nameOffset,
       int packageNameOffset,
-      byte teamID) {
-    builder.startObject(3);
+      byte teamID,
+      int bytecodeLimit) {
+    builder.startObject(4);
+    TeamData.addBytecodeLimit(builder, bytecodeLimit);
     TeamData.addPackageName(builder, packageNameOffset);
     TeamData.addName(builder, nameOffset);
     TeamData.addTeamID(builder, teamID);
     return TeamData.endTeamData(builder);
   }
 
-  public static void startTeamData(FlatBufferBuilder builder) { builder.startObject(3); }
+  public static void startTeamData(FlatBufferBuilder builder) { builder.startObject(4); }
   public static void addName(FlatBufferBuilder builder, int nameOffset) { builder.addOffset(0, nameOffset, 0); }
   public static void addPackageName(FlatBufferBuilder builder, int packageNameOffset) { builder.addOffset(1, packageNameOffset, 0); }
   public static void addTeamID(FlatBufferBuilder builder, byte teamID) { builder.addByte(2, teamID, 0); }
+  public static void addBytecodeLimit(FlatBufferBuilder builder, int bytecodeLimit) { builder.addInt(3, bytecodeLimit, 0); }
   public static int endTeamData(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

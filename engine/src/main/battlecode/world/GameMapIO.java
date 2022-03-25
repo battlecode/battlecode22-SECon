@@ -1,14 +1,10 @@
 package battlecode.world;
 
-import battlecode.common.*;
-import battlecode.schema.*;
-import battlecode.util.FlatHelpers;
-import battlecode.util.TeamMapping;
-import com.google.flatbuffers.FlatBufferBuilder;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -17,6 +13,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import com.google.flatbuffers.FlatBufferBuilder;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+
+import battlecode.common.GameConstants;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
+import battlecode.schema.SpawnedBodyTable;
+import battlecode.schema.Vec;
+import battlecode.schema.VecTable;
+import battlecode.util.FlatHelpers;
+import battlecode.util.TeamMapping;
 
 /**
  * This class contains the code for reading a flatbuffer map file and converting it
@@ -29,9 +39,9 @@ public final strictfp class GameMapIO {
     private static final ClassLoader BACKUP_LOADER = GameMapIO.class.getClassLoader();
 
     /**
-     * The file extension for battlecode 2022 match files.
+     * The file extension for battlecode secon 2022 match files.
      */
-    public static final String MAP_EXTENSION = ".map22";
+    public static final String MAP_EXTENSION = ".mapsecon22";
 
     /**
      * The package we check for maps in if they can't be found in the file system.
@@ -227,15 +237,11 @@ public final strictfp class GameMapIO {
             final int seed = raw.randomSeed();
             final int rounds = GameConstants.GAME_MAX_NUMBER_OF_ROUNDS;
             final String mapName = raw.name();
-            int[] rubbleArray = new int[width * height];
-            int[] leadArray = new int[width * height];
-            for (int i = 0; i < rubbleArray.length; i++) {
-                rubbleArray[i] = raw.rubble(i);
-                leadArray[i] = raw.lead(i);
-            }
-            AnomalyScheduleEntry[] anomalySchedule = new AnomalyScheduleEntry[raw.anomaliesLength()];
-            for (int i = 0; i < anomalySchedule.length; i++) {
-                anomalySchedule[i] = new AnomalyScheduleEntry(raw.anomalyRounds(i), AnomalyType.values()[raw.anomalies(i)]);
+            boolean[] wallArray = new boolean[width * height];
+            int[] uraniumArray = new int[width * height];
+            for (int i = 0; i < wallArray.length; i++) {
+                wallArray[i] = raw.wall(i);
+                uraniumArray[i] = raw.uranium(i);
             }
             ArrayList<RobotInfo> initBodies = new ArrayList<>();
             SpawnedBodyTable bodyTable = raw.bodies();
@@ -243,8 +249,12 @@ public final strictfp class GameMapIO {
 
             RobotInfo[] initialBodies = initBodies.toArray(new RobotInfo[initBodies.size()]);
 
+            MapLocation[] spawnLocs = new MapLocation[2];
+            spawnLocs[0] = raw.spawnLocs(0);
+            spawnLocs[1] = raw.spawnLocs(1);
+
             return new LiveMap(
-                width, height, origin, seed, rounds, mapName, symmetry, initialBodies, rubbleArray, leadArray, anomalySchedule
+                width, height, origin, seed, rounds, mapName, symmetry, initialBodies, wallArray, uraniumArray, spawnLocs
             );
         }
 
@@ -259,28 +269,25 @@ public final strictfp class GameMapIO {
         public static int serialize(FlatBufferBuilder builder, LiveMap gameMap) {
             int name = builder.createString(gameMap.getMapName());
             int randomSeed = gameMap.getSeed();
-            int[] rubbleArray = gameMap.getRubbleArray();
-            int[] leadArray = gameMap.getLeadArray();
-            AnomalyScheduleEntry[] anomalySchedule = gameMap.getAnomalySchedule();
+            boolean[] wallArray = gameMap.getWallArray();
+            int[] uraniumArray = gameMap.getUraniumArray();
+            MapLocation[] spawnLocs = gameMap.getSpawnLocs();
             // Make body tables
             ArrayList<Integer> bodyIDs = new ArrayList<>();
             ArrayList<Byte> bodyTeamIDs = new ArrayList<>();
             ArrayList<Byte> bodyTypes = new ArrayList<>();
             ArrayList<Integer> bodyLocsXs = new ArrayList<>();
             ArrayList<Integer> bodyLocsYs = new ArrayList<>();
-            ArrayList<Integer> rubbleArrayList = new ArrayList<>();
-            ArrayList<Integer> leadArrayList = new ArrayList<>();
-            ArrayList<Integer> anomaliesArrayList = new ArrayList<>();
-            ArrayList<Integer> anomalyRoundsArrayList = new ArrayList<>();
+            ArrayList<Boolean> wallsArrayList = new ArrayList<>();
+            ArrayList<Integer> uraniumArrayList = new ArrayList<>();
+            ArrayList<Integer> spawnLocList = new ArrayList<>();
 
-            for (int i = 0; i < anomalySchedule.length; i++) {
-                anomaliesArrayList.add(anomalySchedule[i].anomalyType.ordinal());
-                anomalyRoundsArrayList.add(anomalySchedule[i].roundNumber);
-            }
+            spawnLocList.add(Vec.createVec(builder, spawnLocs[0].x, spawnLocs[0].y));
+            spawnLocList.add(Vec.createVec(builder, spawnLocs[1].x, spawnLocs[1].y));
 
             for (int i = 0; i < gameMap.getWidth() * gameMap.getHeight(); i++) {
-                rubbleArrayList.add(rubbleArray[i]);
-                leadArrayList.add(leadArray[i]);
+                wallsArrayList.add(wallArray[i]);
+                uraniumArrayList.add(uraniumArray[i]);
             }
 
             for (RobotInfo robot : gameMap.getInitialBodies()) {
@@ -303,10 +310,9 @@ public final strictfp class GameMapIO {
             SpawnedBodyTable.addTypes(builder, types);
             SpawnedBodyTable.addLocs(builder, locs);
             int bodies = SpawnedBodyTable.endSpawnedBodyTable(builder);
-            int rubbleArrayInt = battlecode.schema.GameMap.createRubbleVector(builder, ArrayUtils.toPrimitive(rubbleArrayList.toArray(new Integer[rubbleArrayList.size()])));
-            int leadArrayInt = battlecode.schema.GameMap.createLeadVector(builder, ArrayUtils.toPrimitive(leadArrayList.toArray(new Integer[leadArrayList.size()])));
-            int anomaliesArrayInt = battlecode.schema.GameMap.createAnomaliesVector(builder, ArrayUtils.toPrimitive(anomaliesArrayList.toArray(new Integer[anomaliesArrayList.size()])));
-            int anomalyRoundsArrayInt = battlecode.schema.GameMap.createAnomalyRoundsVector(builder, ArrayUtils.toPrimitive(anomalyRoundsArrayList.toArray(new Integer[anomalyRoundsArrayList.size()])));
+            int wallsArrayBool = battlecode.schema.GameMap.createWallsVector(builder, ArrayUtils.toPrimitive(wallsArrayList.toArray(new Boolean[wallsArrayList.size()])));
+            int uraniumArrayInt = battlecode.schema.GameMap.createUraniumVector(builder, ArrayUtils.toPrimitive(uraniumArrayList.toArray(new Integer[uraniumArrayList.size()])));
+            int spawnLocArrayInt = battlecode.schema.GameMap.createSpawnLocationVector(builder, ArrayUtils.toPrimitive(spawnLocList.toArray(new Integer[spawnLocList.size()])));
             // Build LiveMap for flatbuffer
             battlecode.schema.GameMap.startGameMap(builder);
             battlecode.schema.GameMap.addName(builder, name);
@@ -316,30 +322,11 @@ public final strictfp class GameMapIO {
             battlecode.schema.GameMap.addSymmetry(builder, gameMap.getSymmetry().ordinal());
             battlecode.schema.GameMap.addBodies(builder, bodies);
             battlecode.schema.GameMap.addRandomSeed(builder, randomSeed);
-            battlecode.schema.GameMap.addRubble(builder, rubbleArrayInt);
-            battlecode.schema.GameMap.addLead(builder, leadArrayInt);
-            battlecode.schema.GameMap.addAnomalies(builder, anomaliesArrayInt);
-            battlecode.schema.GameMap.addAnomalyRounds(builder, anomalyRoundsArrayInt);
+            battlecode.schema.GameMap.addWalls(builder, wallsArrayBool);
+            battlecode.schema.GameMap.addUranium(builder, uraniumArrayInt);
+            battlecode.schema.GameMap.addSpawnLocation(builder, spawnLocArrayInt);
+
             return battlecode.schema.GameMap.endGameMap(builder);
-        }
-
-        // ****************************
-        // *** HELPER METHODS *********
-        // ****************************
-
-        private static void initInitialBodiesFromSchemaBodyTable(SpawnedBodyTable bodyTable, ArrayList<RobotInfo> initialBodies) {
-            VecTable locs = bodyTable.locs();
-            for (int i = 0; i < bodyTable.robotIDsLength(); i++) {
-                // all initial bodies should be archons
-                RobotType bodyType = FlatHelpers.getRobotTypeFromBodyType(bodyTable.types(i));
-                int bodyID = bodyTable.robotIDs(i);
-                int bodyX = locs.xs(i);
-                int bodyY = locs.ys(i);
-                Team bodyTeam = TeamMapping.team(bodyTable.teamIDs(i));
-                if (bodyType == RobotType.ARCHON)
-                    initialBodies.add(new RobotInfo(bodyID, bodyTeam, bodyType, RobotMode.TURRET, 1, RobotType.ARCHON.health, new MapLocation(bodyX, bodyY)));
-                // ignore robots that are not archons, TODO throw error?
-            }
         }
     }
 }
