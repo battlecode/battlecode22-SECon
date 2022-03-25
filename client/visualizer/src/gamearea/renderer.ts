@@ -249,9 +249,6 @@ export default class Renderer {
         const targets = bodies.arrays.target
         const targetxs = bodies.arrays.targetx
         const targetys = bodies.arrays.targety
-        const portables = bodies.arrays.portable
-        const prototypes = bodies.arrays.prototype
-        const levels = bodies.arrays.level
         const minY = world.minCorner.y
         const maxY = world.maxCorner.y - 1
 
@@ -290,11 +287,21 @@ export default class Renderer {
             //this.drawBot(effectImg, x, y, 0)
         }
 
+        this.ctx.lineWidth = 1
+        this.ctx.globalAlpha = 1
+
         const renderBot = (i: number) => {
 
             let img: HTMLImageElement
 
             img = this.imgs.robots[cst.bodyTypeToString(types[i])][teams[i]]
+
+            if (actions[i] == schema.Action.MINE_URANIUM){
+                this.ctx.beginPath()
+                this.ctx.arc(realXs[i] + 0.2, realYs[i] + 0.2, 1, 0, 2 * Math.PI, false)
+                this.ctx.strokeStyle = 'green'
+                this.ctx.fill()
+            }
 
             let max_hp = 10 //TODO keep track of spawn health or something
             this.drawBot(img, realXs[i], realYs[i], hps[i], hps[i] / max_hp, cst.bodyTypeToSize(types[i]))
@@ -303,14 +310,14 @@ export default class Renderer {
 
             // draw effect
             if (actions[i] == schema.Action.EXPLODE) {
-                this.ctx.save()
                 this.ctx.globalAlpha = 1
                 this.ctx.beginPath()
                 this.ctx.arc(realXs[i] + 0.5, realYs[i] + 0.5, 1, 0, 2 * Math.PI, false)
                 this.ctx.strokeStyle = teams[i] == 1 ? 'red' : 'blue'
                 this.ctx.stroke()
-                this.ctx.restore()
             }
+
+            
 
             // if (this.conf.showAnomalies) {
             //     if (actions[i] == schema.Action.LOCAL_ABYSS || actions[i] == schema.Action.LOCAL_CHARGE || actions[i] == schema.Action.LOCAL_FURY) {

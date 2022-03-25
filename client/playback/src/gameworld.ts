@@ -183,7 +183,7 @@ export default class GameWorld {
    * which should be removed in the current round.
    */
   private actionRobots: number[] = [];
-  private bidRobots: number[] = [];
+//   private bidRobots: number[] = [];
 
   constructor(meta: Metadata, config: playbackConfig) {
     this.meta = meta
@@ -346,7 +346,7 @@ export default class GameWorld {
     })
     this.mapStats = deepcopy(source.mapStats)
     this.actionRobots = Array.from(source.actionRobots)
-    this.bidRobots = Array.from(source.bidRobots)
+    // this.bidRobots = Array.from(source.bidRobots)
     this.logs = Array.from(source.logs)
     this.logsShift = source.logsShift
   }
@@ -388,13 +388,14 @@ export default class GameWorld {
     }
 
     // Remove abilities from previous round
-    this.bodies.alterBulk({id: new Int32Array(this.actionRobots), action: (new Int8Array(this.actionRobots.length)).fill(-1), 
+    this.bodies.alterBulk(
+        {id: new Int32Array(this.actionRobots), action: (new Int8Array(this.actionRobots.length)).fill(-1), 
       target: new Int32Array(this.actionRobots.length), targetx: new Int32Array(this.actionRobots.length), targety: new Int32Array(this.actionRobots.length)});
     this.actionRobots = [];
 
-    // Remove bids from previous round
-    this.bodies.alterBulk({ id: new Int32Array(this.bidRobots), bid: new Int32Array(this.bidRobots.length) })
-    this.bidRobots = []
+    // // Remove bids from previous round
+    // this.bodies.alterBulk({ id: new Int32Array(this.bidRobots), bid: new Int32Array(this.bidRobots.length) })
+    // this.bidRobots = []
 
     // Map changes
 
@@ -423,6 +424,7 @@ export default class GameWorld {
           }
           this.actionRobots.push(robotID);
         }; // should be called for actions performed *by* the robot
+        
         switch (action) {
           // TODO: validate actions?
           // Actions list from battlecode.fbs enum Action

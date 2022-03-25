@@ -553,32 +553,24 @@ function createWanderGame(turns: number, unitCount: number, doActions: boolean =
         let possible_actions = []
         switch (bodies.types[j]) {
             case schema.BodyType.ROBOT:
-              possible_actions = [schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, 
-                schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, 
-                schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, 
-                schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.EXPLODE]; // got rid of spawn unit for now because it causes problems
+              possible_actions = [schema.Action.MINE_URANIUM, schema.Action.MINE_URANIUM, schema.Action.EXPLODE]; // got rid of spawn unit for now because it causes problems
               break;
             default:
               break;
         }
         action = possible_actions[Math.floor(Math.random() * possible_actions.length)];
         // let building_target_actions = [schema.Action.REPAIR, schema.Action.MUTATE]
-        // if (action !== null) {
-        //   if (building_target_actions.indexOf(action) > -1){
-        //     actionTarget = buildings[Math.floor(Math.random() * buildings.length)];
-        //   }
-        //   actionIDs.push(bodies.robotIDs[j]);
-        //   actions.push(action);
-
-        //   actionTargets.push(actionTarget);
-        // }
+        if (action !== null) {
+          actionIDs.push(bodies.robotIDs[j]);
+          actions.push(action);
+          actionTargets.push(actionTarget);
+        }
       }
     }
 
     const bb_actionIDs = schema.Round.createActionIDsVector(builder, actionIDs);
     const bb_actions = schema.Round.createActionsVector(builder, actions);
     const bb_actionTargets = schema.Round.createActionTargetsVector(builder, actionTargets);
-
     // const uraniumXs = [Math.floor(SIZE*Math.random())]
     // const uraniumYs = [Math.floor(SIZE*Math.random())]
     // const uraniumLocs = createVecTable(builder, uraniumXs, uraniumYs);
