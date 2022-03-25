@@ -9,7 +9,7 @@ package battlecode.common;
  */
 public enum RobotType {
 
-    // Action Cooldown, Health Decay, Health Limit, Bytecode Limit
+    // Action Cooldown, Health Decay, Health Limit
 
     /**
      * Robots are general-purpose units. They can mine uranium deposts around
