@@ -47,7 +47,7 @@ export default class Stats {
   private robotTds: Map<number, Map<string, Map<number, HTMLTableCellElement>>> = new Map();
 
   private archonBars: ArchonBar[];
-  private maxVotes: number;
+  //private maxVotes: number;
 
   private incomeDisplays: IncomeDisplay[];
 
@@ -65,8 +65,10 @@ export default class Stats {
 
   private tourneyUpload: HTMLDivElement;
 
-  private incomeChartLead: Chart;
-  private incomeChartGold: Chart;
+
+  private incomeChartUranium: Chart;
+  //private incomeChartLead: Chart;
+  //private incomeChartGold: Chart;
 
   private ECs: HTMLDivElement;
   
@@ -168,7 +170,8 @@ export default class Stats {
   }
 
   private initRelativeBars(teamIDs: Array<number>) {
-    let metalIDs = [0, 1];
+    //let metalIDs = [0, 1];
+    let metalIDs = [0];
     let colors = ["#AA9700", "#696969"];
     const relativeBars: HTMLDivElement[] = [];
     teamIDs.forEach((teamID: number) => metalIDs.forEach((id: number) => {
@@ -185,14 +188,15 @@ export default class Stats {
   }
 
   private getRelativeBarsElement(){
-    let metalIDs = [0, 1];
+    //let metalIDs = [0, 1];
+    let metalIDs = [0];
     const divleft = document.createElement("div");
     divleft.setAttribute("align", "center");
     divleft.id = "relative-bars-left";
 
     const labelleft = document.createElement('div');
     labelleft.className = "stats-header";
-    labelleft.innerText = 'Gold';
+    labelleft.innerText = 'Uranium';
 
     const frameleft = document.createElement("div");
     frameleft.style.width = "100%";
@@ -202,7 +206,7 @@ export default class Stats {
 
     divleft.appendChild(labelleft);
     divleft.appendChild(frameleft);
-
+    /*
     const divright = document.createElement("div");
     divright.setAttribute("align", "center");
     divright.id = "relative-bars-right";
@@ -219,7 +223,9 @@ export default class Stats {
 
     divright.appendChild(labelright);
     divright.appendChild(frameright);
-    return [divleft, divright];
+    */
+    //return [divleft, divright];
+    return [divleft];
   }
 
   private updateRelBars(teamLead: Array<number>, teamGold: Array<number>){
@@ -255,7 +261,7 @@ export default class Stats {
     title.colSpan = 4;
     const label = document.createElement('div');
     label.className = "stats-header";
-    label.innerText = 'Total Lead & Gold Income Per Turn';
+    label.innerText = 'Total Uraniom Per Turn';
 
     const row = document.createElement("tr");
 
@@ -356,7 +362,7 @@ export default class Stats {
       this.div.removeChild(this.div.firstChild);
     }
     this.relativeBars = [];
-    this.maxVotes = 750;
+    //this.maxVotes = 750; //TODO SECON 
     this.teamMapToTurnsIncomeSet = new Map();
 
     this.div.appendChild(document.createElement("br"));
@@ -445,18 +451,18 @@ export default class Stats {
     graphs.appendChild(goldWrapper);
     this.div.appendChild(graphs);
 
-    this.incomeChartLead = new Chart(canvasElementLead, {
+    this.incomeChartUranium = new Chart(canvasElementLead, {
       type: 'line',
       data: {
           datasets: [{
-            label: 'Red Lead',
+            label: 'Red Uranium',
             data: [],
             backgroundColor: 'rgba(255, 99, 132, 0)',
             borderColor: 'rgb(131,24,27)',
             pointRadius: 0,
           },
           {
-            label: 'Blue Lead',
+            label: 'Blue Uranium',
             data: [],
             backgroundColor: 'rgba(54, 162, 235, 0)',
             borderColor: 'rgb(108, 140, 188)',
@@ -485,7 +491,7 @@ export default class Stats {
           }
       }
     });
-
+    /*
     this.incomeChartGold = new Chart(canvasElementGold, {
       type: 'line',
       data: {
@@ -527,7 +533,7 @@ export default class Stats {
           }
       }
     });
-
+    */
     this.ECs = document.createElement("div");
     this.ECs.style.height = "100px";
     this.ECs.style.display = "flex";
@@ -577,6 +583,8 @@ export default class Stats {
   /**
    * Change the votes of the given team
    */
+ 
+ /*
   setVotes(teamID: number, count: number) {
     // TODO: figure out if statbars.get(id) can actually be null??
     const statBar: ArchonBar = this.archonBars[teamID];
@@ -593,7 +601,7 @@ export default class Stats {
     //   this.images.star.remove();
     // }
   }
-
+  */
   /** setTeamInfluence(teamID: number, influence: number, totalInfluence: number) {
     const relBar: HTMLDivElement = this.relativeBars[teamID];
     relBar.innerText = String(influence);
