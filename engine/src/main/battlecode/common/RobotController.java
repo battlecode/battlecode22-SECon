@@ -191,10 +191,11 @@ public strictfp interface RobotController {
      * @param radiusSquared return robots wihtin this distance rom the center of
      * this robot; if -1 is passed, all robots are returned;
      * @return array of RobotInfo objects of all the robots you saw
+     * @throws GameActionException if radiusSquared is negative but not -1
      *
      * @battlecode.doc.costlymethod
      */
-    RobotInfo[] senseNearbyRobots(int radiusSquared);
+    RobotInfo[] senseNearbyRobots(int radiusSquared) throws GameActionException;
 
     /**
      * Returns all robots of a given team within a certain
@@ -205,10 +206,11 @@ public strictfp interface RobotController {
      * @param team filter game objects by the given team; if null is passed,
      * robots from any team are returned
      * @return array of RobotInfo objects of all the robots you saw
+     * @throws GameActionException if radiusSquared is negative but not -1
      *
      * @battlecode.doc.costlymethod
      */
-    RobotInfo[] senseNearbyRobots(int radiusSquared, Team team);
+    RobotInfo[] senseNearbyRobots(int radiusSquared, Team team) throws GameActionException;
 
     /**
      * Returns all robots of a given team within a certain
@@ -221,10 +223,11 @@ public strictfp interface RobotController {
      * @param team filter game objects by the given team; if null is passed,
      * objects from all teams are returned
      * @return array of RobotInfo objects of the robots you saw
+     * @throws GameActionException if radiusSquared is negative but not -1
      *
      * @battlecode.doc.costlymethod
      */
-    RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team);
+    RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) throws GameActionException;
 
     /**
      * Given a location, returns whether a wall is at that location.

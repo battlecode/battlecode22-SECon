@@ -184,26 +184,28 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotInfo[] senseNearbyRobots() {
-        return senseNearbyRobots(-1);
+        try {
+            return senseNearbyRobots(-1);
+        } catch (GameActionException willNeverHappen) {
+            throw new RuntimeException("impossible", willNeverHappen);
+        }
     }
 
     @Override
-    public RobotInfo[] senseNearbyRobots(int radiusSquared) {
+    public RobotInfo[] senseNearbyRobots(int radiusSquared) throws GameActionException {
         return senseNearbyRobots(radiusSquared, null);
     }
 
     @Override
-    public RobotInfo[] senseNearbyRobots(int radiusSquared, Team team) {
+    public RobotInfo[] senseNearbyRobots(int radiusSquared, Team team) throws GameActionException {
         return senseNearbyRobots(getLocation(), radiusSquared, team);
     }
 
     @Override
-    public RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) {
+    public RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) throws GameActionException {
         assertNotNull(center);
         int actualRadiusSquared = radiusSquared == -1 ? Integer.MAX_VALUE : radiusSquared;
-        if (actualRadiusSquared < 0)
-            throw new GameActionException(CANT_DO_THAT,
-                "Radius squared must be non-negative.");
+        if (actualRadiusSquared < 0) throw new GameActionException(CANT_DO_THAT,"Radius squared must be non-negative.");
         InternalRobot[] allSensedRobots = gameWorld.getAllRobotsWithinRadiusSquared(center, actualRadiusSquared);
         List<RobotInfo> validSensedRobots = new ArrayList<>();
         for (InternalRobot sensedRobot : allSensedRobots) {
@@ -386,7 +388,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.gameWorld.getTeamInfo().addUranium(team, -health);
         MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam());
         boolean prevOccupied = this.isLocationOccupied(loc);
-        int newId = this.gameWorld.spawnRobot(this.robot.getType(), health, team);
+        int newId = this.gameWorld.spawnRobot(this.robot.getType(), team, health);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
 
         // process collisions (auto-collision with enemy)
@@ -461,17 +463,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
     // ****** COMMUNICATION METHODS ****** 
     // ***********************************
-
-    private void assertValidIndex(int index) throws GameActionException {
-        if (index < 0 || index >= GameConstants.SHARED_ARRAY_LENGTH)
-            throw new GameActionException(CANT_DO_THAT, "You can't access this index as it is not within the shared array.");
-    }
-
-    private void assertValidValue(int value) throws GameActionException {
-        if (value < 0 || value > GameConstants.MAX_SHARED_ARRAY_VALUE)
-            throw new GameActionException(CANT_DO_THAT, "You can't write this value to the shared array " +
-                "as it is not within the range of allowable values: [0, " + GameConstants.MAX_SHARED_ARRAY_VALUE + "].");
-    }
 
     // ***********************************
     // ****** OTHER ACTION METHODS *******
