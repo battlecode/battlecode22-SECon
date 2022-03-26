@@ -26,6 +26,7 @@ public class MapBuilder {
     private boolean[] wallArray;
     private int[] uraniumArray;
     private MapLocation[] spawnLocs;
+    private Team[] spawnTeams;
     private int idCounter;
 
     private List<RobotInfo> bodies;
@@ -45,6 +46,7 @@ public class MapBuilder {
         Arrays.fill(this.wallArray, false); // default is there is no wall
         this.uraniumArray = new int[width * height];
         this.spawnLocs = new MapLocation[2];
+        this.spawnTeams = new Team[2];
     }
 
     // ********************
@@ -62,7 +64,9 @@ public class MapBuilder {
     }
 
     public void addSpawnLoc(Team team, MapLocation loc) {
-        spawnLocs[team.ordinal()] = loc;
+        int idx = team.ordinal();
+        spawnLocs[idx] = loc;
+        spawnTeams[idx] = team;
     }
 
     public void addSpawnLoc(int x, int y, Team team) {
@@ -184,7 +188,7 @@ public class MapBuilder {
 
     public LiveMap build() {
         return new LiveMap(width, height, origin, seed, GameConstants.GAME_MAX_NUMBER_OF_ROUNDS, name,
-                symmetry, bodies.toArray(new RobotInfo[bodies.size()]), wallArray, uraniumArray, spawnLocs);
+                symmetry, bodies.toArray(new RobotInfo[bodies.size()]), wallArray, uraniumArray, spawnLocs, spawnTeams);
     }
 
     /**
