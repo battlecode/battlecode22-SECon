@@ -346,14 +346,14 @@ public final strictfp class RobotControllerImpl implements RobotController {
     public void move(Direction dir) throws GameActionException {
         this.assertCanMove(dir);
         MapLocation center = this.adjacentLocation(dir);
-        boolean prevOccupied = this.isLocationOccupied(center);
-        this.robot.setLocation(center);
+        InternalRobot prevOccupied = this.gameWorld.getRobot(center);
         this.gameWorld.moveRobot(this.getLocation(), center);
+        this.robot.setLocation(center);
         this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), this.robot.getLocation());
 
         // process collisions
-        if (prevOccupied){
-            this.robot.collide(this.gameWorld.getRobot(center));
+        if (prevOccupied != null){
+            this.robot.collide(prevOccupied);
         }
         this.robot.resetCooldownTurns();
         
@@ -389,13 +389,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
         Team team = getTeam();
         this.gameWorld.getTeamInfo().addUranium(team, -health);
         MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam());
-        boolean prevOccupied = this.isLocationOccupied(loc);
+        InternalRobot prevOccupied = this.gameWorld.getRobot(loc);
         int newId = this.gameWorld.spawnRobot(this.robot.getType(), team, health);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
 
         // process collisions (auto-collision with enemy)
-        if (prevOccupied){
-            this.gameWorld.getRobot(loc).collide(this.gameWorld.getRobot(loc));
+        if (prevOccupied != null){
+            this.gameWorld.getRobot(loc).collide(prevOccupied);
         }
     }
 
