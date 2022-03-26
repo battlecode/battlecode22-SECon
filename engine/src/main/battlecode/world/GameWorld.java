@@ -308,7 +308,6 @@ public strictfp class GameWorld {
                 return true;
             });
         }
-        System.out.println("Current Round of " + currentRound + "; Uranium at 0, 10: " + uranium[locationToIndex(new MapLocation(0, 10))]);
     }
 
     public void setWinner(Team t, DominationFactor d) {

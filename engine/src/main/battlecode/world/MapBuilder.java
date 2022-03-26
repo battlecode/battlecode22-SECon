@@ -265,7 +265,6 @@ public class MapBuilder {
      */
     private ArrayList<MapSymmetry> getSymmetry(RobotInfo[] robots) {
         ArrayList<MapSymmetry> possible = new ArrayList<MapSymmetry>();
-        System.out.println(robots);
         possible.add(MapSymmetry.ROTATIONAL);
         possible.add(MapSymmetry.HORIZONTAL);
         possible.add(MapSymmetry.VERTICAL);
