@@ -369,10 +369,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(NOT_ENOUGH_RESOURCE,
                     "Insufficient amount of uranium.");
         MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam());
-        if (!onTheMap(loc))
-            throw new GameActionException(OUT_OF_RANGE,
-                    "Can only spawn to locations on the map; " + loc + " is not on the map.");
-        if ( this.isLocationOccupied(loc) && this.gameWorld.getRobot(loc).getTeam() == this.getTeam()){
+        if (this.isLocationOccupied(loc) && this.gameWorld.getRobot(loc).getTeam() == this.getTeam()){
             throw new GameActionException(FRIENDLY_ROBOT_PRESENT,
                     "Can't spawn if a friendly robot is on your spawn square.");
         }
@@ -424,6 +421,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.robot.resetCooldownTurns();
         for (Direction dir : Direction.cardinalDirections()){
             MapLocation loc = this.adjacentLocation(dir);
+            if (!onTheMap(loc)) continue;
             InternalRobot bot = this.gameWorld.getRobot(loc);
             if (bot == null) continue;
             // Don't damage friendly robots.
@@ -432,6 +430,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
             bot.damageHealth(this.robot.getHealth() / 2);
         }
         this.gameWorld.getMatchMaker().addAction(getID(), Action.EXPLODE, -1);
+        this.gameWorld.destroyRobot(getID());
     }
 
     // ***********************
