@@ -68,7 +68,7 @@ public strictfp class GameWorld {
         for (int i = 0; i < initialBodies.length; i++) {
             RobotInfo robot = initialBodies[i];
             MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
-            spawnRobot(robot.ID, robot.type, newLocation, GameConstants.ROBOT_INITIAL_HEALTH, robot.team);
+            spawnRobot(robot.ID, robot.type, robot.team, GameConstants.INITIAL_ROBOT_HEALTH);
         }
         this.teamInfo = new TeamInfo(this);
 
@@ -253,9 +253,17 @@ public strictfp class GameWorld {
         for (int i = 0; i < this.robots.length; i++)
             for (int j = 0; j < this.robots[0].length; j++){
                 MapLocation newLocation = new MapLocation(i, j);
-                if (getRobot() != null)
+                if (getRobot(newLocation) != null)
                     returnRobots.add(getRobot(newLocation));
             }
+        return returnRobots.toArray(new InternalRobot[returnRobots.size()]);
+    }
+
+    public InternalRobot[] getAllRobotsWithinRadiusSquared(MapLocation center, int radiusSquared) {
+        ArrayList<InternalRobot> returnRobots = new ArrayList<InternalRobot>();
+        for (MapLocation newLocation : getAllLocationsWithinRadiusSquared(center, radiusSquared))
+            if (getRobot(newLocation) != null)
+                returnRobots.add(getRobot(newLocation));
         return returnRobots.toArray(new InternalRobot[returnRobots.size()]);
     }
 
@@ -332,6 +340,7 @@ public strictfp class GameWorld {
             setWinner(Team.B, DominationFactor.MORE_URANIUM_NET_WORTH);
             return true;
         }
+        return false;
     }
 
     /**
@@ -407,9 +416,9 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, RobotType type, Team team) {
+    public int spawnRobot(int ID, RobotType type, Team team, int health) {
         MapLocation spawnLoc = getSpawnLoc(team);
-        InternalRobot robot = new InternalRobot(this, ID, type, spawnLoc, team);
+        InternalRobot robot = new InternalRobot(this, ID, type, spawnLoc, health, team);
         objectInfo.spawnRobot(robot);
         addRobot(spawnLoc, robot);
 
@@ -418,19 +427,9 @@ public strictfp class GameWorld {
         return ID;
     }
 
-    public int spawnRobot(int ID, RobotType type, MapLocation loc, Team team) {
-        InternalRobot robot = new InternalRobot(this, ID, type, loc, team);
-        objectInfo.spawnRobot(robot);
-        addRobot(loc, robot);
-        controlProvider.robotSpawned(robot);
-        matchMaker.addSpawnedRobot(robot);
-        return ID;
-    }
-
-    public int spawnRobot(RobotType type, Team team) {
-        MapLocation spawnLoc = getSpawnLoc(team);
+    public int spawnRobot(RobotType type, Team team, int health) {
         int ID = idGenerator.nextID();
-        return spawnRobot(ID, type, spawnLoc, team);
+        return spawnRobot(ID, type, team, health);
     }
 
     // *********************************
