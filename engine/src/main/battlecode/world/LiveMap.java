@@ -32,14 +32,20 @@ public strictfp class LiveMap {
     private final MapSymmetry symmetry;
 
     /**
-     * Factor to multiply cooldowns by.
+     * Whether there is a wall or not.
      */
-    private int[] rubbleArray;
+    private boolean[] wallArray;
 
     /**
-     * How much lead is on each square.
+     * How much uranium is on each square.
      */
-    private final int[] leadArray;
+    private final int[] uraniumArray;
+
+    /**
+     * The location of the spawn locations of each team.
+     */
+    private final MapLocation[] spawnLocs;
+
 
     /**
      * The random seed contained in the map file.
@@ -57,21 +63,11 @@ public strictfp class LiveMap {
     private final String mapName;
 
     /**
-     * List of anomalies that will occur at certain rounds.
-     */
-    private final AnomalyScheduleEntry[] anomalySchedule;
-
-    /**
-     * Index of next anomaly to occur (excluding Singularity which always occurs).
-     */
-    private int nextAnomalyIndex;
-
-    /**
      * The bodies to spawn on the map; MapLocations are in world space -
      * i.e. in game correct MapLocations that need to have the origin
      * subtracted from them to be used to index into the map arrays.
      */
-    private final RobotInfo[] initialBodies; // only contains Archons
+    private final RobotInfo[] initialBodies; //just one robot each
 
     public LiveMap(int width,
                    int height,
@@ -88,12 +84,10 @@ public strictfp class LiveMap {
         this.mapName = mapName;
         this.symmetry = MapSymmetry.ROTATIONAL;
         this.initialBodies = Arrays.copyOf(initialBodies, initialBodies.length);
-        this.rubbleArray = new int[width * height];
-        Arrays.fill(this.rubbleArray, 1); // default cooldown factor is 1
-        this.leadArray = new int[width * height]; // TODO: we guarantee there to be lead within vision range of archons
-
-        this.anomalySchedule = new AnomalyScheduleEntry[0];
-        this.nextAnomalyIndex = 0;
+        this.wallArray = new boolean[width * height];
+        Arrays.fill(this.wallArray, false); // default is there is no wall
+        this.uraniumArray = new int[width * height];
+        this.spawnLocs = new MapLocation[2];
 
         // invariant: bodies is sorted by id
         Arrays.sort(this.initialBodies, (a, b) -> Integer.compare(a.getID(), b.getID()));
@@ -107,9 +101,9 @@ public strictfp class LiveMap {
                    String mapName,
                    MapSymmetry symmetry,
                    RobotInfo[] initialBodies,
-                   int[] rubbleArray,
-                   int[] leadArray,
-                   AnomalyScheduleEntry[] anomalySchedule) {
+                   boolean[] wallArray,
+                   int[] uraniumArray,
+                   MapLocation[] spawnLocs) {
         this.width = width;
         this.height = height;
         this.origin = origin;
@@ -118,20 +112,19 @@ public strictfp class LiveMap {
         this.mapName = mapName;
         this.symmetry = symmetry;
         this.initialBodies = Arrays.copyOf(initialBodies, initialBodies.length);
-        this.rubbleArray = new int[rubbleArray.length];
-        for (int i = 0; i < rubbleArray.length; i++) {
-            this.rubbleArray[i] = rubbleArray[i];
+        this.wallArray = new boolean[wallArray.length];
+        for (int i = 0; i < wallArray.length; i++) {
+            this.wallArray[i] = wallArray[i];
         }
-        this.leadArray = new int[leadArray.length];
-        for (int i = 0; i < leadArray.length; i++) {
-            this.leadArray[i] = leadArray[i];
+        this.uraniumArray = new int[uraniumArray.length];
+        for (int i = 0; i < uraniumArray.length; i++) {
+            this.uraniumArray[i] = uraniumArray[i];
         }
-
-        this.anomalySchedule = new AnomalyScheduleEntry[anomalySchedule.length];
-        for (int i = 0; i < anomalySchedule.length; i++) {
-            this.anomalySchedule[i] = anomalySchedule[i];
+        assert(spawnLocs.length == 2);
+        this.spawnLocs = new MapLocation[2];
+        for (int i = 0; i < spawnLocs.length; i++) {
+            this.spawnLocs[i] = spawnLocs[i];
         }
-        this.nextAnomalyIndex = 0;
 
         // invariant: bodies is sorted by id
         Arrays.sort(this.initialBodies, (a, b) -> Integer.compare(a.getID(), b.getID()));
@@ -144,7 +137,7 @@ public strictfp class LiveMap {
      */
     public LiveMap(LiveMap gm) {
         this(gm.width, gm.height, gm.origin, gm.seed, gm.rounds, gm.mapName, gm.symmetry,
-             gm.initialBodies, gm.rubbleArray, gm.leadArray, gm.anomalySchedule);
+             gm.initialBodies, gm.wallArray, gm.uraniumArray, gm.spawnLocs);
     }
 
     @Override
@@ -166,9 +159,9 @@ public strictfp class LiveMap {
         if (this.seed != other.seed) return false;
         if (!this.mapName.equals(other.mapName)) return false;
         if (!this.origin.equals(other.origin)) return false;
-        if (!Arrays.equals(this.rubbleArray, other.rubbleArray)) return false;
-        if (!Arrays.equals(this.leadArray, other.leadArray)) return false;
-        if (!Arrays.equals(this.anomalySchedule, other.anomalySchedule)) return false;
+        if (!Arrays.equals(this.wallArray, other.wallArray)) return false;
+        if (!Arrays.equals(this.uraniumArray, other.uraniumArray)) return false;
+        if (!Arrays.equals(this.spawnLocs, other.spawnLocs)) return false;
         return Arrays.equals(this.initialBodies, other.initialBodies);
     }
 
@@ -180,9 +173,9 @@ public strictfp class LiveMap {
         result = 31 * result + seed;
         result = 31 * result + rounds;
         result = 31 * result + mapName.hashCode();
-        result = 31 * result + Arrays.hashCode(rubbleArray);
-        result = 31 * result + Arrays.hashCode(leadArray);
-        result = 31 * result + Arrays.hashCode(anomalySchedule);
+        result = 31 * result + Arrays.hashCode(wallArray);
+        result = 31 * result + Arrays.hashCode(uraniumArray);
+        result = 31 * result + Arrays.hashCode(spawnLocs);
         result = 31 * result + Arrays.hashCode(initialBodies);
         return result;
     }
@@ -299,51 +292,29 @@ public strictfp class LiveMap {
     }
 
     /**
-     * @return the rubble array of the map
+     * @return the wall array of the map
      */
-    public int[] getRubbleArray() {
-        return rubbleArray;
+    public boolean[] getWallArray() {
+        return wallArray;
     }
 
     /**
-     * @return the lead array of the map
+     * @return the uranium array of the map
      */
-    public int[] getLeadArray() {
-        return leadArray;
+    public int[] getUraniumArray() {
+        return uraniumArray;
     }
 
     /**
-     * @return a copy of the next Anomaly that hasn't happened yet.
+     * @return the MapLocation array of spawn locations
      */
-    public AnomalyScheduleEntry viewNextAnomaly() {
-        if (this.nextAnomalyIndex < this.anomalySchedule.length)
-            return this.anomalySchedule[this.nextAnomalyIndex].copyEntry();
-        return null;
-    }
-
-    /**
-     * Removes the current anomaly by advancing to the next one.
-     * @return the next Anomaly.
-     */
-    public AnomalyScheduleEntry takeNextAnomaly() {
-        if (this.nextAnomalyIndex < this.anomalySchedule.length)
-            return this.anomalySchedule[this.nextAnomalyIndex++].copyEntry();
-        return null;
-    }
-
-    /**
-     * @return a copy of the anomaly schedule
-     */
-    public AnomalyScheduleEntry[] getAnomalySchedule() {
-        AnomalyScheduleEntry[] anomalyCopy = new AnomalyScheduleEntry[this.anomalySchedule.length];
-        for (int i = 0; i < this.anomalySchedule.length ; i++)
-            anomalyCopy[i] = this.anomalySchedule[i].copyEntry();
-        return anomalyCopy;
+    public MapLocation[] getSpawnLocs() {
+        return spawnLocs;
     }
 
     @Override
     public String toString() {
-        if (rubbleArray.length == 0) {
+        if (wallArray.length == 0) {
             return "LiveMap{" +
                     "width=" + width +
                     ", height=" + height +
@@ -352,7 +323,7 @@ public strictfp class LiveMap {
                     ", rounds=" + rounds +
                     ", mapName='" + mapName + '\'' +
                     ", initialBodies=" + Arrays.toString(initialBodies) +
-                    ", len=" + Integer.toString(rubbleArray.length) +
+                    ", len=" + Integer.toString(wallArray.length) +
                     "}";
         } else {
             return "LiveMap{" +
@@ -363,9 +334,9 @@ public strictfp class LiveMap {
                     ", rounds=" + rounds +
                     ", mapName='" + mapName + '\'' +
                     ", initialBodies=" + Arrays.toString(initialBodies) +
-                    ", rubbleArray=" +  Arrays.toString(rubbleArray) +
-                    ", leadArray=" +  Arrays.toString(leadArray) +
-                    ", anomalySchedule=" +  Arrays.toString(anomalySchedule) +
+                    ", wallArray=" +  Arrays.toString(wallArray) +
+                    ", uraniumArray=" +  Arrays.toString(uraniumArray) +
+                    ", spawnLocs=" +  Arrays.toString(spawnLocs) +
                     "}"; 
         }
     }

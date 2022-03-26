@@ -96,7 +96,7 @@ public class RobotInfo {
         if (ID != robotInfo.ID) return false;
         if (team != robotInfo.team) return false;
         if (type != robotInfo.type) return false;
-        if ( (int) health != (int) robotInfo.health) return false;
+        if ((int) health != (int) robotInfo.health) return false;
         return location.equals(robotInfo.location);
     }
 

@@ -1,18 +1,9 @@
 package battlecode.world.maps;
 
-import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
-import battlecode.common.Team;
-import battlecode.world.GameMapIO;
-import battlecode.world.LiveMap;
-import battlecode.world.MapBuilder;
-import battlecode.world.TestMapBuilder;
-
-import battlecode.common.GameConstants;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+
+import battlecode.world.MapBuilder;
 
 /**
  * Generate a map.
@@ -39,12 +30,13 @@ public class MapTestSmall {
 
     public static void makeSimple() throws IOException {
         MapBuilder mapBuilder = new MapBuilder(mapName, 32, 32, 0, 0, 30);
-        mapBuilder.addSymmetricArchon(5, 5);
+        mapBuilder.addSymmetricSpawnLoc(5, 5);
+        mapBuilder.addSymmetricRobot(5, 5);
         Random random = new Random(6147);
 
         for (int i = 0; i < mapBuilder.width / 2; i++) {
             for (int j = 0; j < mapBuilder.height; j++) {
-                mapBuilder.setSymmetricLead(i, j, random.nextInt(100));
+                mapBuilder.setSymmetricUranium(i, j, random.nextInt(100));
             }
         }
 
