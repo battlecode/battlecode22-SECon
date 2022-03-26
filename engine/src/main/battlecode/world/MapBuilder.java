@@ -70,9 +70,11 @@ public class MapBuilder {
                 team,
                 new MapLocation(x, y)
         );
+        // There needs to a be a single robot in every place there is a spawn location
+        addRobot(x, y, team);
     }
 
-    public void addRobot(int id, Team team, MapLocation loc) {
+    private void addRobot(int id, Team team, MapLocation loc) {
         // check if something already exists here, if so shout
         for (RobotInfo r : bodies) {
             if (r.location.equals(loc)) {
@@ -88,7 +90,7 @@ public class MapBuilder {
         ));
     }
 
-    public void addRobot(int x, int y, Team team) {
+    private void addRobot(int x, int y, Team team) {
         addRobot(
                 idCounter++,
                 team,
@@ -161,7 +163,7 @@ public class MapBuilder {
      * @param x x position
      * @param y y position
      */
-    public void addSymmetricRobot(int x, int y) {
+    private void addSymmetricRobot(int x, int y) {
         addRobot(x, y, Team.A);
         addRobot(symmetricX(x), symmetricY(y), Team.B);
     }
@@ -228,8 +230,8 @@ public class MapBuilder {
                 throw new RuntimeException("Map must have robots start at the spawn location of each team");
             }
         }
-        if (numTeamARobots != GameConstants.NUM_STARTING_ROBOTS) {
-            throw new RuntimeException("Map must have " + GameConstants.NUM_STARTING_ROBOTS + " starting robots of each team");
+        if (numTeamARobots != GameConstants.NUM_SPAWN_LOCATIONS) {
+            throw new RuntimeException("Map must have " + GameConstants.NUM_SPAWN_LOCATIONS + " starting robots of each team");
         }
 
         // assert wall, uranium, and inital robot symmetry

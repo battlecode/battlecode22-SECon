@@ -67,7 +67,6 @@ public strictfp class GameWorld {
         RobotInfo[] initialBodies = this.gameMap.getInitialBodies();
         for (int i = 0; i < initialBodies.length; i++) {
             RobotInfo robot = initialBodies[i];
-            MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
             spawnRobot(robot.ID, robot.type, robot.team, GameConstants.INITIAL_ROBOT_HEALTH);
         }
         this.teamInfo = new TeamInfo(this);
