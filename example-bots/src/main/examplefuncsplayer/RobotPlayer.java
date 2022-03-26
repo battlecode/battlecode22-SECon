@@ -46,6 +46,7 @@ public strictfp class RobotPlayer {
      **/
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {
+        if (rc.getTeam() == Team.A) rng.nextInt(1);
 
         // Hello world! Standard output is very useful for debugging.
         // Everything you say here will be directly viewable in your terminal when you run a match!
@@ -100,28 +101,33 @@ public strictfp class RobotPlayer {
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     static void runRobot(RobotController rc) throws GameActionException {
-        int rngActionInt = rng.nextInt(3);
+        int rngActionInt = rng.nextInt(100);
+        System.out.println("I'm robot " + rc.getID() + " at " + rc.getLocation());
+        System.out.println("My action is decided by arbitrary number " + rngActionInt);
+        System.out.println("I have " + rc.getTeamUraniumAmount(rc.getTeam()) + " uranium");
         // Try to build, this doesn't add to cooldown
-        if (rc.canBuildRobot(1)) {
-            rc.buildRobot(1);
-            System.out.println("Build new robot");
-        }
-        if (rngActionInt == 0) {
-            // Let's try to mine
-            if (rc.canMine()) {
-                System.out.println("Mining, original amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-                rc.mine();
-                System.out.println("Mined, final amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
+        if (rc.getTeamUraniumAmount(rc.getTeam()) > 0) {
+            int health = rng.nextInt(rc.getTeamUraniumAmount(rc.getTeam())) + 1;
+            if (rc.canBuildRobot(health)) {
+                rc.buildRobot(health);
+                System.out.println("Build new robot of health " + health);
             }
-        } else if (rngActionInt == 1) {
+        }
+        if (rngActionInt < 100 && rc.canMine()) {
+            // Let's try to mine
+            System.out.println("Mining, original amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
+            rc.mine();
+            System.out.println("Mined, final amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
+        } else if (rngActionInt < 100) {
+            System.out.println("It's time to move!");
             // Let's try to move
             Direction dir = directions[rng.nextInt(directions.length)];
+            System.out.println(dir);
             if (rc.canMove(dir)) {
-                System.out.println("Moving, original place: " + rc.getLocation());
                 rc.move(dir);
                 System.out.println("Moving, final place: " + rc.getLocation());
             }
-        } else if (rngActionInt == 2) {
+        } else if (rngActionInt < 100) {
             // Let's try to explode
             if (rc.canExplode()) {
                 System.out.println("Exploding");
