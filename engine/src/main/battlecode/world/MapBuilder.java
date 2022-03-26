@@ -67,6 +67,9 @@ public class MapBuilder {
         int idx = team.ordinal();
         spawnLocs[idx] = loc;
         spawnTeams[idx] = team;
+
+        // There needs to a be a single robot in every place there is a spawn location
+        addRobot(loc.x, loc.y, team);
     }
 
     public void addSpawnLoc(int x, int y, Team team) {
@@ -74,8 +77,6 @@ public class MapBuilder {
                 team,
                 new MapLocation(x, y)
         );
-        // There needs to a be a single robot in every place there is a spawn location
-        addRobot(x, y, team);
     }
 
     private void addRobot(int id, Team team, MapLocation loc) {
@@ -224,14 +225,18 @@ public class MapBuilder {
                                        GameConstants.MAP_MAX_HEIGHT + ", inclusive");
 
         // checks just 1 robot on each team and that it is on the spawn location
-        // only needs to check the robots of Team A, because symmetry is checked
         int numTeamARobots = 0;
         for (RobotInfo r : bodies) {
             if (r.getTeam() == Team.A) {
                 numTeamARobots++;
             }
-            if (r.getLocation() != spawnLocs[0]) {
-                throw new RuntimeException("Map must have robots start at the spawn location of each team");
+
+            for (int i = 0; i < spawnLocs.length; i++) {
+                if (spawnTeams[i] == r.getTeam()) {
+                    if (!r.getLocation().equals(spawnLocs[i])) {
+                        throw new RuntimeException("Map must have robots start at the spawn location of each team");
+                    }
+                }
             }
         }
         if (numTeamARobots != GameConstants.NUM_SPAWN_LOCATIONS) {
@@ -260,6 +265,7 @@ public class MapBuilder {
      */
     private ArrayList<MapSymmetry> getSymmetry(RobotInfo[] robots) {
         ArrayList<MapSymmetry> possible = new ArrayList<MapSymmetry>();
+        System.out.println(robots);
         possible.add(MapSymmetry.ROTATIONAL);
         possible.add(MapSymmetry.HORIZONTAL);
         possible.add(MapSymmetry.VERTICAL);
@@ -268,7 +274,7 @@ public class MapBuilder {
         for (int i = possible.size() - 1; i >= 0; i--) {
             MapSymmetry symmetry = possible.get(i);
             MapLocation symmSpawnLoc1 = new MapLocation(symmetricX(spawnLoc1.x, symmetry), symmetricY(spawnLoc1.y, symmetry));
-            if (symmSpawnLoc1 != spawnLocs[1]) {
+            if (!symmSpawnLoc1.equals(spawnLocs[1])) {
                 possible.remove(symmetry);
             }
         }
