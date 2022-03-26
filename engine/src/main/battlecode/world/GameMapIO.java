@@ -19,9 +19,8 @@ import com.google.flatbuffers.FlatBufferBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
-import battlecode.common.GameConstants;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
+import battlecode.common.*;
+
 import battlecode.schema.SpawnedBodyTable;
 import battlecode.schema.Vec;
 import battlecode.schema.VecTable;
@@ -251,7 +250,7 @@ public final strictfp class GameMapIO {
 
             SpawnLocationTable spawnTable = raw.spawnLocation();
             ArrayList<MapLocation> initSpawns = new ArrayList<>();
-            ArrayList<Teams> initSpawnTeams = new ArrayList<>();
+            ArrayList<Team> initSpawnTeams = new ArrayList<>();
             initInitialBodiesFromSchemaBodyTable(spawnTable, initSpawns, initSpawnTeams);
             MapLocation[] spawnLocs = initSpawns.toArray(new MapLocation[initSpawns.size()]);
             Team[] spawnTeams = initSpawnTeams.toArray(new Team[initSpawnTeams.size()]);
@@ -328,7 +327,7 @@ public final strictfp class GameMapIO {
                     VecTable.createXsVector(builder, ArrayUtils.toPrimitive(spawnLocsXs.toArray(new Integer[spawnLocsXs.size()]))),
                     VecTable.createYsVector(builder, ArrayUtils.toPrimitive(spawnLocsYs.toArray(new Integer[spawnLocsYs.size()]))));
             SpawnLocationTable.startSpawnLocationTable(builder);
-            SpawnLocationTable.addTeamIDS(builder, spawabTeamIDs);
+            SpawnLocationTable.addTeamIDS(builder, spawnTeamIDs);
             SpawnLocationTable.addLocs(builder, spawnLocsInt);
             int spawns = SpawnLocationTable.endSpawnLocationTable(builder);
             // Build LiveMap for flatbuffer
@@ -372,7 +371,7 @@ public final strictfp class GameMapIO {
                 int spawnY = locs.ys(i);
                 Team spawnTeam = TeamMapping.team(spawnTable.teamIDs(i));
                 initialSpawns.add(new MapLocation(spawnX, spawnY));
-                initialSpawnTeams.add(new Team(spawnTeam));
+                initialSpawnTeams.add(spawnTeam);
             }
         }
     }
