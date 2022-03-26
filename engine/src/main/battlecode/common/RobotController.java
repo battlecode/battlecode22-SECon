@@ -88,6 +88,15 @@ public strictfp interface RobotController {
     Team getTeam();
 
     /**
+     * Returns this robot's type (ROBOT).
+     *
+     * @return this robot's type
+     *
+     * @battlecode.doc.costlymethod
+     */
+    RobotType getType();
+
+    /**
      * Returns this robot's current location.
      *
      * @return this robot's current location

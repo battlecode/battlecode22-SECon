@@ -63,9 +63,8 @@ public final class GameMap extends Table {
   /**
    * The spawn locations.
    */
-  public Vec spawnLocation(int j) { return spawnLocation(new Vec(), j); }
-  public Vec spawnLocation(Vec obj, int j) { int o = __offset(20); return o != 0 ? obj.__assign(__vector(o) + j * 8, bb) : null; }
-  public int spawnLocationLength() { int o = __offset(20); return o != 0 ? __vector_len(o) : 0; }
+  public SpawnLocationTable spawnLocation() { return spawnLocation(new SpawnLocationTable()); }
+  public SpawnLocationTable spawnLocation(SpawnLocationTable obj) { int o = __offset(20); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
 
   public static void startGameMap(FlatBufferBuilder builder) { builder.startObject(9); }
   public static void addName(FlatBufferBuilder builder, int nameOffset) { builder.addOffset(0, nameOffset, 0); }
@@ -81,7 +80,6 @@ public final class GameMap extends Table {
   public static int createUraniumVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startUraniumVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static void addSpawnLocation(FlatBufferBuilder builder, int spawnLocationOffset) { builder.addOffset(8, spawnLocationOffset, 0); }
-  public static void startSpawnLocationVector(FlatBufferBuilder builder, int numElems) { builder.startVector(8, numElems, 4); }
   public static int endGameMap(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;
