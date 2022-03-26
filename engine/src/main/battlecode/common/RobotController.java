@@ -71,6 +71,25 @@ public strictfp interface RobotController {
     // *********************************
 
     /**
+     * Returns the ID of this robot.
+     *
+     * @return the ID of this robot
+     *
+     * @battlecode.doc.costlymethod
+     */
+    int getID();
+
+    /**
+     * Returns this robot's Team.
+     *
+     * @param id of robot of interest
+     * @return the robot's Team
+     *
+     * @battlecode.doc.costlymethod
+     */
+    Team getTeam();
+
+    /**
      * Returns a robot's Team.
      *
      * @param id of robot of interest
@@ -79,6 +98,15 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     Team getTeam(int id);
+
+    /**
+     * Returns this robot's type (ROBOT).
+     *
+     * @return the robot's type
+     *
+     * @battlecode.doc.costlymethod
+     */
+    RobotType getType();
 
     /**
      * Returns a robot's type (ROBOT).
@@ -492,11 +520,10 @@ public strictfp interface RobotController {
     /**
     
      * Causes your team to lose the game. It's like typing "gg."
-     * @param id of the robot to request resignation
      *
      * @battlecode.doc.costlymethod
      */
-    void resign(int id);
+    void resign();
 
     // ***********************************
     // ******** DEBUG METHODS ************

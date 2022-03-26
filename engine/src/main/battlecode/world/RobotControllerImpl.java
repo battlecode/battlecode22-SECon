@@ -25,6 +25,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private final GameWorld gameWorld;
 
     /**
+     * The robot this controller controls.
+     */
+    private final InternalRobot robot;
+
+    /**
      * An rng based on the world seed.
      */
     private static Random random;
@@ -33,9 +38,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
      * Create a new RobotControllerImpl
      *
      * @param gameWorld the relevant world
+     * @param robot the relevant robot
      */
-    public RobotControllerImpl(GameWorld gameWorld) {
+    public RobotControllerImpl(GameWorld gameWorld, InternalRobot robot) {
         this.gameWorld = gameWorld;
+        this.robot = robot;
+ 
         this.random = new Random(gameWorld.getMapSeed());
     }
 
@@ -52,6 +60,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (o == null) {
             throw new NullPointerException("Argument has an invalid null value");
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return getID();
     }
 
     // *********************************
@@ -87,10 +100,24 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** UNIT QUERY METHODS *******
     // *********************************
 
+    @Override
+    public int getID() {
+        return this.robot.getID();
+    }
+
+    @Override
+    public Team getTeam() {
+        return this.robot.getTeam();
+    }
 
     @Override
     public Team getTeam(int id) {
         return this.getRobotByID(id).getTeam();
+    }
+
+    @Override
+    public RobotType getType() {
+        return this.robot.getType();
     }
 
     @Override
@@ -465,8 +492,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public void resign(int id) {
-        Team team = getTeam(id);
+    public void resign() {
+        Team team = getTeam();
         gameWorld.getObjectInfo().eachRobot((robot) -> {
             if (robot.getTeam() == team) {
                 gameWorld.destroyRobot(robot.getID());

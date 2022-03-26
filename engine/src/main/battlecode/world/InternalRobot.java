@@ -66,7 +66,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
         this.indicatorString = "";
 
-        this.controller = new RobotControllerImpl(gameWorld);
+        this.controller = new RobotControllerImpl(gameWorld, this);
     }
 
     // ******************************************

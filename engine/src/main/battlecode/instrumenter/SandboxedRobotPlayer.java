@@ -183,7 +183,7 @@ public class SandboxedRobotPlayer {
                 // If we get here, we've returned from the 'run' method. Tell the user.
                 System.out.println(robotController.getTeam().toString() + "'s "
                         + robotController.getType().toString() + " " +
-                        robotController.getID() + " at location " + robotController.getLocation().toString()
+                        robotController.getID()
                         + " froze in round " +robotController.getRoundNum() +
                         " because it returned from its run() method!");
             } catch (final IllegalAccessException e) {
@@ -216,7 +216,7 @@ public class SandboxedRobotPlayer {
                     notifier.notifyAll();
                 }
             }
-        }, teamName + "." + PLAYER_CLASS_NAME + " #"+ robotController.getID());
+        }, teamName + "." + PLAYER_CLASS_NAME);
 
 
         // Wait for thread to tell us it's ready
