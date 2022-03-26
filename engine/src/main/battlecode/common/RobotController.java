@@ -46,15 +46,14 @@ public strictfp interface RobotController {
     int getMapHeight();
 
     /**
-     * Returns the number of robots on the team of a certain robot.
+     * Returns the number of robots on your team.
      * If this number ever reaches zero for your team, you immediately lose.
      *
-     * @param id of the robot which team is of interest
      * @return the number of robots on that team
      *
      * @battlecode.doc.costlymethod
      */
-    int getRobotCount(int id);
+    int getRobotCount();
 
     /**
      * Returns the amount of uranium a team has in its reserves.
@@ -119,7 +118,7 @@ public strictfp interface RobotController {
     RobotType getType(int id);
 
     /**
-     * Returns this robot's current location.
+     * Returns a robot's current location.
      *
      * @param id of robot of interest
      * @return the robot's current location
@@ -210,19 +209,18 @@ public strictfp interface RobotController {
      * Returns all robots. The objects are returned in no
      * particular order.
      *
-     * @param id of robot to perform query
      * @return array of RobotInfo objects, which contain information about all
      * the robots
      *
      * @battlecode.doc.costlymethod
      */
-    RobotInfo[] senseNearbyRobots(int id);
+    RobotInfo[] senseAllRobots();
 
     /**
      * Returns all robots within a certain distance of this
      * robot. The objects are returned in no particular order.
      *
-     * @param id of robot to perform query
+     * @param id of robot that is center used for radius
      * @param radiusSquared return robots wihtin this distance rom the center of
      * this robot; if -1 is passed, all robots are returned;
      * @return array of RobotInfo objects of all the robots you saw
@@ -236,7 +234,7 @@ public strictfp interface RobotController {
      * Returns all robots of a given team within a certain
      * distance of this robot. The objects are returned in no particular order.
      *
-     * @param id of robot to perform query
+     * @param id of robot that is center used for radius
      * @param radiusSquared return robots within this distance away from the center of
      * this robot; if -1 is passed, all robots are returned;
      * @param team filter game objects by the given team; if null is passed,
@@ -253,7 +251,6 @@ public strictfp interface RobotController {
      * radius of a specified location. The objects are returned in no particular
      * order.
      *
-     * @param id of robot to perform query
      * @param center center of the given search radius
      * @param radiusSquared return robots this distance away from the center; 
      * if -1 is passed, all robots are returned;
@@ -264,7 +261,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    RobotInfo[] senseNearbyRobots(int id, MapLocation center, int radiusSquared, Team team) throws GameActionException;
+    RobotInfo[] senseNearbyRobots(MapLocation center, int radiusSquared, Team team) throws GameActionException;
 
     /**
      * Given a location, returns whether a wall is at that location.
@@ -291,19 +288,18 @@ public strictfp interface RobotController {
     /**
      * Return all locations that contain a nonzero amount of uranium.
      *
-     * @param id of robot to perform query
      * @return all locations that contain a nonzero amount of uranium
      *
      * @battlecode.doc.costlymethod
      */
-    MapLocation[] senseNearbyLocationsWithUranium(int id);
+    MapLocation[] senseNearbyLocationsWithUranium();
 
     /**
      * Return all locations that contain a nonzero amount of uranium, within a
      * specified radius of your robot location.
      * If radiusSquared is -1, all locations are returned.
      *
-     * @param id of robot to perform query
+     * @param id of robot that gives center for the radius
      * @param radiusSquared the squared radius of all locations to be returned
      * @return all locations that contain a nonzero amount of uranium within the radius
      * @throws GameActionException if the radius is negative 
@@ -331,7 +327,7 @@ public strictfp interface RobotController {
      * specified radius of your robot location.
      * If radiusSquared is -1, all locations are returned.
 
-     * @param id of robot to perform query
+     * @param id of robot that gives center for the radius
      * @param radiusSquared the squared radius of all locations to be returned
      * @param minLead the minimum amount of uranium
      * @return all locations that contain at least minUranium uranium within the radius
@@ -386,14 +382,13 @@ public strictfp interface RobotController {
     // ***********************************
 
     /**
-     * Tests whether a robot can do one and any of move, act, or mine.
+     * Tests whether this team can ask a robot can do one and any of move, act, or mine.
      * 
-     * @param id of robot of interest
      * @return true if the robot can do one and any of move, act, or mine.
      *
      * @battlecode.doc.costlymethod
      */
-    boolean isReady(int id);
+    boolean isReady();
 
     // ***********************************
     // ****** MOVEMENT METHODS ***********
@@ -440,41 +435,38 @@ public strictfp interface RobotController {
      * Tests whether a robot can be built. Checks that the spawn location is not occupied 
      * by a friendly robot and that the robot has the amount of uranium it's trying to spend.
      *
-     * @param id of the robot to perform the build
      * @param health, the health of the robot to build
      * @return whether it is possible to build a robot of this cost in your spawn location.
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canBuildRobot(int id, int health);
+    boolean canBuildRobot(int health);
 
     /**
      * Builds a robot at the given location. The robot has the specified health specified 
      * by its cost
      *
-     * @param id of robot that will build the new robot
      * @param health, the health of the robot to build
      * @throws GameActionException if the conditions of canBuildRobot
      * are not all satisfied
      *
      * @battlecode.doc.costlymethod
      */
-    void buildRobot(int id, int health) throws GameActionException;
+    void buildRobot(int health) throws GameActionException;
 
     // *****************************
     // **** COMBAT UNIT METHODS **** 
     // *****************************
 
     /**
-     * Tests whether a robot can explode.
+     * Tests whether any robot can explode.
      * 
      * Checks that no cooldown turns remain.
-     * @param id of robot of interest
      * @return whether it is possible to explode
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canExplode(int id);
+    boolean canExplode();
 
     /** 
      * Explode, dealing damage equal to half of the robot's current health to enemy robots on the 
