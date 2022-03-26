@@ -19,13 +19,13 @@ public class GameConstants {
     public static final int MAP_MIN_HEIGHT = 20;
 
     /** The maximum possible map height. */
-    public static final int MAP_MAX_HEIGHT = 60;
+    public static final int MAP_MAX_HEIGHT = 40;
 
     /** The minimum possible map width. */
     public static final int MAP_MIN_WIDTH = 20;
 
     /** The maximum possible map width. */
-    public static final int MAP_MAX_WIDTH = 60;
+    public static final int MAP_MAX_WIDTH = 40;
 
     /** The number of starting robots per team. */
     public static final int NUM_STARTING_ROBOTS = 1;
@@ -42,6 +42,9 @@ public class GameConstants {
 
     /** The initial amount of uranium each team starts with. */
     public static final int INITIAL_URANIUM_AMOUNT = 10;
+  
+    /** The bytecode cost per round. */
+    public static final int BYTECODE_LIMIT = 100000;
 
     /** The amount of uranium each team gains per turn. */
     public static final int PASSIVE_URANIUM_INCREASE = 1;
@@ -68,6 +71,12 @@ public class GameConstants {
 
     public static final int INITIAL_ROBOT_HEALTH = 1;
 
+    /** The threshold for considering two colliding robots to be of equal health. */
+    public static final int COLLISION_EQUALITY_THRESHOLD = 1;
+
+    /** The threshold for considering two colliding robots to be of equal health. */
+    public static final float FLOAT_EQUALITY_THRESHOLD = 0.00001f;
+
     // *********************************
     // ****** GAMEPLAY PROPERTIES ******
     // *********************************
@@ -77,5 +86,4 @@ public class GameConstants {
 
     /** The maximum number of rounds in a game.  **/
     public static final int GAME_MAX_NUMBER_OF_ROUNDS = 6000;
-
 }

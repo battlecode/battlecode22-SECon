@@ -68,7 +68,7 @@ public strictfp class GameWorld {
         for (int i = 0; i < initialBodies.length; i++) {
             RobotInfo robot = initialBodies[i];
             MapLocation newLocation = robot.location.translate(gm.getOrigin().x, gm.getOrigin().y);
-            spawnRobot(robot.ID, robot.type, newLocation, robot.team);
+            spawnRobot(robot.ID, robot.type, newLocation, GameConstants.ROBOT_INITIAL_HEALTH, robot.team);
         }
         this.teamInfo = new TeamInfo(this);
 
@@ -102,7 +102,7 @@ public strictfp class GameWorld {
             this.processBeginningOfRound();
             this.controlProvider.roundStarted();
 
-            int teamIndex = this.getCurrentRound() % 2;
+            int teamIndex = (this.getCurrentRound() - 1) % 2; // since first round is actually round 1, subtract to make team A go first
             Team teamToPlay = Team.values()[teamIndex];
             // TODO: there may be a safer way to do above because the enum is technically of length 3
 
@@ -248,27 +248,25 @@ public strictfp class GameWorld {
         this.robots[loc.x - this.gameMap.getOrigin().x][loc.y - this.gameMap.getOrigin().y] = null;
     }
 
-    public InternalRobot[] getAllRobotsWithinRadiusSquared(MapLocation center, int radiusSquared) {
+    public InternalRobot[] getAllRobots(){
         ArrayList<InternalRobot> returnRobots = new ArrayList<InternalRobot>();
-        for (MapLocation newLocation : getAllLocationsWithinRadiusSquared(center, radiusSquared))
-            if (getRobot(newLocation) != null)
-                returnRobots.add(getRobot(newLocation));
+        for (int i = 0; i < this.robots.length; i++)
+            for (int j = 0; j < this.robots[0].length; j++){
+                MapLocation newLocation = new MapLocation(i, j);
+                if (getRobot() != null)
+                    returnRobots.add(getRobot(newLocation));
+            }
         return returnRobots.toArray(new InternalRobot[returnRobots.size()]);
     }
 
     public MapLocation[] getAllLocationsWithinRadiusSquared(MapLocation center, int radiusSquared) {
-        return getAllLocationsWithinRadiusSquaredWithoutMap(
-            this.gameMap.getOrigin(),
-            this.gameMap.getWidth(),
-            this.gameMap.getHeight(),
-            center, radiusSquared
-        );
-    }
 
-    public static MapLocation[] getAllLocationsWithinRadiusSquaredWithoutMap(MapLocation origin,
-                                                                            int width, int height,
-                                                                            MapLocation center, int radiusSquared) {
         ArrayList<MapLocation> returnLocations = new ArrayList<MapLocation>();
+
+        MapLocation origin = this.gameMap.getOrigin();
+        int width = this.gameMap.getWidth();
+        int height = this.gameMap.getHeight();
+        
         int ceiledRadius = (int) Math.ceil(Math.sqrt(radiusSquared)) + 1; // add +1 just to be safe
         int minX = Math.max(center.x - ceiledRadius, origin.x);
         int minY = Math.max(center.y - ceiledRadius, origin.y);
@@ -284,13 +282,7 @@ public strictfp class GameWorld {
         return returnLocations.toArray(new MapLocation[returnLocations.size()]);
     }
 
-    /**
-     * @return all of the locations on the grid
-     */
-    private MapLocation[] getAllLocations() {
-        return getAllLocationsWithinRadiusSquared(new MapLocation(0, 0), Integer.MAX_VALUE);
-    }
-
+  
     // *********************************
     // ****** GAMEPLAY *****************
     // *********************************
@@ -299,11 +291,16 @@ public strictfp class GameWorld {
         // Increment round counter
         currentRound++;
 
-        // Process beginning of each robot's round
-        objectInfo.eachRobot((robot) -> {
-            robot.processBeginningOfRound();
-            return true;
-        });
+        // Robots only see a round every 2 rounds, so on odd rounds they start their perceived round
+        boolean perceivedStartOfRound = (currentRound % 2 != 0);
+
+        if (perceivedStartOfRound) {
+            // Process beginning of each robot's round
+            objectInfo.eachRobot((robot) -> {
+                robot.processBeginningOfRound();
+                return true;
+            });
+        }
     }
 
     public void setWinner(Team t, DominationFactor d) {
@@ -315,7 +312,8 @@ public strictfp class GameWorld {
      * @return whether a team has a greater net Uranium value
      */
     public boolean setWinnerIfMoreUraniumValue() {
-        int[] totalUraniumValues = new int[2];
+
+        float[] totalUraniumValues = new float[2];
 
         // consider team reserves
         totalUraniumValues[Team.A.ordinal()] += this.teamInfo.getUranium(Team.A);
@@ -323,16 +321,17 @@ public strictfp class GameWorld {
         
         // sum live robots worth
         for (InternalRobot robot : objectInfo.robotsArray())
-            totalUraniumValues[robot.getTeam().ordinal()] += robot.getUraniumWorth();
+            totalUraniumValues[robot.getTeam().ordinal()] += robot.getHealth();
         
-        if (totalUraniumValues[0] > totalUraniumValues[1]) {
+        if (Math.abs(totalUraniumValues[0] - totalUraniumValues[1]) < GameConstants.FLOAT_EQUALITY_THRESHOLD) {
+            return false;
+        } else if (totalUraniumValues[0] > totalUraniumValues[1]) {
             setWinner(Team.A, DominationFactor.MORE_URANIUM_NET_WORTH);
             return true;
         } else if (totalUraniumValues[1] > totalUraniumValues[0]) {
             setWinner(Team.B, DominationFactor.MORE_URANIUM_NET_WORTH);
             return true;
         }
-        return false;
     }
 
     /**
@@ -371,14 +370,18 @@ public strictfp class GameWorld {
         this.teamInfo.addUranium(Team.A, GameConstants.PASSIVE_URANIUM_INCREASE);
         this.teamInfo.addUranium(Team.B, GameConstants.PASSIVE_URANIUM_INCREASE);
 
-        // Process end of each robot's round
-        objectInfo.eachRobot((robot) -> {
-            robot.processEndOfRound();
-            return true;
-        });
+        // Robots only see a round every 2 rounds, so on even rounds they end their perceived round
+        boolean perceivedEndOfRound = this.currentRound % 2 == 0;
+
+        if (perceivedEndOfRound) {
+            // Process end of each robot's round
+            objectInfo.eachRobot((robot) -> {
+                robot.processEndOfRound();
+                return true;
+            });
+        }
 
         // Add uranium resources to the map
-        // TODO: make sure our notion of rounds is consistent with below
         if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) 
             for (int i = 0; i < this.uranium.length; i++)
                 if (this.uranium[i] > 0)
@@ -388,14 +391,16 @@ public strictfp class GameWorld {
         this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B));
         this.teamInfo.processEndOfRound();
 
-        // Check for end of match
-        if (timeLimitReached() && gameStats.getWinner() == null)
-            if (!setWinnerIfMoreUraniumValue())
-                if (!setWinnerIfMoreUraniumMined())
-                    setWinnerBlue();
+        if (perceivedEndOfRound) {
+            // Check for end of match
+            if (timeLimitReached() && gameStats.getWinner() == null)
+                if (!setWinnerIfMoreUraniumValue())
+                    if (!setWinnerIfMoreUraniumMined())
+                        setWinnerBlue();
 
-        if (gameStats.getWinner() != null)
-            running = false;
+            if (gameStats.getWinner() != null)
+                running = false;
+        }
     }
 
     // *********************************
@@ -417,7 +422,6 @@ public strictfp class GameWorld {
         InternalRobot robot = new InternalRobot(this, ID, type, loc, team);
         objectInfo.spawnRobot(robot);
         addRobot(loc, robot);
-
         controlProvider.robotSpawned(robot);
         matchMaker.addSpawnedRobot(robot);
         return ID;
@@ -434,10 +438,6 @@ public strictfp class GameWorld {
     // *********************************
 
     public void destroyRobot(int id) {
-        destroyRobot(id, true);
-    }
-
-    public void destroyRobot(int id, boolean checkWin) {
         InternalRobot robot = objectInfo.getRobotByID(id);
         RobotType type = robot.getType();
         Team team = robot.getTeam();
@@ -445,13 +445,6 @@ public strictfp class GameWorld {
 
         controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
-
-        if (checkWin) {
-            // TODO: check this, possibly not here, since there is also the other case of running into each other which goes to tiebreaks
-            // this happens here because the last robot can explode itself and kill another robot in the process
-            if (this.objectInfo.getRobotCount(team) == 0)
-                setWinner(team == Team.A ? Team.B : Team.A, DominationFactor.ANNIHILATION);
-        }
 
         matchMaker.addDied(id);
     }
