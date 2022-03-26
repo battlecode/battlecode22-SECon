@@ -53,7 +53,7 @@ public class GameConstants {
     public static final int ADD_URANIUM_EVERY_ROUNDS = 20;
 
     /** The amount of uranium to add each round that uranium is added. */
-    public static final int ADD_URANIUM = 5;
+    public static final int ADD_URANIUM = 1;
     
     // *********************************
     // ****** COOLDOWNS ****************
