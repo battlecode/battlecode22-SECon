@@ -93,26 +93,8 @@ locs(obj?:VecTable):VecTable|null {
   return offset ? (obj || new VecTable()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
-/**
- * The healths of these newly spawned robots
- */
-healths(index: number):number|null {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-}
-
-healthsLength():number {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-}
-
-healthsArray():Int32Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-}
-
 static startSpawnedBodyTable(builder:flatbuffers.Builder) {
-  builder.startObject(5);
+  builder.startObject(4);
 }
 
 static addRobotIDs(builder:flatbuffers.Builder, robotIDsOffset:flatbuffers.Offset) {
@@ -175,27 +157,6 @@ static startTypesVector(builder:flatbuffers.Builder, numElems:number) {
 
 static addLocs(builder:flatbuffers.Builder, locsOffset:flatbuffers.Offset) {
   builder.addFieldOffset(3, locsOffset, 0);
-}
-
-static addHealths(builder:flatbuffers.Builder, healthsOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(4, healthsOffset, 0);
-}
-
-static createHealthsVector(builder:flatbuffers.Builder, data:number[]|Int32Array):flatbuffers.Offset;
-/**
- * @deprecated This Uint8Array overload will be removed in the future.
- */
-static createHealthsVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
-static createHealthsVector(builder:flatbuffers.Builder, data:number[]|Int32Array|Uint8Array):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]!);
-  }
-  return builder.endVector();
-}
-
-static startHealthsVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
 }
 
 static endSpawnedBodyTable(builder:flatbuffers.Builder):flatbuffers.Offset {

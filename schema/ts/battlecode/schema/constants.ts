@@ -25,7 +25,7 @@ increasePeriod():number {
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
-uraniumAdditiveIncease():number {
+uraniumAdditiveIncrease():number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
@@ -38,8 +38,8 @@ static addIncreasePeriod(builder:flatbuffers.Builder, increasePeriod:number) {
   builder.addFieldInt32(0, increasePeriod, 0);
 }
 
-static addUraniumAdditiveIncease(builder:flatbuffers.Builder, uraniumAdditiveIncease:number) {
-  builder.addFieldInt32(1, uraniumAdditiveIncease, 0);
+static addUraniumAdditiveIncrease(builder:flatbuffers.Builder, uraniumAdditiveIncrease:number) {
+  builder.addFieldInt32(1, uraniumAdditiveIncrease, 0);
 }
 
 static endConstants(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -47,10 +47,10 @@ static endConstants(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createConstants(builder:flatbuffers.Builder, increasePeriod:number, uraniumAdditiveIncease:number):flatbuffers.Offset {
+static createConstants(builder:flatbuffers.Builder, increasePeriod:number, uraniumAdditiveIncrease:number):flatbuffers.Offset {
   Constants.startConstants(builder);
   Constants.addIncreasePeriod(builder, increasePeriod);
-  Constants.addUraniumAdditiveIncease(builder, uraniumAdditiveIncease);
+  Constants.addUraniumAdditiveIncrease(builder, uraniumAdditiveIncrease);
   return Constants.endConstants(builder);
 }
 }

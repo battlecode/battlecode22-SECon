@@ -30,9 +30,9 @@ static getSizePrefixedRootAsProfilerEvent(bb:flatbuffers.ByteBuffer, obj?:Profil
 /**
  * Whether this is an open event (true) or a close event (false).
  */
-isOpen():boolean {
+isOpen():number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
 }
 
 /**
@@ -55,8 +55,8 @@ static startProfilerEvent(builder:flatbuffers.Builder) {
   builder.startObject(3);
 }
 
-static addIsOpen(builder:flatbuffers.Builder, isOpen:boolean) {
-  builder.addFieldInt8(0, +isOpen, +false);
+static addIsOpen(builder:flatbuffers.Builder, isOpen:number) {
+  builder.addFieldInt32(0, isOpen, 0);
 }
 
 static addAt(builder:flatbuffers.Builder, at:number) {
@@ -72,7 +72,7 @@ static endProfilerEvent(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createProfilerEvent(builder:flatbuffers.Builder, isOpen:boolean, at:number, frame:number):flatbuffers.Offset {
+static createProfilerEvent(builder:flatbuffers.Builder, isOpen:number, at:number, frame:number):flatbuffers.Offset {
   ProfilerEvent.startProfilerEvent(builder);
   ProfilerEvent.addIsOpen(builder, isOpen);
   ProfilerEvent.addAt(builder, at);
