@@ -83,7 +83,7 @@ public class MapBuilder {
                 id,
                 team,
                 RobotType.ROBOT,
-                GameConstants.ROBOT_INITIAL_HEALTH,
+                GameConstants.INITIAL_ROBOT_HEALTH,
                 loc
         ));
     }
@@ -217,12 +217,15 @@ public class MapBuilder {
                                        GameConstants.MAP_MIN_HEIGHT + " and " + GameConstants.MAP_MAX_WIDTH + "x" +
                                        GameConstants.MAP_MAX_HEIGHT + ", inclusive");
 
-        // checks just 1 robot on each team
+        // checks just 1 robot on each team and that it is on the spawn location
         // only needs to check the robots of Team A, because symmetry is checked
         int numTeamARobots = 0;
         for (RobotInfo r : bodies) {
             if (r.getTeam() == Team.A) {
                 numTeamARobots++;
+            }
+            if (r.getLocation() != spawnLocs[0]) {
+                throw new RuntimeException("Map must have robots start at the spawn location of each team");
             }
         }
         if (numTeamARobots != GameConstants.NUM_STARTING_ROBOTS) {

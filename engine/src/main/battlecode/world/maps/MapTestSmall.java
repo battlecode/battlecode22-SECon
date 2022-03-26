@@ -31,6 +31,7 @@ public class MapTestSmall {
     public static void makeSimple() throws IOException {
         MapBuilder mapBuilder = new MapBuilder(mapName, 32, 32, 0, 0, 30);
         mapBuilder.addSymmetricSpawnLoc(5, 5);
+        mapBuilder.addSymmetricRobot(5, 5);
         Random random = new Random(6147);
 
         for (int i = 0; i < mapBuilder.width / 2; i++) {

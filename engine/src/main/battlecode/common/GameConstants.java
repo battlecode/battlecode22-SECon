@@ -66,7 +66,7 @@ public class GameConstants {
     // ****** GAME MECHANICS ***********
     // *********************************
 
-    public static final int ROBOT_INITIAL_HEALTH = 1;
+    public static final int INITIAL_ROBOT_HEALTH = 1;
 
     // *********************************
     // ****** GAMEPLAY PROPERTIES ******
