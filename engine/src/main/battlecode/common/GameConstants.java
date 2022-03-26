@@ -43,9 +43,6 @@ public class GameConstants {
     /** The initial amount of uranium each team starts with. */
     public static final int INITIAL_URANIUM_AMOUNT = 10;
   
-    /** The bytecode cost per round. */
-    public static final int BYTECODE_LIMIT = 100000;
-
     /** The amount of uranium each team gains per turn. */
     public static final int PASSIVE_URANIUM_INCREASE = 1;
 

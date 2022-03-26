@@ -56,7 +56,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health = health;
 
         this.controlBits = 0;
-        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
+        this.currentBytecodeLimit = this.type.bytecodeLimit;
         this.bytecodesUsed = 0;
 
         this.roundsAlive = 0;
@@ -64,7 +64,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
         this.indicatorString = "";
 
-        this.controller = new RobotControllerImpl(gameWorld, this);
+        this.controller = new RobotControllerImpl(gameWorld);
     }
 
     // ******************************************
@@ -283,6 +283,10 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // *********************************
     // ****** VARIOUS METHODS **********
     // *********************************
+
+    public void disintegrate() {
+        throw new RobotDeathException();
+    }
 
     public void die_exception() {
         this.gameWorld.getMatchMaker().addAction(getID(), Action.DIE_EXCEPTION, -1);

@@ -230,6 +230,10 @@ public strictfp class GameWorld {
     // ****** ROBOT METHODS **************
     // ***********************************
 
+    public InternalRobot getRobotByID(int id){
+        return objectInfo.getRobotByID(id);
+    }
+
     public InternalRobot getRobot(MapLocation loc) {
         return this.robots[loc.x - this.gameMap.getOrigin().x][loc.y - this.gameMap.getOrigin().y];
     }

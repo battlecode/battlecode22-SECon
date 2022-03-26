@@ -492,15 +492,17 @@ public strictfp interface RobotController {
      * Sets the indicator string for this robot for debugging purposes. Only the first
      * {@link GameConstants#INDICATOR_STRING_MAX_LENGTH} characters are used.
      *
+     * @param id of the robot to assign the indicator string
      * @param string the indicator string this round
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorString(String string);
+    void setIndicatorString(int id, String string);
 
     /**
      * Draw a dot on the game map for debugging purposes.
      *
+     * @param id of the robot associated with the drawn dot
      * @param loc the location to draw the dot
      * @param red the red component of the dot's color
      * @param green the green component of the dot's color
@@ -508,11 +510,12 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorDot(MapLocation loc, int red, int green, int blue);
+    void setIndicatorDot(int id, MapLocation loc, int red, int green, int blue);
 
     /**
      * Draw a line on the game map for debugging purposes.
      *
+     * @param id of the robot associated with the drawn line
      * @param startLoc the location to draw the line from
      * @param endLoc the location to draw the line to
      * @param red the red component of the line's color
@@ -521,5 +524,5 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
+    void setIndicatorLine(int id, MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
 }
