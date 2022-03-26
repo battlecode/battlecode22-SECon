@@ -46,6 +46,11 @@ public strictfp class LiveMap {
      */
     private final MapLocation[] spawnLocs;
 
+    /**
+     * The team of the spawn locations.
+     */
+    private final Team[] spawnTeams;
+
 
     /**
      * The random seed contained in the map file.
@@ -88,6 +93,7 @@ public strictfp class LiveMap {
         Arrays.fill(this.wallArray, false); // default is there is no wall
         this.uraniumArray = new int[width * height];
         this.spawnLocs = new MapLocation[2];
+        this.spawnTeams = new Team[2];
 
         // invariant: bodies is sorted by id
         Arrays.sort(this.initialBodies, (a, b) -> Integer.compare(a.getID(), b.getID()));
@@ -103,7 +109,8 @@ public strictfp class LiveMap {
                    RobotInfo[] initialBodies,
                    boolean[] wallArray,
                    int[] uraniumArray,
-                   MapLocation[] spawnLocs) {
+                   MapLocation[] spawnLocs, 
+                   Team[] spawnTeams) {
         this.width = width;
         this.height = height;
         this.origin = origin;
@@ -121,9 +128,12 @@ public strictfp class LiveMap {
             this.uraniumArray[i] = uraniumArray[i];
         }
         assert(spawnLocs.length == 2);
+        assert(spawnTeams.length == 2);
         this.spawnLocs = new MapLocation[2];
+        this.spawnTeams = new Team[2];
         for (int i = 0; i < spawnLocs.length; i++) {
             this.spawnLocs[i] = spawnLocs[i];
+            this.spawnTeams[i] = spawnTeams[i];
         }
 
         // invariant: bodies is sorted by id
@@ -137,7 +147,7 @@ public strictfp class LiveMap {
      */
     public LiveMap(LiveMap gm) {
         this(gm.width, gm.height, gm.origin, gm.seed, gm.rounds, gm.mapName, gm.symmetry,
-             gm.initialBodies, gm.wallArray, gm.uraniumArray, gm.spawnLocs);
+             gm.initialBodies, gm.wallArray, gm.uraniumArray, gm.spawnLocs, gm.spawnTeams);
     }
 
     @Override
@@ -162,6 +172,7 @@ public strictfp class LiveMap {
         if (!Arrays.equals(this.wallArray, other.wallArray)) return false;
         if (!Arrays.equals(this.uraniumArray, other.uraniumArray)) return false;
         if (!Arrays.equals(this.spawnLocs, other.spawnLocs)) return false;
+        if (!Arrays.equals(this.spawnTeams, other.spawnTeams)) return false;
         return Arrays.equals(this.initialBodies, other.initialBodies);
     }
 
@@ -176,6 +187,7 @@ public strictfp class LiveMap {
         result = 31 * result + Arrays.hashCode(wallArray);
         result = 31 * result + Arrays.hashCode(uraniumArray);
         result = 31 * result + Arrays.hashCode(spawnLocs);
+        result = 31 * result + Arrays.hashCode(spawnTeams);
         result = 31 * result + Arrays.hashCode(initialBodies);
         return result;
     }
@@ -312,6 +324,13 @@ public strictfp class LiveMap {
         return spawnLocs;
     }
 
+    /**
+     * @return the MapLocation array of spawn locations
+     */
+    public Team[] getSpawnTeams() {
+        return spawnTeams;
+    }
+
     @Override
     public String toString() {
         if (wallArray.length == 0) {
@@ -337,6 +356,7 @@ public strictfp class LiveMap {
                     ", wallArray=" +  Arrays.toString(wallArray) +
                     ", uraniumArray=" +  Arrays.toString(uraniumArray) +
                     ", spawnLocs=" +  Arrays.toString(spawnLocs) +
+                    ", spawnTeams=" +  Arrays.toString(spawnTeams) +
                     "}"; 
         }
     }
