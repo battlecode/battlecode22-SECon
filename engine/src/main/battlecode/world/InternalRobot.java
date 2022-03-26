@@ -4,6 +4,8 @@ import java.lang.Math;
 import battlecode.common.*;
 import battlecode.schema.Action;
 
+import battlecode.instrumenter.RobotDeathException;
+
 /**
  * The representation of a robot used by the server.
  * Comparable ordering:
@@ -244,7 +246,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     public void processBeginningOfTurn() {
         this.cooldownTurns = Math.max(0, this.cooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
-        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT; //TODO: move from here
+        this.currentBytecodeLimit = this.type.bytecodeLimit;
     }
 
     public void processEndOfTurn() {

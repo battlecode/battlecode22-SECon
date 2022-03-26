@@ -2,7 +2,6 @@ package battlecode.world;
 
 import battlecode.common.*;
 import static battlecode.common.GameActionExceptionType.*;
-import battlecode.instrumenter.RobotDeathException;
 import battlecode.schema.Action;
 
 import java.util.*;
@@ -75,8 +74,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public int getRobotCount() {
-        return this.gameWorld.getObjectInfo().getRobotCount(getTeam());
+    public int getRobotCount(int id) {
+        return this.gameWorld.getObjectInfo().getRobotCount(getTeam(id));
     }
 
     @Override
@@ -171,22 +170,22 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public RobotInfo[] senseNearbyRobots() {
+    public RobotInfo[] senseNearbyRobots(int id) {
         try {
-            return senseNearbyRobots(-1);
+            return senseNearbyRobots(id, -1);
         } catch (GameActionException willNeverHappen) {
             throw new RuntimeException("impossible", willNeverHappen);
         }
     }
 
     @Override
-    public RobotInfo[] senseNearbyRobots(int radiusSquared) throws GameActionException {
-        return senseNearbyRobots(radiusSquared, null);
+    public RobotInfo[] senseNearbyRobots(int id, int radiusSquared) throws GameActionException {
+        return senseNearbyRobots(id, radiusSquared, null);
     }
 
     @Override
-    public RobotInfo[] senseNearbyRobots(int radiusSquared, Team team) throws GameActionException {
-        return senseNearbyRobots(getLocation(), radiusSquared, team);
+    public RobotInfo[] senseNearbyRobots(int id, int radiusSquared, Team team) throws GameActionException {
+        return senseNearbyRobots(id, this.getLocation(id), radiusSquared, team);
     }
 
     @Override
@@ -221,17 +220,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public MapLocation[] senseNearbyLocationsWithUranium() {
+    public MapLocation[] senseNearbyLocationsWithUranium(int id) {
         try {
-            return senseNearbyLocationsWithUranium(getLocation(), -1, 1);
+            return senseNearbyLocationsWithUranium(this.getLocation(id), -1, 1);
         } catch (GameActionException willNeverHappen) {
             throw new RuntimeException("impossible", willNeverHappen);
         }
     }
 
     @Override
-    public MapLocation[] senseNearbyLocationsWithUranium(int radiusSquared) throws GameActionException {
-        return senseNearbyLocationsWithUranium(getLocation(), radiusSquared, 1);
+    public MapLocation[] senseNearbyLocationsWithUranium(int id, int radiusSquared) throws GameActionException {
+        return senseNearbyLocationsWithUranium(this.getLocation(id), radiusSquared, 1);
     }
 
     @Override
@@ -240,8 +239,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public MapLocation[] senseNearbyLocationsWithUranium(int radiusSquared, int minUranium) throws GameActionException {
-        return senseNearbyLocationsWithUranium(getLocation(), radiusSquared, minUranium);
+    public MapLocation[] senseNearbyLocationsWithUranium(int id, int radiusSquared, int minUranium) throws GameActionException {
+        return senseNearbyLocationsWithUranium(this.getLocation(id), radiusSquared, minUranium);
     }
 
     @Override
@@ -261,8 +260,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public MapLocation adjacentLocation(Direction dir) {
-        return getLocation().add(dir);
+    public MapLocation adjacentLocation(int id, Direction dir) {
+        return getLocation(id).add(dir);
     }
 
     @Override
@@ -302,8 +301,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanMove(int id, Direction dir) throws GameActionException {
         assertNotNull(dir);
-        assertIsReady();
-        MapLocation loc = adjacentLocation(dir);
+        assertIsReady(id);
+        MapLocation loc = adjacentLocation(id, dir);
         if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
                     "Can only move to locations on the map; " + loc + " is not on the map.");
@@ -320,7 +319,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public boolean canMove(int id, Direction dir) {
         try {
-            assertCanMove(int id, dir);
+            assertCanMove(id, dir);
             return true;
         } catch (GameActionException e) { return false; }
     }
@@ -328,9 +327,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public void move(int id, Direction dir) throws GameActionException {
         this.assertCanMove(id, dir);
-        MapLocation center = this.adjacentLocation(dir);
+        MapLocation center = this.adjacentLocation(id, dir);
         InternalRobot prevOccupied = this.gameWorld.getRobot(center);
-        this.gameWorld.getMatchMaker().addMoved(this.getRobotByID(id).getID(), this.getRobotByID(id).getLocation());
+        this.gameWorld.getMatchMaker().addMoved(id, this.getRobotByID(id).getLocation());
 
         // process collisions
         boolean winner = false;
@@ -340,7 +339,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         }
         
         if (winner) {
-            this.gameWorld.moveRobot(this.getLocation(), center);
+            this.gameWorld.moveRobot(this.getLocation(id), center);
             this.getRobotByID(id).setLocation(center);
 
             this.getRobotByID(id).resetCooldownTurns();
@@ -352,35 +351,35 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ****** BUILDING/SPAWNING **********
     // ***********************************
 
-    private void assertCanBuildRobot(int health) throws GameActionException {
-        Team team = getTeam();
+    private void assertCanBuildRobot(int id, int health) throws GameActionException {
+        Team team = getTeam(id);
         if (this.gameWorld.getTeamInfo().getUranium(team) < health)
             throw new GameActionException(NOT_ENOUGH_RESOURCE,
                     "Insufficient amount of uranium.");
-        MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam());
-        if (this.isLocationOccupied(loc) && this.gameWorld.getRobot(loc).getTeam() == this.getTeam()){
+        MapLocation loc = this.gameWorld.getSpawnLoc(getTeam(id));
+        if (this.isLocationOccupied(loc) && this.gameWorld.getRobot(loc).getTeam() == this.getTeam(id)){
             throw new GameActionException(FRIENDLY_ROBOT_PRESENT,
                     "Can't spawn if a friendly robot is on your spawn square.");
         }
     } 
 
     @Override
-    public boolean canBuildRobot(int health) {
+    public boolean canBuildRobot(int id, int health) {
         try {
-            assertCanBuildRobot(health);
+            assertCanBuildRobot(id, health);
             return true;
         } catch (GameActionException e) { return false; }
     }
 
     @Override
     public void buildRobot(int id, int health) throws GameActionException {
-        assertCanBuildRobot(health);
-        Team team = getTeam();
+        assertCanBuildRobot(id, health);
+        Team team = getTeam(id);
         this.gameWorld.getTeamInfo().addUranium(team, -health);
-        MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam());
+        MapLocation loc = this.gameWorld.getSpawnLoc(this.getTeam(id));
         InternalRobot prevOccupied = this.gameWorld.getRobot(loc);
         int newId = this.gameWorld.spawnRobot(this.getRobotByID(id).getType(), team, health);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
+        this.gameWorld.getMatchMaker().addAction(id, Action.SPAWN_UNIT, newId);
 
         // process collisions (auto-collision with enemy)
         if (prevOccupied != null){
@@ -406,10 +405,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public void explode(int id) throws GameActionException {
-        assertCanExplode();
+        assertCanExplode(id);
         this.getRobotByID(id).resetCooldownTurns();
         for (Direction dir : Direction.cardinalDirections()){
-            MapLocation loc = this.adjacentLocation(dir);
+            MapLocation loc = this.adjacentLocation(id,dir);
             if (!onTheMap(loc)) continue;
             InternalRobot bot = this.gameWorld.getRobot(loc);
             if (bot == null) continue;
@@ -418,8 +417,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 continue;
             bot.damageHealth(this.getRobotByID(id).getHealth() / 2);
         }
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.EXPLODE, -1);
-        this.gameWorld.destroyRobot(getID());
+        this.gameWorld.getMatchMaker().addAction(id, Action.EXPLODE, -1);
+        this.gameWorld.destroyRobot(id);
     }
 
     // ***********************
@@ -429,7 +428,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertCanMine(int id, MapLocation loc) throws GameActionException {
         assertNotNull(loc);
         assertOnTheMap(loc);
-        assertIsReady(int id);
+        assertIsReady(id);
         if (this.gameWorld.getUranium(loc) < 1)
             throw new GameActionException(CANT_DO_THAT, 
                     "Uranium amount must be positive to be mined.");
@@ -438,7 +437,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public boolean canMine(int id) {
         try {
-            assertCanMine(this.getRobotByID(id).getLocation());
+            assertCanMine(id, this.getLocation(id));
             return true;
         } catch (GameActionException e) { return false; }  
     }
@@ -449,8 +448,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
         assertCanMine(id, loc);
         this.getRobotByID(id).resetCooldownTurns();
         this.gameWorld.setUranium(loc, this.gameWorld.getUranium(loc) - 1);
-        this.gameWorld.getTeamInfo().addUranium(getTeam(), 1);
-        this.gameWorld.getMatchMaker().addAction(getID(), Action.MINE_URANIUM, locationToInt(loc));
+        this.gameWorld.getTeamInfo().addUranium(getTeam(id), 1);
+        this.gameWorld.getMatchMaker().addAction(id, Action.MINE_URANIUM, locationToInt(loc));
     }
 
     // ***********************************
@@ -462,12 +461,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     public void disintegrate(int id) {
-        this.getRobotByID(id).dist;
+        this.getRobotByID(id).disintegrate();
     }
 
     @Override
-    public void resign() {
-        Team team = getTeam();
+    public void resign(int id) {
+        Team team = getTeam(id);
         gameWorld.getObjectInfo().eachRobot((robot) -> {
             if (robot.getTeam() == team) {
                 gameWorld.destroyRobot(robot.getID());
@@ -481,7 +480,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     @Override
-    public void setIndicatorString(int id) {
+    public void setIndicatorString(int id, String string) {
         if (string.length() > GameConstants.INDICATOR_STRING_MAX_LENGTH) {
             string = string.substring(0, GameConstants.INDICATOR_STRING_MAX_LENGTH);
         }
