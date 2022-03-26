@@ -104,7 +104,7 @@ public strictfp class RobotPlayer {
         int rngActionInt = rng.nextInt(100);
         System.out.println("I'm robot " + rc.getID() + " at " + rc.getLocation());
         System.out.println("My action is decided by arbitrary number " + rngActionInt);
-        System.out.println("I have " + rc.getTeamUraniumAmount(rc.getTeam()) + " uranium");
+        System.out.println("I have " + rc.getTeamUraniumAmount(rc.getTeam()) + " uranium and " + rc.getHealth() + " health");
         // Try to build, this doesn't add to cooldown
         if (rc.getTeamUraniumAmount(rc.getTeam()) > 0) {
             int health = rng.nextInt(rc.getTeamUraniumAmount(rc.getTeam())) + 1;
@@ -113,12 +113,19 @@ public strictfp class RobotPlayer {
                 System.out.println("Build new robot of health " + health);
             }
         }
-        if (rngActionInt < 100 && rc.canMine()) {
+        if (rngActionInt < 30 && rc.canMine()) {
             // Let's try to mine
             System.out.println("Mining, original amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
             rc.mine();
             System.out.println("Mined, final amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-        } else if (rngActionInt < 100) {
+        } else if (rngActionInt < 60 && rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
+            System.out.println(rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A)[0]);
+            // Let's try to explode
+            if (rc.canExplode()) {
+                System.out.println("Exploding");
+                rc.explode();
+            }
+        }  else if (rngActionInt < 100) {
             System.out.println("It's time to move!");
             // Let's try to move
             Direction dir = directions[rng.nextInt(directions.length)];
@@ -127,12 +134,6 @@ public strictfp class RobotPlayer {
                 rc.move(dir);
                 System.out.println("Moving, final place: " + rc.getLocation());
             }
-        } else if (rngActionInt < 100) {
-            // Let's try to explode
-            if (rc.canExplode()) {
-                System.out.println("Exploding");
-                rc.explode();
-            }
-        } 
+        }
     }
 }

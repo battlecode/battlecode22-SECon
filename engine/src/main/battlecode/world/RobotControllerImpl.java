@@ -347,15 +347,21 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.assertCanMove(dir);
         MapLocation center = this.adjacentLocation(dir);
         InternalRobot prevOccupied = this.gameWorld.getRobot(center);
-        this.gameWorld.moveRobot(this.getLocation(), center);
-        this.robot.setLocation(center);
         this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), this.robot.getLocation());
 
         // process collisions
-        if (prevOccupied != null){
-            this.robot.collide(prevOccupied);
+        boolean winner = false;
+        if (prevOccupied != null) {
+            System.out.println("Collision!");
+            winner = this.robot.collide(prevOccupied);
         }
-        this.robot.resetCooldownTurns();
+        
+        if (winner) {
+            this.gameWorld.moveRobot(this.getLocation(), center);
+            this.robot.setLocation(center);
+
+            this.robot.resetCooldownTurns();
+        }
         
     }
 
