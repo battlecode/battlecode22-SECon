@@ -4,6 +4,7 @@ import battlecode.common.GameConstants;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
+import battlecode.common.MapLocation;
 import battlecode.world.*;
 import battlecode.world.control.*;
 
@@ -212,26 +213,20 @@ public strictfp class Server implements Runnable {
             throw new RuntimeException("MAP HEIGHT BENEATH GameConstants.MAP_MIN_HEIGHT");
         }
         
-        // Check rubble
-        for (int rubble : liveMap.getRubbleArray()) {
-            if (rubble < GameConstants.MIN_RUBBLE) {
-                throw new RuntimeException("RUBBLE BENEATH GameConstants.MIN_RUBBLE");
+        // Check starting spawn squares
+        MapLocation[] spawns = liveMap.getSpawnLocs();
+        if (spawns.length < GameConstants.NUM_SPAWN_LOCATIONS * 2) {
+            throw new RuntimeException("NUMBER OF SPAWNS BENEATH GameConstants.NUM_SPAWN_LOCATIONS");
+        }
+        if (spawns.length > GameConstants.NUM_SPAWN_LOCATIONS * 2) {
+            throw new RuntimeException("NUMBER OF SPAWNS EXCEEDS GameConstants.NUM_SPAWN_LOCATIONS");
+        }
+        for (int i = 0; i < spawns.length; i++) {
+            for (int j = i + 1; j < spawns.length; j++) {
+                if (spawns[i].equals(spawns[j])) {
+                    throw new RuntimeException("SPAWN LOCATIONS LOCATED ON SAME SQUARE");
+                }
             }
-            if (rubble > GameConstants.MAX_RUBBLE) {
-                throw new RuntimeException("RUBBLE EXCEEDS GameConstants.MAX_RUBBLE");
-            }
-        }
-        
-        // Check starting Archons
-        int archonCount = 0;
-        for (RobotInfo robotInfo : liveMap.getInitialBodies()) {
-            if (robotInfo.type == RobotType.ARCHON) archonCount++;
-        }
-        if (archonCount < GameConstants.MIN_STARTING_ARCHONS * 2) {
-            throw new RuntimeException("RUBBLE BENEATH GameConstants.MIN_STARTING_ARCHONS");
-        }
-        if (archonCount > GameConstants.MAX_STARTING_ARCHONS * 2) {
-            throw new RuntimeException("RUBBLE EXCEEDS GameConstants.MAX_STARTING_ARCHONS");
         }
     }
 
@@ -402,19 +397,16 @@ public strictfp class Server implements Runnable {
 
         switch (dom) {
             case ANNIHILATION:
-                sb.append("The winning team won by annihilating the enemy team's Archons.");
+                sb.append("The winning team won by annihilating the enemy team's units.");
                 break;
-            case MORE_ARCHONS:
-                sb.append("The winning team won by having more Archons.");
+            case MORE_URANIUM_NET_WORTH:
+                sb.append("The winning team won on tiebreakers (more uranium net worth).");
                 break;
-            case MORE_GOLD_NET_WORTH:
-                sb.append("The winning team won on tiebreakers (more gold net worth).");
+            case MORE_URANIUM_MINED:
+                sb.append("The winning team won on tiebreakers (more uranium mined).");
                 break;
-            case MORE_LEAD_NET_WORTH:
-                sb.append("The winning team won on tiebreakers (more lead net worth).");
-                break;
-            case WON_BY_DUBIOUS_REASONS:
-                sb.append("The winning team won arbitrarily (coin flip).");
+            case WON_BY_BEING_BLUE:
+                sb.append("The winning team won on tiebreakers (move order).");
                 break;
         }
 

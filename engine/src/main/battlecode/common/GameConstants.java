@@ -27,8 +27,8 @@ public class GameConstants {
     /** The maximum possible map width. */
     public static final int MAP_MAX_WIDTH = 40;
 
-    /** The number of starting robots per team. */
-    public static final int NUM_STARTING_ROBOTS = 1;
+    /** The number of spawning squares per team. */
+    public static final int NUM_SPAWN_LOCATIONS = 1;
 
     // *********************************
     // ****** GAME PARAMETERS **********

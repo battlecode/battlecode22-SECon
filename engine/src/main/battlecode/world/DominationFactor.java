@@ -5,7 +5,7 @@ package battlecode.world;
  */
 public enum DominationFactor {
     /**
-     * Win by all enemy archons being destroyed (early end).
+     * Win by all enemy units being destroyed (early end).
      */
     ANNIHILATION,
     /**
