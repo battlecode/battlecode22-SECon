@@ -286,12 +286,12 @@ export default class Stats {
     return canvas;
   }
 
-  private getIncomeGoldGraph() {
-    const canvas = document.createElement("canvas");
-    canvas.id = "goldGraph";
-    canvas.className = "graph";
-    return canvas;
-  }
+//   private getIncomeGoldGraph() {
+//     const canvas = document.createElement("canvas");
+//     canvas.id = "goldGraph";
+//     canvas.className = "graph";
+//     return canvas;
+//   }
 
   private getECDivElement() {
     const div = document.createElement('div');

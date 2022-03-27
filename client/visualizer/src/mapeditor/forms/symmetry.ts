@@ -45,7 +45,7 @@ export default class SymmetryForm {
     this.SYMMETRY_OPTIONS.forEach((option: Symmetry) => {
       let opt = document.createElement("option");
       opt.value = String(option);
-    //   opt.appendChild(document.createTextNode(cst.symmetryToString(option)));
+      opt.appendChild(document.createTextNode(cst.symmetryToString(option)));
       this.select.appendChild(opt);
     });
   }
@@ -159,7 +159,7 @@ export default class SymmetryForm {
   /**
    * Given a list of units and passability, finds a compatible symmetry.
    */
-  discoverSymmetryAndBodies(mapUnits: MapUnit[], passability: number[], width: number, height: number): {symmetry: Symmetry, originalBodies: Map<number, MapUnit>} | null {
+  discoverSymmetryAndBodies(mapUnits: MapUnit[], passability: boolean[], width: number, height: number): {symmetry: Symmetry, originalBodies: Map<number, MapUnit>} | null {
     for (const symmetry of this.SYMMETRY_OPTIONS) {
 
       var possible: boolean = true;

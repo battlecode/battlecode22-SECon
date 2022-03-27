@@ -21,7 +21,7 @@ export default class MapRenderer {
   // Callbacks for clicking robots and trees on the canvas
   readonly onclickUnit: (id: number) => void;
   readonly onclickBlank: (x, y) => void;
-  readonly onMouseover: (x: number, y: number, rubble: number, lead: number) => void
+  readonly onMouseover: (x: number, y: number, walls: boolean, uranium: number) => void
   readonly onDrag: (x, y) => void
 
   // Other useful values
@@ -33,7 +33,7 @@ export default class MapRenderer {
 
   constructor(canvas: HTMLCanvasElement, imgs: AllImages, conf: config.Config,
     onclickUnit: (id: number) => void, onclickBlank: (x: number, y: number) => void,
-    onMouseover: (x: number, y: number, rubble: number, lead: number) => void,
+    onMouseover: (x: number, y: number, walls: boolean, uranium: number) => void,
     onDrag: (x: number, y: number) => void) {
     this.canvas = canvas;
     this.conf = conf;
@@ -71,7 +71,7 @@ export default class MapRenderer {
     this.renderBackground(map);
     this.renderBodies(map);
     this.renderResources(map);
-
+    console.log(this.canvas)
     // restore default rendering
   }
 
@@ -91,22 +91,20 @@ export default class MapRenderer {
   private renderBackground(map: GameMap): void {
     for(let i = 0; i < this.width; i++){
       for(let j = 0; j < this.height; j++){
-        const rubble = map.rubble[(map.height-j-1)*this.width + i];
-        this.renderTile(i, j, rubble);
-        
+        const walls = map.walls[(map.height-j-1)*this.width + i];
+        this.renderTile(i, j, walls);
       }
     }
   }
 
-  private renderTile(i: number, j: number, rubble: number) {
+  private renderTile(i: number, j: number, walls: boolean) {
     this.ctx.save();
+    this.ctx.globalAlpha = 1;
     const scale = 20;
     this.ctx.scale(1/scale, 1/scale);
-    const swampLevel = cst.getLevel(rubble);
-    const tileImg = this.imgs.tiles[swampLevel];
-    this.ctx.drawImage(tileImg, i*scale, j*scale, scale, scale);
+    this.ctx.fillStyle = walls ? "black" : "white";
+    this.ctx.fillRect(i * scale, j * scale, scale + 1, scale + 1)
     this.ctx.strokeStyle = 'gray';
-    this.ctx.globalAlpha = 1;
     this.ctx.strokeRect(i*scale, j*scale, scale, scale);
     this.ctx.restore();
   }
@@ -115,7 +113,7 @@ export default class MapRenderer {
     this.ctx.save()
     this.ctx.globalAlpha = 1
 
-    const leadImg = this.imgs.resources.uranium
+    const uraniumImg = this.imgs.resources.uranium
 
     const scale = 1
 
@@ -124,14 +122,14 @@ export default class MapRenderer {
     }
 
     for (let i = 0; i < this. width; i++) for (let j = 0; j < this.height; j++) {
-      const lead = map.leadVals[(map.height-j-1)*this.width + i];
+      const uranium = map.uraniumVals[(map.height-j-1)*this.width + i];
 
       this.ctx.globalAlpha = 1
       const cx = i*scale, cy = j*scale
 
-      if (lead > 0) {
-        let size = sigmoid(lead / 50)
-        this.ctx.drawImage(leadImg, cx + (1 - size) / 2, cy + (1 - size) / 2, scale * size, scale * size)
+      if (uranium > 0) {
+        let size = sigmoid(uranium / 50)
+        this.ctx.drawImage(uraniumImg, cx + (1 - size) / 2, cy + (1 - size) / 2, scale * size, scale * size)
 
         this.ctx.strokeStyle = '#59727d'
         this.ctx.lineWidth = 1 / 30
@@ -216,7 +214,7 @@ export default class MapRenderer {
 
     this.canvas.onmousemove = (event) => {
       const {x,y} = this.getIntegerLocation(event, this.map);
-      this.onMouseover(x, y, this.map.rubble[(y)*this.width + x], this.map.leadVals[y*this.width + x]);
+      this.onMouseover(x, y, this.map.walls[(y)*this.width + x], this.map.uraniumVals[y*this.width + x]);
       hoverPos = {x: x, y: y};
     };
 

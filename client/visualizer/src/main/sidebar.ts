@@ -6,7 +6,7 @@ import Console from '../sidebar/console';
 import MatchRunner from '../sidebar/matchrunner';
 import MatchQueue from '../sidebar/matchqueue';
 import Profiler from '../sidebar/profiler';
-// import MapEditor from '../mapeditor/mapeditor';
+import MapEditor from '../mapeditor/mapeditor';
 import ScaffoldCommunicator from './scaffold';
 import Runner from '../runner';
 
@@ -25,7 +25,7 @@ export default class Sidebar {
   // Different modes
   readonly stats: Stats;
   readonly console: Console;
-//   readonly mapeditor: MapEditor;
+  readonly mapeditor: MapEditor;
   readonly matchrunner: MatchRunner;
   readonly matchqueue: MatchQueue;
   readonly profiler?: Profiler;
@@ -52,7 +52,7 @@ export default class Sidebar {
     this.innerDiv = document.createElement("div");
     this.images = images;
     this.console = new Console(conf);
-    // this.mapeditor = new MapEditor(conf, images);
+    this.mapeditor = new MapEditor(conf, images);
     this.matchrunner = new MatchRunner(conf, () => {
       // Set callback for matchrunner in case the scaffold is loaded later
       electron.remote.dialog.showOpenDialog({
@@ -114,7 +114,7 @@ export default class Sidebar {
    * Sets a scaffold if a scaffold directory is found after everything is loaded
    */
   addScaffold(scaffold: ScaffoldCommunicator): void {
-    // this.mapeditor.addScaffold(scaffold);
+    this.mapeditor.addScaffold(scaffold);
     this.matchrunner.addScaffold(scaffold);
   }
 
@@ -353,9 +353,9 @@ export default class Sidebar {
       case Mode.QUEUE:
         this.innerDiv.appendChild(this.matchqueue.div);
         break;
-    //   case Mode.MAPEDITOR:
-    //     this.innerDiv.appendChild(this.mapeditor.div);
-    //     break;
+      case Mode.MAPEDITOR:
+        this.innerDiv.appendChild(this.mapeditor.div);
+        break;
       case Mode.PROFILER:
         if (this.profiler) this.innerDiv.append(this.profiler.div);
         break;

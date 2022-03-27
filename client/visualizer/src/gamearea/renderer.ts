@@ -106,8 +106,6 @@ export default class Renderer {
 
             this.ctx.globalAlpha = 1
 
-
-
             //since tiles arent completely opaque
             if (!this.conf.doingRotate) this.ctx.clearRect(cx, cy, scale + 1, scale + 1)
             else this.ctx.clearRect(cx, cy, scale + 1, scale + 1)

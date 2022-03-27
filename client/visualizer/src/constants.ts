@@ -1,5 +1,5 @@
 import { schema } from 'battlecode-playback'
-// import { Symmetry } from './mapeditor/index'
+import { Symmetry } from './mapeditor/index'
 
 // Body types
 export const ROBOT = schema.BodyType.ROBOT
@@ -176,14 +176,14 @@ export function bodyTypeToString(bodyType: schema.BodyType) {
   }
 }
 
-// export function symmetryToString(symmetry: Symmetry) {
-//   switch (symmetry) {
-//     case Symmetry.ROTATIONAL: return "Rotational"
-//     case Symmetry.HORIZONTAL: return "Horizontal"
-//     case Symmetry.VERTICAL: return "Vertical"
-//     default: throw new Error("invalid symmetry")
-//   }
-// }
+export function symmetryToString(symmetry: Symmetry) {
+  switch (symmetry) {
+    case Symmetry.ROTATIONAL: return "Rotational"
+    case Symmetry.HORIZONTAL: return "Horizontal"
+    case Symmetry.VERTICAL: return "Vertical"
+    default: throw new Error("invalid symmetry")
+  }
+}
 
 // export function anomalyToString(anomaly: schema.Action) {
 //   switch (anomaly) {
