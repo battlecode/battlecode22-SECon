@@ -136,6 +136,17 @@ export default class Renderer {
             }
         }
 
+        this.ctx.globalAlpha = .25
+        for(let loc of map.spawnLocations){
+            this.ctx.fillStyle = loc.color
+            let plotJ = height - loc.y - 1
+            const cx = (minX + loc.x) * scale, cy = (minY + plotJ) * scale
+            if (!this.conf.doingRotate) this.ctx.fillRect(cx, cy, scale, scale)
+            else this.ctx.fillRect(cy, cx, scale, scale)
+        }
+
+        this.ctx.globalAlpha = 1
+
         // ANOMALIES CODE =================================================================================================================
         // let i = world.mapStats.anomalyRounds.indexOf(world.turn)
         // const d = new Date()

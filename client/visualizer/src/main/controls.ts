@@ -450,7 +450,7 @@ export default class Controls {
     infoString += `<br>`;
     infoString += `<span class="info-name">HP:</span> <span class="info-num">${hp}</span>`; // / <span class="info-num">${max_hp}</span> |       
     // infoString += `<span class="info-name">DP:</span> <span class="info-num">${dp}</span> | `;    
-    infoString += `<span class="info-name">Bytecodes Used:</span> <span class="info-num">${bytecodes}</span>`;
+    // infoString += `<span class="info-name">Bytecodes Used:</span> <span class="info-num">${bytecodes}</span>`;
     if (parent !== undefined) infoString += ` | <span class="info-name">Parent:</span> <span class="info-num">${parent}</span>`;
     infoString += `<br><span class="info-name">Indicator String:</span> <span class="info-string"><span class="info-num">${indicatorString}</span></span>`;
 

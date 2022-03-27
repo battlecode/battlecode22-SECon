@@ -19,17 +19,17 @@ export const bodyTypePriority: number[] = [] // for guns, drones, etc. that shou
 // ]
 
 export const TILE_COLORS: Array<number>[] = [
-  [204, 191, 173],
-  [191, 179, 163],
-  [184, 169, 151],
-  [171, 157, 138],
-  [161, 146, 127],
-  [156, 143, 126],
-  [145, 130, 110],
-  [130, 117, 100],
-  [122, 109,  91],
-  [115, 102,  85],
-  [102,  92,  75]
+    [204, 191, 173],
+    [191, 179, 163],
+    [184, 169, 151],
+    [171, 157, 138],
+    [161, 146, 127],
+    [156, 143, 126],
+    [145, 130, 110],
+    [130, 117, 100],
+    [122, 109, 91],
+    [115, 102, 85],
+    [102, 92, 75]
 ]
 // flashy colors
 // [0, 147, 83], // turquoise
@@ -41,18 +41,18 @@ export const TILE_COLORS: Array<number>[] = [
 
 // Given passability, get index of tile to use.
 export const getLevel = (x: number): number => {
-  const nLev = TILE_COLORS.length
-  const level = Math.floor((x + 9) / 10);
-  return Math.min(nLev - 1, Math.max(0, level))
+    const nLev = TILE_COLORS.length
+    const level = Math.floor((x + 9) / 10)
+    return Math.min(nLev - 1, Math.max(0, level))
 }
 
 export const passiveInfluenceRate = (round: number): number => {
-  //return Math.floor((1/50 + 0.03 * Math.exp(-0.001 * x)) * x); this one's for slanderers
-  return Math.ceil(0.2 * Math.sqrt(round))
+    //return Math.floor((1/50 + 0.03 * Math.exp(-0.001 * x)) * x); this one's for slanderers
+    return Math.ceil(0.2 * Math.sqrt(round))
 }
 
 export const buffFactor = (numBuffs: number): number => {
-  return 1 + 0.001 * numBuffs
+    return 1 + 0.001 * numBuffs
 }
 
 export const ACTION_RADIUS_COLOR = "#46ff00"
@@ -62,11 +62,11 @@ export const VISION_RADIUS_COLOR = "#0000ff"
 //export const IMAGE_SIZE = 25
 
 export function bodyTypeToSize(bodyType: schema.BodyType) {
-  switch (bodyType) {
-    case ROBOT:
-      return 50
-    default: throw new Error("invalid body type")
-  }
+    switch (bodyType) {
+        case ROBOT:
+            return 50
+        default: throw new Error("invalid body type")
+    }
 }
 
 // Game canvas rendering sizes
@@ -95,94 +95,95 @@ export const NUMBER_OF_TEAMS = 2
 // Maps available in the server.
 // The key is the map name and the value is the type
 export enum MapType {
-  DEFAULT,
-  SPRINT_1,
-  SPRINT_2,
-  INTL_QUALIFYING,
-  US_QUALIFYING,
-  HS_NEWBIE,
-  FINAL,
-  CUSTOM
+    DEFAULT,
+    //   SPRINT_1,
+    //   SPRINT_2,
+    //   INTL_QUALIFYING,
+    //   US_QUALIFYING,
+    //   HS_NEWBIE,
+    //   FINAL,
+    CUSTOM
 };
 
 // Map types to filter in runner
 export const mapTypes: MapType[] = [MapType.DEFAULT,
-MapType.SPRINT_1,
-MapType.SPRINT_2,
-MapType.INTL_QUALIFYING,
-MapType.US_QUALIFYING,
-MapType.HS_NEWBIE,
-MapType.FINAL,
-MapType.CUSTOM]
+// MapType.SPRINT_1,
+// MapType.SPRINT_2,
+// MapType.INTL_QUALIFYING,
+// MapType.US_QUALIFYING,
+// MapType.HS_NEWBIE,
+// MapType.FINAL,
+MapType.CUSTOM
+]
 
 export const SERVER_MAPS: Map<string, MapType> = new Map<string, MapType>([
-  ["maptestsmall", MapType.DEFAULT],
-  ["eckleburg", MapType.DEFAULT],
-  ["intersection", MapType.DEFAULT],
-  ["colosseum", MapType.SPRINT_1],
-  ["fortress", MapType.SPRINT_1],
-  ["jellyfish", MapType.SPRINT_1],
-  ["nottestsmall", MapType.SPRINT_1],
-  ["progress", MapType.SPRINT_1],
-  ["rivers", MapType.SPRINT_1],
-  ["sandwich", MapType.SPRINT_1],
-  ["squer", MapType.SPRINT_1],
-  ["uncomfortable", MapType.SPRINT_1],
-  ["underground", MapType.SPRINT_1],
-  ["valley", MapType.SPRINT_1],
-  ["chessboard", MapType.SPRINT_2],
-  ["collaboration", MapType.SPRINT_2],
-  ["dodgeball", MapType.SPRINT_2],
-  ["equals", MapType.SPRINT_2],
-  ["highway", MapType.SPRINT_2],
-  ["nyancat", MapType.SPRINT_2],
-  ["panda", MapType.SPRINT_2],
-  ["pillars", MapType.SPRINT_2],
-  ["snowflake", MapType.SPRINT_2],
-  ["spine", MapType.SPRINT_2],
-  ["stronghold", MapType.SPRINT_2],
-  ["tower", MapType.SPRINT_2],
-  ["charge", MapType.INTL_QUALIFYING],
-  ["definitely_not_league", MapType.INTL_QUALIFYING],
-  ["fire", MapType.INTL_QUALIFYING],
-  ["highway_redux", MapType.INTL_QUALIFYING],
-  ["lotus", MapType.INTL_QUALIFYING],
-  ["maze", MapType.INTL_QUALIFYING],
-  ["olympics", MapType.INTL_QUALIFYING],
-  ["one_river", MapType.INTL_QUALIFYING],
-  ["planets", MapType.INTL_QUALIFYING],
-  ["snowflake_redux", MapType.INTL_QUALIFYING],
-  ["treasure", MapType.INTL_QUALIFYING],
-  ["walls", MapType.INTL_QUALIFYING],
-  ["chalice", MapType.US_QUALIFYING],
-  ["cobra", MapType.US_QUALIFYING],
-  ["deer", MapType.US_QUALIFYING],
-  ["desert", MapType.US_QUALIFYING],
-  ["despair", MapType.US_QUALIFYING],
-  ["flowers", MapType.US_QUALIFYING],
-  ["island_hopping", MapType.US_QUALIFYING],
-  ["octopus_game", MapType.US_QUALIFYING],
-  ["rugged", MapType.US_QUALIFYING],
-  ["snowman", MapType.US_QUALIFYING],
-  ["tunnels", MapType.US_QUALIFYING],
-  ["vault", MapType.US_QUALIFYING]
+    ["testmap", MapType.DEFAULT],
+    ["maze2", MapType.DEFAULT],
+    ["small", MapType.DEFAULT],
+    //   ["colosseum", MapType.SPRINT_1],
+    //   ["fortress", MapType.SPRINT_1],
+    //   ["jellyfish", MapType.SPRINT_1],
+    //   ["nottestsmall", MapType.SPRINT_1],
+    //   ["progress", MapType.SPRINT_1],
+    //   ["rivers", MapType.SPRINT_1],
+    //   ["sandwich", MapType.SPRINT_1],
+    //   ["squer", MapType.SPRINT_1],
+    //   ["uncomfortable", MapType.SPRINT_1],
+    //   ["underground", MapType.SPRINT_1],
+    //   ["valley", MapType.SPRINT_1],
+    //   ["chessboard", MapType.SPRINT_2],
+    //   ["collaboration", MapType.SPRINT_2],
+    //   ["dodgeball", MapType.SPRINT_2],
+    //   ["equals", MapType.SPRINT_2],
+    //   ["highway", MapType.SPRINT_2],
+    //   ["nyancat", MapType.SPRINT_2],
+    //   ["panda", MapType.SPRINT_2],
+    //   ["pillars", MapType.SPRINT_2],
+    //   ["snowflake", MapType.SPRINT_2],
+    //   ["spine", MapType.SPRINT_2],
+    //   ["stronghold", MapType.SPRINT_2],
+    //   ["tower", MapType.SPRINT_2],
+    //   ["charge", MapType.INTL_QUALIFYING],
+    //   ["definitely_not_league", MapType.INTL_QUALIFYING],
+    //   ["fire", MapType.INTL_QUALIFYING],
+    //   ["highway_redux", MapType.INTL_QUALIFYING],
+    //   ["lotus", MapType.INTL_QUALIFYING],
+    //   ["maze", MapType.INTL_QUALIFYING],
+    //   ["olympics", MapType.INTL_QUALIFYING],
+    //   ["one_river", MapType.INTL_QUALIFYING],
+    //   ["planets", MapType.INTL_QUALIFYING],
+    //   ["snowflake_redux", MapType.INTL_QUALIFYING],
+    //   ["treasure", MapType.INTL_QUALIFYING],
+    //   ["walls", MapType.INTL_QUALIFYING],
+    //   ["chalice", MapType.US_QUALIFYING],
+    //   ["cobra", MapType.US_QUALIFYING],
+    //   ["deer", MapType.US_QUALIFYING],
+    //   ["desert", MapType.US_QUALIFYING],
+    //   ["despair", MapType.US_QUALIFYING],
+    //   ["flowers", MapType.US_QUALIFYING],
+    //   ["island_hopping", MapType.US_QUALIFYING],
+    //   ["octopus_game", MapType.US_QUALIFYING],
+    //   ["rugged", MapType.US_QUALIFYING],
+    //   ["snowman", MapType.US_QUALIFYING],
+    //   ["tunnels", MapType.US_QUALIFYING],
+    //   ["vault", MapType.US_QUALIFYING]
 ])
 
 export function bodyTypeToString(bodyType: schema.BodyType) {
-  switch (bodyType) {
-    case ROBOT:
-      return "robot"
-    default: throw new Error("invalid body type")
-  }
+    switch (bodyType) {
+        case ROBOT:
+            return "robot"
+        default: throw new Error("invalid body type")
+    }
 }
 
 export function symmetryToString(symmetry: Symmetry) {
-  switch (symmetry) {
-    case Symmetry.ROTATIONAL: return "Rotational"
-    case Symmetry.HORIZONTAL: return "Horizontal"
-    case Symmetry.VERTICAL: return "Vertical"
-    default: throw new Error("invalid symmetry")
-  }
+    switch (symmetry) {
+        case Symmetry.ROTATIONAL: return "Rotational"
+        case Symmetry.HORIZONTAL: return "Horizontal"
+        case Symmetry.VERTICAL: return "Vertical"
+        default: throw new Error("invalid symmetry")
+    }
 }
 
 // export function anomalyToString(anomaly: schema.Action) {
@@ -218,20 +219,20 @@ export function symmetryToString(symmetry: Symmetry) {
 
 // TODO: fix radius (is this vision that can be toggled in sidebar?)
 export function radiusFromBodyType(bodyType: schema.BodyType) {
-  return -1
-  // switch(bodyType) {
-  //   case MINER:
-  //   case LANDSCAPER:
-  //   case DRONE:
-  //   case NET_GUN:
-  //   case COW:
-  //   case REFINERY:
-  //   case VAPORATOR:
-  //   case HQ:
-  //   case DESIGN_SCHOOL:
-  //   case FULFILLMENT_CENTER: return 1;
-  //   default: throw new Error("invalid body type");
-  // }
+    return -1
+    // switch(bodyType) {
+    //   case MINER:
+    //   case LANDSCAPER:
+    //   case DRONE:
+    //   case NET_GUN:
+    //   case COW:
+    //   case REFINERY:
+    //   case VAPORATOR:
+    //   case HQ:
+    //   case DESIGN_SCHOOL:
+    //   case FULFILLMENT_CENTER: return 1;
+    //   default: throw new Error("invalid body type");
+    // }
 }
 
 // export function waterLevel(x: number) {
