@@ -281,6 +281,7 @@ public final strictfp class GameMapIO {
             ArrayList<Byte> bodyTypes = new ArrayList<>();
             ArrayList<Integer> bodyLocsXs = new ArrayList<>();
             ArrayList<Integer> bodyLocsYs = new ArrayList<>();
+            ArrayList<Float> bodyHealths = new ArrayList<>();
             ArrayList<Boolean> wallsArrayList = new ArrayList<>();
             ArrayList<Integer> uraniumArrayList = new ArrayList<>();
             ArrayList<Integer> spawnLocsXs = new ArrayList<>();
@@ -293,11 +294,12 @@ public final strictfp class GameMapIO {
             }
 
             for (RobotInfo robot : gameMap.getInitialBodies()) {
-                bodyIDs.add(robot.ID);
-                bodyTeamIDs.add(TeamMapping.id(robot.team));
-                bodyTypes.add(FlatHelpers.getBodyTypeFromRobotType(robot.type));
-                bodyLocsXs.add(robot.location.x);
-                bodyLocsYs.add(robot.location.y);
+                bodyIDs.add(robot.getID());
+                bodyTeamIDs.add(TeamMapping.id(robot.getTeam()));
+                bodyTypes.add(FlatHelpers.getBodyTypeFromRobotType(robot.getType()));
+                bodyLocsXs.add(robot.getLocation().x);
+                bodyLocsYs.add(robot.getLocation().y);
+                bodyHealths.add(robot.getHealth());
             }
 
             for (MapLocation spawnLocation : gameMap.getSpawnLocs()) {
@@ -312,6 +314,7 @@ public final strictfp class GameMapIO {
             int robotIDs = SpawnedBodyTable.createRobotIDsVector(builder, ArrayUtils.toPrimitive(bodyIDs.toArray(new Integer[bodyIDs.size()])));
             int teamIDs = SpawnedBodyTable.createTeamIDsVector(builder, ArrayUtils.toPrimitive(bodyTeamIDs.toArray(new Byte[bodyTeamIDs.size()])));
             int types = SpawnedBodyTable.createTypesVector(builder, ArrayUtils.toPrimitive(bodyTypes.toArray(new Byte[bodyTypes.size()])));
+            int healths = SpawnedBodyTable.createHealthsVector(builder, ArrayUtils.toPrimitive(bodyHealths.toArray(new Float[bodyHealths.size()])));
             int bodyLocsInt = VecTable.createVecTable(builder,
                     VecTable.createXsVector(builder, ArrayUtils.toPrimitive(bodyLocsXs.toArray(new Integer[bodyLocsXs.size()]))),
                     VecTable.createYsVector(builder, ArrayUtils.toPrimitive(bodyLocsYs.toArray(new Integer[bodyLocsYs.size()]))));
@@ -320,6 +323,7 @@ public final strictfp class GameMapIO {
             SpawnedBodyTable.addTeamIDs(builder, teamIDs);
             SpawnedBodyTable.addTypes(builder, types);
             SpawnedBodyTable.addLocs(builder, bodyLocsInt);
+            SpawnedBodyTable.addHealths(builder, healths);
             int bodies = SpawnedBodyTable.endSpawnedBodyTable(builder);
             int wallsArrayBool = battlecode.schema.GameMap.createWallsVector(builder, ArrayUtils.toPrimitive(wallsArrayList.toArray(new Boolean[wallsArrayList.size()])));
             int uraniumArrayInt = battlecode.schema.GameMap.createUraniumVector(builder, ArrayUtils.toPrimitive(uraniumArrayList.toArray(new Integer[uraniumArrayList.size()])));
@@ -354,14 +358,13 @@ public final strictfp class GameMapIO {
         private static void initInitialBodiesFromSchemaBodyTable(SpawnedBodyTable bodyTable, ArrayList<RobotInfo> initialBodies) {
             VecTable locs = bodyTable.locs();
             for (int i = 0; i < bodyTable.robotIDsLength(); i++) {
-                // all initial bodies should be archons
                 RobotType bodyType = FlatHelpers.getRobotTypeFromBodyType(bodyTable.types(i));
                 int bodyID = bodyTable.robotIDs(i);
                 int bodyX = locs.xs(i);
                 int bodyY = locs.ys(i);
+                float health = bodyTable.healths(i);
                 Team bodyTeam = TeamMapping.team(bodyTable.teamIDs(i));
-                initialBodies.add(new RobotInfo(bodyID, bodyTeam, bodyType, GameConstants.INITIAL_ROBOT_HEALTH, new MapLocation(bodyX, bodyY)));
-                // ignore robots that are not archons, TODO throw error?
+                initialBodies.add(new RobotInfo(bodyID, bodyTeam, bodyType, health, new MapLocation(bodyX, bodyY)));
             }
         }
 

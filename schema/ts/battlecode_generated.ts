@@ -658,7 +658,7 @@ locs(obj?:battlecode.schema.VecTable):battlecode.schema.VecTable|null {
  */
 healths(index: number):number|null {
   var offset = this.bb!.__offset(this.bb_pos, 12);
-  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+  return offset ? this.bb!.readFloat32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
 };
 
 /**
@@ -670,11 +670,11 @@ healthsLength():number {
 };
 
 /**
- * @returns Int32Array
+ * @returns Float32Array
  */
-healthsArray():Int32Array|null {
+healthsArray():Float32Array|null {
   var offset = this.bb!.__offset(this.bb_pos, 12);
-  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+  return offset ? new Float32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 };
 
 /**
@@ -795,7 +795,7 @@ static addHealths(builder:flatbuffers.Builder, healthsOffset:flatbuffers.Offset)
 static createHealthsVector(builder:flatbuffers.Builder, data:number[] | Uint8Array):flatbuffers.Offset {
   builder.startVector(4, data.length, 4);
   for (var i = data.length - 1; i >= 0; i--) {
-    builder.addInt32(data[i]);
+    builder.addFloat32(data[i]);
   }
   return builder.endVector();
 };
