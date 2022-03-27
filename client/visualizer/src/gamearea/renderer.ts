@@ -445,14 +445,17 @@ export default class Renderer {
             return 1 / (1 + Math.exp(-x))
         }
         //this.ctx.filter = `brightness(${sigmoid(c - 100) * 30 + 90}%)`;
-        let size = ratio * 0.5 + 0.5
+        let size = sigmoid(ratio) * 0.5 + 0.5
         this.ctx.drawImage(img, x + (1 - realWidth * size) / 2, y + (1 - realHeight * size) / 2, realWidth * size, realHeight * size)
-        this.ctx.beginPath()
-        this.ctx.moveTo(x + realWidth * size / 2 - realWidth * ratio / 2, y + 1)
-        this.ctx.lineTo(x + realWidth * size / 2 + realWidth * ratio / 2, y + 1)
-        this.ctx.strokeStyle = "green"
-        this.ctx.lineWidth = cst.SIGHT_RADIUS_LINE_WIDTH
-        this.ctx.stroke()
+        
+        //health bars
+        
+        // this.ctx.beginPath()
+        // this.ctx.moveTo(x + realWidth * size / 2 - realWidth * ratio / 2, y + 1)
+        // this.ctx.lineTo(x + realWidth * size / 2 + realWidth * ratio / 2, y + 1)
+        // this.ctx.strokeStyle = "green"
+        // this.ctx.lineWidth = cst.SIGHT_RADIUS_LINE_WIDTH
+        // this.ctx.stroke()
     }
 
     private setInfoStringEvent(world: GameWorld,

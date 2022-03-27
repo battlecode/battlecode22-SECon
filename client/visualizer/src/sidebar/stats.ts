@@ -257,7 +257,7 @@ export default class Stats {
     title.colSpan = 4;
     const label = document.createElement('div');
     label.className = "stats-header";
-    label.innerText = 'Total Uraniom Per Turn';
+    label.innerText = 'Total Uranium Per Turn';
 
     const row = document.createElement("tr");
 

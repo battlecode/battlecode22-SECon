@@ -365,6 +365,7 @@ export default class GameWorld {
       let statObj = this.teamStats.get(teamID)
 
       statObj.uranium += delta.teamUraniumChanges(i)
+      console.log(delta.teamUraniumChanges(i))
       statObj.uraniumChange = delta.teamUraniumChanges(i)
       statObj.uraniumMined = 0
 

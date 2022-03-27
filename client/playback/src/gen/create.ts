@@ -221,7 +221,7 @@ function createGameHeader(builder: flatbuffers.Builder): flatbuffers.Offset {
       var gold_costs = [1,2,3]
       var lead_costs = [1,2,3]
     }
-    bodies.push(btmd.createBodyTypeMetadata(builder, body, .1, .005, 10, 10000)); //TODO: make robots interesting
+    bodies.push(btmd.createBodyTypeMetadata(builder, body, .1, .005, 10)); //TODO: make robots interesting
   }
 
   const teams: flatbuffers.Offset[] = [];
@@ -241,7 +241,7 @@ function createGameHeader(builder: flatbuffers.Builder): flatbuffers.Offset {
   
   schema.Constants.startConstants(builder);
   schema.Constants.addIncreasePeriod(builder, 20);
-  schema.Constants.addUraniumAdditiveIncease(builder, 5);
+  schema.Constants.addUraniumAdditiveIncrease(builder, 5);
   const constants = schema.Constants.endConstants(builder);
 
   schema.GameHeader.startGameHeader(builder);
