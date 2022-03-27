@@ -401,7 +401,7 @@ export default class GameWorld {
 
     if (delta.roundID() % this.meta.constants.increasePeriod() == 0) {
       this.mapStats.uraniumVals.forEach((x, i) => {
-        this.mapStats.uraniumVals[i] = x > 0 ? x + this.meta.constants.uraniumAdditiveIncease() : 0
+        this.mapStats.uraniumVals[i] = x > 0 ? x + this.meta.constants.uraniumAdditiveIncrease() : 0
       })
     }
 
@@ -525,12 +525,12 @@ export default class GameWorld {
     this.turn = delta.roundID()
 
     // Update bytecode costs
-    if (delta.bytecodeIDsLength() > 0) {
-      this.bodies.alterBulk({
-        id: delta.bytecodeIDsArray(),
-        bytecodesUsed: delta.bytecodesUsedArray()
-      })
-    }
+    // if (delta.bytecodeIDsLength() > 0) {
+    //   this.bodies.alterBulk({
+    //     id: delta.bytecodeIDsArray(),
+    //     bytecodesUsed: delta.bytecodesUsedArray()
+    //   })
+    // }
   }
 
   private insertDiedBodies(delta: schema.Round) {

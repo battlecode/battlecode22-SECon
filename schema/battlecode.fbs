@@ -44,6 +44,7 @@ table SpawnedBodyTable {
     types: [BodyType];
     /// The locations of the bodies.
     locs: VecTable;
+    healths: [int];
 }
 
 /// The map a round is played on.
