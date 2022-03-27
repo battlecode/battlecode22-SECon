@@ -378,7 +378,7 @@ public strictfp class GameMaker {
             this.spawnedBodiesRobotIDs = new TIntArrayList();
             this.spawnedBodiesTeamIDs = new TByteArrayList();
             this.spawnedBodiesTypes = new TByteArrayList();
-            this.spawnedBodiesHealths = new TByteArrayList();
+            this.spawnedBodiesHealths = new TFloatArrayList();
             this.spawnedBodiesLocsXs = new TIntArrayList();
             this.spawnedBodiesLocsYs = new TIntArrayList();
             this.diedIDs = new TIntArrayList();
