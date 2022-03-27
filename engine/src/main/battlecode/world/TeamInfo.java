@@ -12,13 +12,12 @@ import static battlecode.common.GameActionExceptionType.*;
 public class TeamInfo {
 
     private GameWorld gameWorld;
-    private int[] leadCounts;
-    private int[] goldCounts;
-    private int[][] sharedArrays;
+    private int[] uraniumCounts;
+    private int[] uraniumMined;
 
     // for reporting round statistics to client
-    private int[] oldLeadCounts;
-    private int[] oldGoldCounts;
+    private int[] oldUraniumCounts;
+    private int[] oldUraniumMined;
 
     /**
      * Create a new representation of TeamInfo
@@ -27,11 +26,10 @@ public class TeamInfo {
      */
     public TeamInfo(GameWorld gameWorld) {
         this.gameWorld = gameWorld;
-        this.leadCounts = new int[2];
-        this.goldCounts = new int[2];
-        this.sharedArrays = new int[2][GameConstants.SHARED_ARRAY_LENGTH];
-        this.oldLeadCounts = new int[2];
-        this.oldGoldCounts = new int[2];
+        this.uraniumCounts = new int[2];
+        this.uraniumMined = new int[2];
+        this.oldUraniumCounts = new int[2];
+        this.oldUraniumMined = new int[2];
     }
     
     // *********************************
@@ -39,34 +37,23 @@ public class TeamInfo {
     // *********************************
 
     /**
-     * Get the amount of lead.
+     * Get the amount of uranium.
      *
      * @param team the team to query
-     * @return the team's lead count
+     * @return the team's uranium count
      */
-    public int getLead(Team team) {
-        return this.leadCounts[team.ordinal()];
+    public int getUranium(Team team) {
+        return this.uraniumCounts[team.ordinal()];
     }
 
     /**
-     * Get the amount of gold.
+     * Get the amount of uranium mined.
      *
      * @param team the team to query
-     * @return the team's gold count
+     * @return the amount of uranium the team has mined
      */
-    public int getGold(Team team) {
-        return this.goldCounts[team.ordinal()];
-    }
-
-    /**
-     * Reads the shared array value.
-     *
-     * @param team the team to query
-     * @param index the index in the array
-     * @return the value at that index in the team's shared array
-     */
-    public int readSharedArray(Team team, int index) {
-        return this.sharedArrays[team.ordinal()][index];
+    public int getUraniumMined(Team team) {
+        return this.uraniumMined[team.ordinal()];
     }
 
     // *********************************
@@ -74,56 +61,51 @@ public class TeamInfo {
     // *********************************
 
     /**
-     * Add to the amount of lead. If amount is negative, subtract from lead instead. 
+     * Add to the amount of uranium. If amount is negative, subtract from uranium instead. 
      * 
      * @param team the team to query
-     * @param amount the change in the lead count
-     * @throws IllegalArgumentException if the resulting amount of lead is negative
+     * @param amount the change in the uranium count
+     * @throws IllegalArgumentException if the resulting amount of uranium is negative
      */
-    public void addLead(Team team, int amount) throws IllegalArgumentException {
-        if (this.leadCounts[team.ordinal()] + amount < 0) {
-            throw new IllegalArgumentException("Invalid lead change");
+    public void addUranium(Team team, int amount) throws IllegalArgumentException {
+        if (this.uraniumCounts[team.ordinal()] + amount < 0) {
+            throw new IllegalArgumentException("Invalid uranium change");
         }
-        this.leadCounts[team.ordinal()] += amount;
+        this.uraniumCounts[team.ordinal()] += amount;
     }
 
     /**
-     * Add to the amount of gold. If amount is negative, subtract from gold instead. 
+     * Add to the amount of uranium mined.
      * 
      * @param team the team to query
-     * @param amount the change in the gold count
-     * @throws IllegalArgumentException if the resulting amount of gold is negative
+     * @param amount the change in the uranium count, must be positive
+     * @throws IllegalArgumentException if the amount passed in is negative
      */
-    public void addGold(Team team, int amount) throws IllegalArgumentException {
-        if (this.goldCounts[team.ordinal()] + amount < 0) {
-            throw new IllegalArgumentException("Invalid gold change");
+    public void addUraniumMined(Team team, int amount) throws IllegalArgumentException {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Invalid uranium change");
         }
-        this.goldCounts[team.ordinal()] += amount;
+        this.uraniumMined[team.ordinal()] += amount;
     }
 
-    /**
-     * Sets an index in the team's shared array to a given value.
-     *
-     * @param team the team to query
-     * @param index the index in the shared array
-     * @param value the new value
-     */
-    public void writeSharedArray(Team team, int index, int value) {
-        this.sharedArrays[team.ordinal()][index] = value;
+    public int getRoundUraniumChange(Team team) {
+        return this.uraniumCounts[team.ordinal()] - this.oldUraniumCounts[team.ordinal()];
     }
 
-    public int getRoundLeadChange(Team team) {
-        return this.leadCounts[team.ordinal()] - this.oldLeadCounts[team.ordinal()];
-    }
-
-    public int getRoundGoldChange(Team team) {
-        return this.goldCounts[team.ordinal()] - this.oldGoldCounts[team.ordinal()];
+    public int getRoundUraniumMined(Team team) {
+        return this.uraniumMined[team.ordinal()] - this.oldUraniumMined[team.ordinal()];
     }
 
     public void processEndOfRound() {
-        this.oldLeadCounts[0] = this.leadCounts[0];
-        this.oldLeadCounts[1] = this.leadCounts[1];
-        this.oldGoldCounts[0] = this.goldCounts[0];
-        this.oldGoldCounts[1] = this.goldCounts[1];
+        if (this.uraniumCounts[0] != this.oldUraniumCounts[0] && this.uraniumCounts[1] != this.oldUraniumCounts[1]) {
+            throw new IllegalArgumentException("Both teams uranium can not change");
+        }
+        if (this.uraniumMined[0] != this.oldUraniumMined[0] && this.uraniumMined[1] != this.oldUraniumMined[1]) {
+            throw new IllegalArgumentException("Both teams can not mine uranium");
+        }
+        this.oldUraniumCounts[0] = this.uraniumCounts[0];
+        this.oldUraniumCounts[1] = this.uraniumCounts[1];
+        this.oldUraniumMined[0] = this.uraniumMined[0];
+        this.oldUraniumMined[1] = this.uraniumMined[1];
     }
 }
