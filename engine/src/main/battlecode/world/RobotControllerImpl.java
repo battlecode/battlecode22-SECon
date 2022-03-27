@@ -350,7 +350,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), this.robot.getLocation());
 
         // process collisions
-        boolean winner = false;
+        boolean winner = true;
         if (prevOccupied != null) {
             System.out.println("Collision!");
             winner = this.robot.collide(prevOccupied);
