@@ -417,9 +417,9 @@ export default class Renderer {
      */
     private drawSightRadii(x: number, y: number, type: schema.BodyType, single?: Boolean) {
         // handle bots with no radius here, if necessary
-        if (this.conf.seeActionRadius || single) {
-            this.drawBotRadius(x, y, this.metadata.types[type].actionRadiusSquared, cst.ACTION_RADIUS_COLOR)
-        }
+        // if (this.conf.seeActionRadius || single) {
+        //     this.drawBotRadius(x, y, this.metadata.types[type].actionRadiusSquared, cst.ACTION_RADIUS_COLOR)
+        // }
 
         // if (this.conf.seeVisionRadius || single) {
         //     this.drawBotRadius(x, y, this.metadata.types[type].visionRadiusSquared, cst.VISION_RADIUS_COLOR)
