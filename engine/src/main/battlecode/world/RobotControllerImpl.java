@@ -348,18 +348,17 @@ public final strictfp class RobotControllerImpl implements RobotController {
         MapLocation center = this.adjacentLocation(dir);
         InternalRobot prevOccupied = this.gameWorld.getRobot(center);
         this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), this.robot.getLocation());
+        this.gameWorld.moveRobot(this.getLocation(), center);
 
         // process collisions
         boolean winner = true;
         if (prevOccupied != null) {
             System.out.println("Collision!");
-            winner = this.robot.collide(prevOccupied);
+            winner = this.robot.collide(center, prevOccupied);
         }
         
         if (winner) {
-            this.gameWorld.moveRobot(this.getLocation(), center);
             this.robot.setLocation(center);
-
             this.robot.resetCooldownTurns();
         }
         
@@ -398,10 +397,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot prevOccupied = this.gameWorld.getRobot(loc);
         int newId = this.gameWorld.spawnRobot(this.robot.getType(), team, health);
         this.gameWorld.getMatchMaker().addAction(getID(), Action.SPAWN_UNIT, newId);
+        InternalRobot spawnedBot = this.gameWorld.getRobotByID(newId);
 
         // process collisions (auto-collision with enemy)
-        if (prevOccupied != null){
-            this.gameWorld.getRobot(loc).collide(prevOccupied);
+        boolean winner = true;
+        if (prevOccupied != null) {
+            System.out.println("Initial Collision!");
+            winner = spawnedBot.collide(loc, prevOccupied);
         }
     }
 

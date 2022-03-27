@@ -234,6 +234,10 @@ public strictfp class GameWorld {
         return this.robots[loc.x - this.gameMap.getOrigin().x][loc.y - this.gameMap.getOrigin().y];
     }
 
+    public InternalRobot getRobotByID(int id) {
+        return this.objectInfo.getRobotByID(id);
+    }
+
     public void moveRobot(MapLocation start, MapLocation end) {
         addRobot(end, getRobot(start));
         removeRobot(start);
