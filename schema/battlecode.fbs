@@ -44,7 +44,16 @@ table SpawnedBodyTable {
     types: [BodyType];
     /// The locations of the bodies.
     locs: VecTable;
+    /// The healths of these newly spawned robots
     healths: [int];
+}
+
+/// A list of new bodies to be placed on the map.
+table SpawnLocationTable {
+    /// The teams of the new spawn locations.
+    teamIDs: [byte];
+    /// The locations of the spawn locations.
+    locs: VecTable;
 }
 
 /// The map a round is played on.
@@ -66,7 +75,7 @@ table GameMap {
     /// The uranium on the map.
     uranium: [int];
     /// The spawn locations.
-    spawnLocation: [Vec];
+    spawnLocation: SpawnLocationTable;
 }
 
 /// Actions that can be performed.

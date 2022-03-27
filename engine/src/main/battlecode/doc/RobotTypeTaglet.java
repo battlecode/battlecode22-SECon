@@ -177,26 +177,11 @@ public class RobotTypeTaglet implements Taglet {
 
         StringBuilder builder = new StringBuilder();
         try {
-            appendField(builder, rt, "buildCostLead");
-            builder.append("<br />");
-            appendField(builder, rt, "buildCostGold");
-            builder.append("<br />");
             appendField(builder, rt, "actionCooldown");
             builder.append("<br />");
-            appendField(builder, rt, "movementCooldown");
+            appendField(builder, rt, "healthDecay");
             builder.append("<br />");
-            appendField(builder, rt, "health");
-            builder.append("<br />");
-            appendField(builder, rt, "damage");
-            builder.append("<br />");
-            appendField(builder, rt, "actionRadiusSquared");
-            builder.append("<br />");
-            appendField(builder, rt, "visionRadiusSquared");
-
-            if (rt.bytecodeLimit != 0) {
-                builder.append("<br />");
-                appendField(builder, rt, "bytecodeLimit");
-            }
+            appendField(builder, rt, "healthLimit");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -19,10 +19,10 @@ import com.google.flatbuffers.FlatBufferBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
-import battlecode.common.GameConstants;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
+import battlecode.common.*;
+
 import battlecode.schema.SpawnedBodyTable;
+import battlecode.schema.SpawnLocationTable;
 import battlecode.schema.Vec;
 import battlecode.schema.VecTable;
 import battlecode.util.FlatHelpers;
@@ -240,7 +240,7 @@ public final strictfp class GameMapIO {
             boolean[] wallArray = new boolean[width * height];
             int[] uraniumArray = new int[width * height];
             for (int i = 0; i < wallArray.length; i++) {
-                wallArray[i] = raw.wall(i);
+                wallArray[i] = raw.walls(i);
                 uraniumArray[i] = raw.uranium(i);
             }
             ArrayList<RobotInfo> initBodies = new ArrayList<>();
@@ -249,12 +249,15 @@ public final strictfp class GameMapIO {
 
             RobotInfo[] initialBodies = initBodies.toArray(new RobotInfo[initBodies.size()]);
 
-            MapLocation[] spawnLocs = new MapLocation[2];
-            spawnLocs[0] = raw.spawnLocs(0);
-            spawnLocs[1] = raw.spawnLocs(1);
+            SpawnLocationTable spawnTable = raw.spawnLocation();
+            ArrayList<MapLocation> initSpawns = new ArrayList<>();
+            ArrayList<Team> initSpawnTeams = new ArrayList<>();
+            initInitialSpawnsFromSchemaSpawnTable(spawnTable, initSpawns, initSpawnTeams);
+            MapLocation[] spawnLocs = initSpawns.toArray(new MapLocation[initSpawns.size()]);
+            Team[] spawnTeams = initSpawnTeams.toArray(new Team[initSpawnTeams.size()]);
 
             return new LiveMap(
-                width, height, origin, seed, rounds, mapName, symmetry, initialBodies, wallArray, uraniumArray, spawnLocs
+                width, height, origin, seed, rounds, mapName, symmetry, initialBodies, wallArray, uraniumArray, spawnLocs, spawnTeams
             );
         }
 
@@ -280,10 +283,9 @@ public final strictfp class GameMapIO {
             ArrayList<Integer> bodyLocsYs = new ArrayList<>();
             ArrayList<Boolean> wallsArrayList = new ArrayList<>();
             ArrayList<Integer> uraniumArrayList = new ArrayList<>();
-            ArrayList<Integer> spawnLocList = new ArrayList<>();
-
-            spawnLocList.add(Vec.createVec(builder, spawnLocs[0].x, spawnLocs[0].y));
-            spawnLocList.add(Vec.createVec(builder, spawnLocs[1].x, spawnLocs[1].y));
+            ArrayList<Integer> spawnLocsXs = new ArrayList<>();
+            ArrayList<Integer> spawnLocsYs = new ArrayList<>();
+            ArrayList<Byte> spawnTeamIDs = new ArrayList<>();
 
             for (int i = 0; i < gameMap.getWidth() * gameMap.getHeight(); i++) {
                 wallsArrayList.add(wallArray[i]);
@@ -298,21 +300,37 @@ public final strictfp class GameMapIO {
                 bodyLocsYs.add(robot.location.y);
             }
 
+            for (MapLocation spawnLocation : gameMap.getSpawnLocs()) {
+                spawnLocsXs.add(spawnLocation.x);
+                spawnLocsYs.add(spawnLocation.y);
+            }
+
+            for (Team spawnTeam : gameMap.getSpawnTeams()) {
+                spawnTeamIDs.add(TeamMapping.id(spawnTeam));
+            }
+
             int robotIDs = SpawnedBodyTable.createRobotIDsVector(builder, ArrayUtils.toPrimitive(bodyIDs.toArray(new Integer[bodyIDs.size()])));
             int teamIDs = SpawnedBodyTable.createTeamIDsVector(builder, ArrayUtils.toPrimitive(bodyTeamIDs.toArray(new Byte[bodyTeamIDs.size()])));
             int types = SpawnedBodyTable.createTypesVector(builder, ArrayUtils.toPrimitive(bodyTypes.toArray(new Byte[bodyTypes.size()])));
-            int locs = VecTable.createVecTable(builder,
+            int bodyLocsInt = VecTable.createVecTable(builder,
                     VecTable.createXsVector(builder, ArrayUtils.toPrimitive(bodyLocsXs.toArray(new Integer[bodyLocsXs.size()]))),
                     VecTable.createYsVector(builder, ArrayUtils.toPrimitive(bodyLocsYs.toArray(new Integer[bodyLocsYs.size()]))));
             SpawnedBodyTable.startSpawnedBodyTable(builder);
             SpawnedBodyTable.addRobotIDs(builder, robotIDs);
             SpawnedBodyTable.addTeamIDs(builder, teamIDs);
             SpawnedBodyTable.addTypes(builder, types);
-            SpawnedBodyTable.addLocs(builder, locs);
+            SpawnedBodyTable.addLocs(builder, bodyLocsInt);
             int bodies = SpawnedBodyTable.endSpawnedBodyTable(builder);
             int wallsArrayBool = battlecode.schema.GameMap.createWallsVector(builder, ArrayUtils.toPrimitive(wallsArrayList.toArray(new Boolean[wallsArrayList.size()])));
             int uraniumArrayInt = battlecode.schema.GameMap.createUraniumVector(builder, ArrayUtils.toPrimitive(uraniumArrayList.toArray(new Integer[uraniumArrayList.size()])));
-            int spawnLocArrayInt = battlecode.schema.GameMap.createSpawnLocationVector(builder, ArrayUtils.toPrimitive(spawnLocList.toArray(new Integer[spawnLocList.size()])));
+            int spawnTeamInt = SpawnLocationTable.createTeamIDsVector(builder, ArrayUtils.toPrimitive(spawnTeamIDs.toArray(new Byte[spawnTeamIDs.size()])));
+            int spawnLocsInt = VecTable.createVecTable(builder,
+                    VecTable.createXsVector(builder, ArrayUtils.toPrimitive(spawnLocsXs.toArray(new Integer[spawnLocsXs.size()]))),
+                    VecTable.createYsVector(builder, ArrayUtils.toPrimitive(spawnLocsYs.toArray(new Integer[spawnLocsYs.size()]))));
+            SpawnLocationTable.startSpawnLocationTable(builder);
+            SpawnLocationTable.addTeamIDs(builder, spawnTeamInt);
+            SpawnLocationTable.addLocs(builder, spawnLocsInt);
+            int spawns = SpawnLocationTable.endSpawnLocationTable(builder);
             // Build LiveMap for flatbuffer
             battlecode.schema.GameMap.startGameMap(builder);
             battlecode.schema.GameMap.addName(builder, name);
@@ -324,9 +342,38 @@ public final strictfp class GameMapIO {
             battlecode.schema.GameMap.addRandomSeed(builder, randomSeed);
             battlecode.schema.GameMap.addWalls(builder, wallsArrayBool);
             battlecode.schema.GameMap.addUranium(builder, uraniumArrayInt);
-            battlecode.schema.GameMap.addSpawnLocation(builder, spawnLocArrayInt);
+            battlecode.schema.GameMap.addSpawnLocation(builder, spawns);
 
             return battlecode.schema.GameMap.endGameMap(builder);
+        }
+
+        // ****************************
+        // *** HELPER METHODS *********
+        // ****************************
+
+        private static void initInitialBodiesFromSchemaBodyTable(SpawnedBodyTable bodyTable, ArrayList<RobotInfo> initialBodies) {
+            VecTable locs = bodyTable.locs();
+            for (int i = 0; i < bodyTable.robotIDsLength(); i++) {
+                // all initial bodies should be archons
+                RobotType bodyType = FlatHelpers.getRobotTypeFromBodyType(bodyTable.types(i));
+                int bodyID = bodyTable.robotIDs(i);
+                int bodyX = locs.xs(i);
+                int bodyY = locs.ys(i);
+                Team bodyTeam = TeamMapping.team(bodyTable.teamIDs(i));
+                initialBodies.add(new RobotInfo(bodyID, bodyTeam, bodyType, GameConstants.INITIAL_ROBOT_HEALTH, new MapLocation(bodyX, bodyY)));
+                // ignore robots that are not archons, TODO throw error?
+            }
+        }
+
+        private static void initInitialSpawnsFromSchemaSpawnTable(SpawnLocationTable spawnTable, ArrayList<MapLocation> initialSpawns, ArrayList<Team> initialSpawnTeams) {
+            VecTable locs = spawnTable.locs();
+            for (int i = 0; i < spawnTable.teamIDsLength(); i++) {
+                int spawnX = locs.xs(i);
+                int spawnY = locs.ys(i);
+                Team spawnTeam = TeamMapping.team(spawnTable.teamIDs(i));
+                initialSpawns.add(new MapLocation(spawnX, spawnY));
+                initialSpawnTeams.add(spawnTeam);
+            }
         }
     }
 }

@@ -651,10 +651,37 @@ locs(obj?:battlecode.schema.VecTable):battlecode.schema.VecTable|null {
 };
 
 /**
+ * The healths of these newly spawned robots
+ *
+ * @param number index
+ * @returns number
+ */
+healths(index: number):number|null {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+};
+
+/**
+ * @returns number
+ */
+healthsLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns Int32Array
+ */
+healthsArray():Int32Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
  * @param flatbuffers.Builder builder
  */
 static startSpawnedBodyTable(builder:flatbuffers.Builder) {
-  builder.startObject(4);
+  builder.startObject(5);
 };
 
 /**
@@ -754,6 +781,35 @@ static addLocs(builder:flatbuffers.Builder, locsOffset:flatbuffers.Offset) {
 
 /**
  * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset healthsOffset
+ */
+static addHealths(builder:flatbuffers.Builder, healthsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(4, healthsOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<number> data
+ * @returns flatbuffers.Offset
+ */
+static createHealthsVector(builder:flatbuffers.Builder, data:number[] | Uint8Array):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt32(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startHealthsVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
  * @returns flatbuffers.Offset
  */
 static endSpawnedBodyTable(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -761,13 +817,143 @@ static endSpawnedBodyTable(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 };
 
-static createSpawnedBodyTable(builder:flatbuffers.Builder, robotIDsOffset:flatbuffers.Offset, teamIDsOffset:flatbuffers.Offset, typesOffset:flatbuffers.Offset, locsOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createSpawnedBodyTable(builder:flatbuffers.Builder, robotIDsOffset:flatbuffers.Offset, teamIDsOffset:flatbuffers.Offset, typesOffset:flatbuffers.Offset, locsOffset:flatbuffers.Offset, healthsOffset:flatbuffers.Offset):flatbuffers.Offset {
   SpawnedBodyTable.startSpawnedBodyTable(builder);
   SpawnedBodyTable.addRobotIDs(builder, robotIDsOffset);
   SpawnedBodyTable.addTeamIDs(builder, teamIDsOffset);
   SpawnedBodyTable.addTypes(builder, typesOffset);
   SpawnedBodyTable.addLocs(builder, locsOffset);
+  SpawnedBodyTable.addHealths(builder, healthsOffset);
   return SpawnedBodyTable.endSpawnedBodyTable(builder);
+}
+}
+}
+/**
+ * A list of new bodies to be placed on the map.
+ *
+ * @constructor
+ */
+export namespace battlecode.schema{
+export class SpawnLocationTable {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns SpawnLocationTable
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):SpawnLocationTable {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param SpawnLocationTable= obj
+ * @returns SpawnLocationTable
+ */
+static getRootAsSpawnLocationTable(bb:flatbuffers.ByteBuffer, obj?:SpawnLocationTable):SpawnLocationTable {
+  return (obj || new SpawnLocationTable).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * The teams of the new spawn locations.
+ *
+ * @param number index
+ * @returns number
+ */
+teamIDs(index: number):number|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readInt8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
+};
+
+/**
+ * @returns number
+ */
+teamIDsLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns Int8Array
+ */
+teamIDsArray():Int8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? new Int8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * The locations of the spawn locations.
+ *
+ * @param battlecode.schema.VecTable= obj
+ * @returns battlecode.schema.VecTable|null
+ */
+locs(obj?:battlecode.schema.VecTable):battlecode.schema.VecTable|null {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? (obj || new battlecode.schema.VecTable).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startSpawnLocationTable(builder:flatbuffers.Builder) {
+  builder.startObject(2);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset teamIDsOffset
+ */
+static addTeamIDs(builder:flatbuffers.Builder, teamIDsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, teamIDsOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<number> data
+ * @returns flatbuffers.Offset
+ */
+static createTeamIDsVector(builder:flatbuffers.Builder, data:number[] | Uint8Array):flatbuffers.Offset {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startTeamIDsVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset locsOffset
+ */
+static addLocs(builder:flatbuffers.Builder, locsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(1, locsOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endSpawnLocationTable(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+static createSpawnLocationTable(builder:flatbuffers.Builder, teamIDsOffset:flatbuffers.Offset, locsOffset:flatbuffers.Offset):flatbuffers.Offset {
+  SpawnLocationTable.startSpawnLocationTable(builder);
+  SpawnLocationTable.addTeamIDs(builder, teamIDsOffset);
+  SpawnLocationTable.addLocs(builder, locsOffset);
+  return SpawnLocationTable.endSpawnLocationTable(builder);
 }
 }
 }
@@ -924,21 +1110,12 @@ uraniumArray():Int32Array|null {
 /**
  * The spawn locations.
  *
- * @param number index
- * @param battlecode.schema.Vec= obj
- * @returns battlecode.schema.Vec
+ * @param battlecode.schema.SpawnLocationTable= obj
+ * @returns battlecode.schema.SpawnLocationTable|null
  */
-spawnLocation(index: number, obj?:battlecode.schema.Vec):battlecode.schema.Vec|null {
+spawnLocation(obj?:battlecode.schema.SpawnLocationTable):battlecode.schema.SpawnLocationTable|null {
   var offset = this.bb!.__offset(this.bb_pos, 20);
-  return offset ? (obj || new battlecode.schema.Vec).__init(this.bb!.__vector(this.bb_pos + offset) + index * 8, this.bb!) : null;
-};
-
-/**
- * @returns number
- */
-spawnLocationLength():number {
-  var offset = this.bb!.__offset(this.bb_pos, 20);
-  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+  return offset ? (obj || new battlecode.schema.SpawnLocationTable).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 };
 
 /**
@@ -1060,14 +1237,6 @@ static startUraniumVector(builder:flatbuffers.Builder, numElems:number) {
  */
 static addSpawnLocation(builder:flatbuffers.Builder, spawnLocationOffset:flatbuffers.Offset) {
   builder.addFieldOffset(8, spawnLocationOffset, 0);
-};
-
-/**
- * @param flatbuffers.Builder builder
- * @param number numElems
- */
-static startSpawnLocationVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(8, numElems, 4);
 };
 
 /**

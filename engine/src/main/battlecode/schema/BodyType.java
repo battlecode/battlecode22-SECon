@@ -6,7 +6,6 @@ package battlecode.schema;
  * The possible types of things that can exist.
  * Note that bullets are not treated as bodies.
  */
-@SuppressWarnings("unused")
 public final class BodyType {
   private BodyType() { }
   public static final byte ROBOT = 0;

@@ -8,10 +8,10 @@ import battlecode.world.MapBuilder;
 /**
  * Generate a map.
  */
-public class MapTestSmall {
+public class MapTestSparse {
 
     // change this!!!
-    public static final String mapName = "maptestsmall";
+    public static final String mapName = "maptestsparse";
 
     // don't change this!!
     public static final String outputDirectory = "engine/src/main/battlecode/world/resources/";
@@ -35,7 +35,8 @@ public class MapTestSmall {
 
         for (int i = 0; i < mapBuilder.width / 2; i++) {
             for (int j = 0; j < mapBuilder.height; j++) {
-                mapBuilder.setSymmetricUranium(i, j, random.nextInt(100));
+                if (i % 10 == 0 && j % 10 == 0)
+                  mapBuilder.setSymmetricUranium(i, j, 100);
             }
         }
 

@@ -266,7 +266,7 @@ public strictfp class GameMaker {
 
             Constants.startConstants(builder);
             Constants.addIncreasePeriod(builder, GameConstants.ADD_URANIUM_EVERY_ROUNDS);
-            Constants.addUraniumAdditiveIncease(builder, GameConstants.ADD_URANIUM);
+            Constants.addUraniumAdditiveIncrease(builder, GameConstants.ADD_URANIUM);
             int constantsOffset = Constants.endConstants(builder);
 
             GameHeader.startGameHeader(builder);

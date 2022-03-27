@@ -97,9 +97,6 @@ public class TeamInfo {
     }
 
     public void processEndOfRound() {
-        if (this.uraniumCounts[0] != this.oldUraniumCounts[0] && this.uraniumCounts[1] != this.oldUraniumCounts[1]) {
-            throw new IllegalArgumentException("Both teams uranium can not change");
-        }
         if (this.uraniumMined[0] != this.oldUraniumMined[0] && this.uraniumMined[1] != this.oldUraniumMined[1]) {
             throw new IllegalArgumentException("Both teams can not mine uranium");
         }
