@@ -49,11 +49,8 @@ export default class Metadata {
             const body = header.bodyTypeMetadata(i)
             this.types[body.type()] = new BodyTypeMetaData(
                 body.type(),
-                body.deathThreshold(),
-                body.healthDecayPercentage(),
-                body.actionRadiusSquared(),
-                body.bytecodeLimit()
-            )
+                body.healthLimit(),
+                body.healthDecay(),            )
         }
         this.constants = header.constants()
         // SAFE
@@ -87,8 +84,6 @@ export class Team {
  */
 export class BodyTypeMetaData {
     constructor(public type: schema.BodyType,
-        public deathThreshold: number, public healthDecalPercentage: number,
-        public actionRadiusSquared: number,
-        public bytecodeLimit: number) {
+        public deathThreshold: number, public healthDecalPercentage: number) {
     }
 }
