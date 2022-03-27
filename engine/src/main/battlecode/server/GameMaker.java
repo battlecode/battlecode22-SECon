@@ -328,6 +328,7 @@ public strictfp class GameMaker {
         private TIntArrayList spawnedBodiesRobotIDs;
         private TByteArrayList spawnedBodiesTeamIDs;
         private TByteArrayList spawnedBodiesTypes;
+        private TFloatArrayList spawnedBodiesHealths;
         private TIntArrayList spawnedBodiesLocsXs; //For locs
         private TIntArrayList spawnedBodiesLocsYs; //For locs
 
@@ -377,6 +378,7 @@ public strictfp class GameMaker {
             this.spawnedBodiesRobotIDs = new TIntArrayList();
             this.spawnedBodiesTeamIDs = new TByteArrayList();
             this.spawnedBodiesTypes = new TByteArrayList();
+            this.spawnedBodiesHealths = new TByteArrayList();
             this.spawnedBodiesLocsXs = new TIntArrayList();
             this.spawnedBodiesLocsYs = new TIntArrayList();
             this.diedIDs = new TIntArrayList();
@@ -488,11 +490,13 @@ public strictfp class GameMaker {
                 int spawnedBodiesRobotIDsP = SpawnedBodyTable.createRobotIDsVector(builder, spawnedBodiesRobotIDs.toArray());
                 int spawnedBodiesTeamIDsP = SpawnedBodyTable.createTeamIDsVector(builder, spawnedBodiesTeamIDs.toArray());
                 int spawnedBodiesTypesP = SpawnedBodyTable.createTypesVector(builder, spawnedBodiesTypes.toArray());
+                int spawnedBodiesHealthP = SpawnedBodyTable.createHealthsVector(builder, spawnedBodiesHealths.toArray());
                 SpawnedBodyTable.startSpawnedBodyTable(builder);
                 SpawnedBodyTable.addLocs(builder, spawnedBodiesLocsP);
                 SpawnedBodyTable.addRobotIDs(builder, spawnedBodiesRobotIDsP);
                 SpawnedBodyTable.addTeamIDs(builder, spawnedBodiesTeamIDsP);
                 SpawnedBodyTable.addTypes(builder, spawnedBodiesTypesP);
+                SpawnedBodyTable.addHealths(builder, spawnedBodiesHealthP);
                 int spawnedBodiesP = SpawnedBodyTable.endSpawnedBodyTable(builder);
 
                 // Round statistics
@@ -633,6 +637,7 @@ public strictfp class GameMaker {
             spawnedBodiesLocsYs.add(robot.getLocation().y);
             spawnedBodiesTeamIDs.add(TeamMapping.id(robot.getTeam()));
             spawnedBodiesTypes.add(FlatHelpers.getBodyTypeFromRobotType(robot.getType()));
+            spawnedBodiesHealths.add(robot.getHealth());
         }
 
         private void clearData() {
@@ -642,6 +647,7 @@ public strictfp class GameMaker {
             spawnedBodiesRobotIDs.clear();
             spawnedBodiesTeamIDs.clear();
             spawnedBodiesTypes.clear();
+            spawnedBodiesHealths.clear();
             spawnedBodiesLocsXs.clear();
             spawnedBodiesLocsYs.clear();
             diedIDs.clear();
