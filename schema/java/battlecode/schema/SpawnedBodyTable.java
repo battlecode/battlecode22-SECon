@@ -50,7 +50,7 @@ public final class SpawnedBodyTable extends Table {
   /**
    * The healths of these newly spawned robots
    */
-  public float healths(int j) { int o = __offset(12); return o != 0 ? bb.getFloat(__vector(o) + j * 4) : 0; }
+  public int healths(int j) { int o = __offset(12); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
   public int healthsLength() { int o = __offset(12); return o != 0 ? __vector_len(o) : 0; }
   public ByteBuffer healthsAsByteBuffer() { return __vector_as_bytebuffer(12, 4); }
   public ByteBuffer healthsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 12, 4); }
@@ -82,7 +82,7 @@ public final class SpawnedBodyTable extends Table {
   public static void startTypesVector(FlatBufferBuilder builder, int numElems) { builder.startVector(1, numElems, 1); }
   public static void addLocs(FlatBufferBuilder builder, int locsOffset) { builder.addOffset(3, locsOffset, 0); }
   public static void addHealths(FlatBufferBuilder builder, int healthsOffset) { builder.addOffset(4, healthsOffset, 0); }
-  public static int createHealthsVector(FlatBufferBuilder builder, float[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addFloat(data[i]); return builder.endVector(); }
+  public static int createHealthsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startHealthsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static int endSpawnedBodyTable(FlatBufferBuilder builder) {
     int o = builder.endObject();

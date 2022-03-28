@@ -69,6 +69,15 @@ public class RobotInfo {
     }
 
     /**
+     * Returns the initial health of this robot.
+     *
+     * @return the health of this robot
+     */
+    public int getInitialHealth() {
+        return Math.round(health);
+    }
+
+    /**
      * Returns the health of this robot.
      *
      * @return the health of this robot

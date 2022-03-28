@@ -281,7 +281,7 @@ public final strictfp class GameMapIO {
             ArrayList<Byte> bodyTypes = new ArrayList<>();
             ArrayList<Integer> bodyLocsXs = new ArrayList<>();
             ArrayList<Integer> bodyLocsYs = new ArrayList<>();
-            ArrayList<Float> bodyHealths = new ArrayList<>();
+            ArrayList<Integer> bodyHealths = new ArrayList<>();
             ArrayList<Boolean> wallsArrayList = new ArrayList<>();
             ArrayList<Integer> uraniumArrayList = new ArrayList<>();
             ArrayList<Integer> spawnLocsXs = new ArrayList<>();
@@ -299,7 +299,7 @@ public final strictfp class GameMapIO {
                 bodyTypes.add(FlatHelpers.getBodyTypeFromRobotType(robot.getType()));
                 bodyLocsXs.add(robot.getLocation().x);
                 bodyLocsYs.add(robot.getLocation().y);
-                bodyHealths.add(robot.getHealth());
+                bodyHealths.add(robot.getInitialHealth());
             }
 
             for (MapLocation spawnLocation : gameMap.getSpawnLocs()) {
@@ -314,7 +314,7 @@ public final strictfp class GameMapIO {
             int robotIDs = SpawnedBodyTable.createRobotIDsVector(builder, ArrayUtils.toPrimitive(bodyIDs.toArray(new Integer[bodyIDs.size()])));
             int teamIDs = SpawnedBodyTable.createTeamIDsVector(builder, ArrayUtils.toPrimitive(bodyTeamIDs.toArray(new Byte[bodyTeamIDs.size()])));
             int types = SpawnedBodyTable.createTypesVector(builder, ArrayUtils.toPrimitive(bodyTypes.toArray(new Byte[bodyTypes.size()])));
-            int healths = SpawnedBodyTable.createHealthsVector(builder, ArrayUtils.toPrimitive(bodyHealths.toArray(new Float[bodyHealths.size()])));
+            int healths = SpawnedBodyTable.createHealthsVector(builder, ArrayUtils.toPrimitive(bodyHealths.toArray(new Integer[bodyHealths.size()])));
             int bodyLocsInt = VecTable.createVecTable(builder,
                     VecTable.createXsVector(builder, ArrayUtils.toPrimitive(bodyLocsXs.toArray(new Integer[bodyLocsXs.size()]))),
                     VecTable.createYsVector(builder, ArrayUtils.toPrimitive(bodyLocsYs.toArray(new Integer[bodyLocsYs.size()]))));

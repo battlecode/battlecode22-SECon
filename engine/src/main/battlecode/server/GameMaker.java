@@ -328,7 +328,7 @@ public strictfp class GameMaker {
         private TIntArrayList spawnedBodiesRobotIDs;
         private TByteArrayList spawnedBodiesTeamIDs;
         private TByteArrayList spawnedBodiesTypes;
-        private TFloatArrayList spawnedBodiesHealths;
+        private TIntArrayList spawnedBodiesHealths;
         private TIntArrayList spawnedBodiesLocsXs; //For locs
         private TIntArrayList spawnedBodiesLocsYs; //For locs
 
@@ -378,7 +378,7 @@ public strictfp class GameMaker {
             this.spawnedBodiesRobotIDs = new TIntArrayList();
             this.spawnedBodiesTeamIDs = new TByteArrayList();
             this.spawnedBodiesTypes = new TByteArrayList();
-            this.spawnedBodiesHealths = new TFloatArrayList();
+            this.spawnedBodiesHealths = new TIntArrayList();
             this.spawnedBodiesLocsXs = new TIntArrayList();
             this.spawnedBodiesLocsYs = new TIntArrayList();
             this.diedIDs = new TIntArrayList();
@@ -637,7 +637,7 @@ public strictfp class GameMaker {
             spawnedBodiesLocsYs.add(robot.getLocation().y);
             spawnedBodiesTeamIDs.add(TeamMapping.id(robot.getTeam()));
             spawnedBodiesTypes.add(FlatHelpers.getBodyTypeFromRobotType(robot.getType()));
-            spawnedBodiesHealths.add(robot.getHealth());
+            spawnedBodiesHealths.add(robot.getRobotInfo().getInitialHealth());
         }
 
         private void clearData() {
