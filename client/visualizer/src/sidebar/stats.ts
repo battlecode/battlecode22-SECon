@@ -67,6 +67,9 @@ export default class Stats {
 
 
   private incomeChartUranium: Chart;
+  private redHpHisto: Chart;
+  private blueHpHisto: Chart;
+  private num_lumps = 20;
   //private incomeChartLead: Chart;
   //private incomeChartGold: Chart;
 
@@ -176,6 +179,7 @@ export default class Stats {
     const relativeBars: HTMLDivElement[] = [];
     teamIDs.forEach((teamID: number) => metalIDs.forEach((id: number) => {
       const bar = document.createElement("div");
+      //bar.setAttribute("align", ((teamID === teamIDs[0]) ? alignment[0] : alignment[1]));
       bar.style.backgroundColor = colors[id];
       bar.style.border = "5px solid " + ((teamID === teamIDs[0]) ? "#C00040" : "#4000C0");
       bar.style.width = `90%`;
@@ -196,36 +200,36 @@ export default class Stats {
 
     const labelleft = document.createElement('div');
     labelleft.className = "stats-header";
-    labelleft.innerText = 'Uranium';
+    labelleft.innerText = 'Total Red Uranium';
 
     const frameleft = document.createElement("div");
-    frameleft.style.width = "200%";
+    frameleft.style.width = "100%";
 
     frameleft.appendChild(this.relativeBars[0]);
-    frameleft.appendChild(this.relativeBars[1]);
+    //frameleft.appendChild(this.relativeBars[1]);
 
     divleft.appendChild(labelleft);
     divleft.appendChild(frameleft);
-    /*
+    
     const divright = document.createElement("div");
     divright.setAttribute("align", "center");
     divright.id = "relative-bars-right";
 
     const labelright = document.createElement('div');
     labelright.className = "stats-header";
-    labelright.innerText = 'Lead';
+    labelright.innerText = 'Total Blue Uranium';
 
     const frameright = document.createElement("div");
     frameright.style.width = "100%";
 
-    frameright.appendChild(this.relativeBars[2]);
-    frameright.appendChild(this.relativeBars[3]);
+    frameright.appendChild(this.relativeBars[1]);
+    //frameright.appendChild(this.relativeBars[3]);
 
     divright.appendChild(labelright);
     divright.appendChild(frameright);
-    */
+    
     //return [divleft, divright];
-    return [divleft];
+    return [divleft, divright];
   }
 
   private updateRelBars(teamUranium: Array<number>){
@@ -257,7 +261,7 @@ export default class Stats {
     title.colSpan = 4;
     const label = document.createElement('div');
     label.className = "stats-header";
-    label.innerText = 'Total Uranium Per Turn';
+    label.innerText = 'Uranium Income Per Turn';
 
     const row = document.createElement("tr");
 
@@ -286,6 +290,14 @@ export default class Stats {
     return canvas;
   }
 
+  private getHpHistogram(team) {
+    const canvas = document.createElement("canvas");
+    //canvas.id = "leadGraph";
+    canvas.id = team.concat("-hp-histogram");
+    canvas.className = "histogram";
+    return canvas;
+  }
+
 //   private getIncomeGoldGraph() {
 //     const canvas = document.createElement("canvas");
 //     canvas.id = "goldGraph";
@@ -297,7 +309,7 @@ export default class Stats {
     const div = document.createElement('div');
     const label = document.createElement('div');
     label.className = "stats-header";
-    label.innerText = 'Archon Status';
+    label.innerText = 'Unit Size Histograms';
     div.appendChild(label);
     div.appendChild(this.ECs);
     return div;
@@ -434,12 +446,21 @@ export default class Stats {
 
     const graphs = document.createElement("div");
     graphs.style.display = 'flex';
+    
     const leadWrapper = document.createElement("div");
-    leadWrapper.style.width = "75%";
+    leadWrapper.style.width = "50%";
     leadWrapper.style.float = "inherit";
+
+    
+    
+
     const canvasElementLead = this.getIncomeUraniumGraph();
+
+    
+
     leadWrapper.appendChild(canvasElementLead);    
     graphs.appendChild(leadWrapper);
+
     //const goldWrapper = document.createElement("div");
     //goldWrapper.style.width = "50%";
     //goldWrapper.style.float = "right";
@@ -448,18 +469,19 @@ export default class Stats {
     //graphs.appendChild(goldWrapper);
     this.div.appendChild(graphs);
 
+
     this.incomeChartUranium = new Chart(canvasElementLead, {
       type: 'line',
       data: {
           datasets: [{
-            label: 'Red Uranium',
+            label: 'Red',
             data: [],
             backgroundColor: 'rgba(255, 99, 132, 0)',
             borderColor: 'rgb(131,24,27)',
             pointRadius: 0,
           },
           {
-            label: 'Blue Uranium',
+            label: 'Blue',
             data: [],
             backgroundColor: 'rgba(54, 162, 235, 0)',
             borderColor: 'rgb(108, 140, 188)',
@@ -537,6 +559,87 @@ export default class Stats {
     this.div.appendChild(this.getECDivElement());
 
     this.div.appendChild(document.createElement("br"));
+
+
+    const redhistoWrapper = document.createElement("div");
+    redhistoWrapper.style.width = "50%";
+    redhistoWrapper.style.float = "left";
+
+    const canvasElementRedHisto = this.getHpHistogram("red");
+
+    redhistoWrapper.appendChild(canvasElementRedHisto);
+
+
+    var xValues : Array<number> = [];
+    var yValues : Array<number> = [];
+    var barColors  : Array<string> = [];
+    for(let i = 0; i < this.num_lumps; i++){
+      xValues.push(i);
+      yValues.push(i);
+      barColors.push("red");
+    }
+
+
+    this.redHpHisto =  new Chart(canvasElementRedHisto, {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      legend: {display: false},
+      title: {
+        display: false,
+        text: "World Wine Production 2018"
+      }
+    }
+  });
+
+    this.div.appendChild(redhistoWrapper);
+
+//-------------------------------------------
+    const bluehistoWrapper = document.createElement("div");
+    bluehistoWrapper.style.width = "50%";
+    bluehistoWrapper.style.float = "right";
+
+    const canvasElementBlueHisto = this.getHpHistogram("blue");
+
+    bluehistoWrapper.appendChild(canvasElementBlueHisto);
+
+
+    var xValues : Array<number> = [];
+    var yValues : Array<number> = [];
+    var barColors  : Array<string> = [];
+    for(let i = 0; i < this.num_lumps; i++){
+      xValues.push(i);
+      yValues.push(i);
+      barColors.push("blue");
+    }
+
+
+    this.blueHpHisto =  new Chart(canvasElementBlueHisto, {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      legend: {display: false},
+      title: {
+        display: false,
+        text: "World Wine Production 2018"
+      }
+    }
+  });
+
+  this.div.appendChild(bluehistoWrapper);
+
   }
 
   tourIndexJumpFun(e) {
@@ -654,6 +757,95 @@ export default class Stats {
     //   this.images.star.remove();
     // }
   }*/
+
+  /*
+  private cleateHistograms(teamRed, teamBlue){
+    const num_lumps = 10;
+
+    const divleft = document.createElement("div");
+    divleft.setAttribute("align", "center");
+    divleft.id = "hp-histogram-left";
+
+    const labelleft = document.createElement('div');
+    labelleft.className = "stats-header";
+    labelleft.innerText = teamRed.concat(" hp histogram");
+
+    const frameleft = document.createElement("div");
+    frameleft.style.width = "100%";
+
+    var xValues : Array<number> = [];
+    var yValues : Array<number> = [];
+    var barColors  : Array<string> = [];
+    for(let i = 0; i < num_lumps; i++){
+      xValues.push(i);
+      yValues.push(0);
+      barColors.push("red");
+    }
+
+    let red_chart = new Chart("red-hp-chart", {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      legend: {display: false},
+      title: {
+        display: false,
+        text: "World Wine Production 2018"
+      }
+    }
+  });
+ 
+
+
+    frameleft.appendChild(red_chart);
+    
+    divleft.appendChild(labelleft);
+    divleft.appendChild(frameleft);
+
+  }
+*/
+  updateHistograms(hp, team){
+    let red_hps : Array<number> = [];
+    let blue_hps : Array<number> = [];
+    for(var i = 0; i < hp.length; i++){
+      if(team[i] == 1){
+        red_hps.push(hp[i]);
+      } else{
+        blue_hps.push(hp[i]);
+      }
+    }
+    //TODO: fetch histograms to update and pass them below
+    this.updateTeamHistogram(red_hps, this.redHpHisto);
+    this.updateTeamHistogram(blue_hps, this.blueHpHisto);
+
+  }
+
+  private updateTeamHistogram(hps, histogram){
+    let lump_vals : Array<number> = [];
+    let lump_labels : Array<number> = [];
+    let max_hp = Math.max(hps);
+    let min_hp = Math.min(hps);
+    let lump_size = Math.ceil((max_hp - min_hp) / this.num_lumps);
+    for(let i = 0; i < lump_size; i++){
+      lump_labels.push(min_hp + i * lump_size);
+      lump_vals.push(0);
+    }
+    for(let i = 0; i < hps.length; i++){
+      let bin_num = Math.floor((hps[i] - min_hp) / lump_size);
+      lump_vals[bin_num] += 1;
+    }
+    //TODO: uncomment and debug
+    /*
+    histogram.data.labels =  lump_labels;
+    histogram.data.datasets[0].data = lump_vals;
+    histogram.update();
+    */
+  }
 
   setExtraInfo(info: string) {
     this.extraInfo.innerHTML = info;

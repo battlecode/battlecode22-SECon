@@ -393,6 +393,7 @@ export default class Looper {
         const types = world.bodies.arrays.type;
         const portables = world.bodies.arrays.portable;
         const levels = world.bodies.arrays.portable;
+        this.stats.updateHistograms(hps, teams);
         // teamIDs.forEach((team) => { 
         //     for(var i = 0; i < hps.length; i++){
         //         if(types[i] == ARCHON && teams[i] == team) {
