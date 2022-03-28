@@ -388,12 +388,15 @@ export default class Looper {
     
         this.stats.updateBars(teamUranium);
         // this.stats.resetECs();
+        
         const hps = world.bodies.arrays.hp;
         const teams = world.bodies.arrays.team;
+        const bytecodesUsed = world.bodies.arrays.bytecodesUsed;
         const types = world.bodies.arrays.type;
         const portables = world.bodies.arrays.portable;
         const levels = world.bodies.arrays.portable;
         this.stats.updateHistograms(hps, teams);
+        this.stats.updateBytecode(bytecodesUsed, teams, world.turn);
         // teamIDs.forEach((team) => { 
         //     for(var i = 0; i < hps.length; i++){
         //         if(types[i] == ARCHON && teams[i] == team) {
@@ -401,7 +404,6 @@ export default class Looper {
         //         }
         //     }
         // });
-
         if (this.match.winner && this.match.current.turn == this.match.lastTurn) {
             this.stats.setWinner(this.match.winner, teamNames, teamIDs);
         }

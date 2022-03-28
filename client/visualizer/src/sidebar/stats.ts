@@ -67,6 +67,9 @@ export default class Stats {
 
 
   private incomeChartUranium: Chart;
+
+  private bytecodeChart: Chart;
+
   private redHpHisto: Chart;
   private blueHpHisto: Chart;
   private num_lumps = 20;
@@ -245,11 +248,32 @@ export default class Stats {
       const uraniumIncome = document.createElement("span");
       uraniumIncome.style.color = hex[id];
       uraniumIncome.style.fontWeight = "bold";
-      uraniumIncome.textContent = "L: 0";
+      uraniumIncome.textContent = "U: 0";
       uraniumIncome.style.padding = "10px";
       incomeDisplays[id] = {uraniumIncome: uraniumIncome};
     });
     return incomeDisplays;
+  }
+
+
+  private getByteDisplaysElement(teamIDs: Array<number>): HTMLElement {
+    const table = document.createElement("table");
+    table.id = "byte-table";
+    table.style.width = "100%";
+
+    const title = document.createElement('td');
+    title.colSpan = 4;
+    const label = document.createElement('div');
+    label.className = "stats-header";
+    label.innerText = 'Bytecodes used Per Turn';
+
+    const row = document.createElement("tr");
+
+    title.appendChild(label);
+    table.appendChild(title);
+    table.appendChild(row);
+
+    return table;
   }
 
   private getIncomeDisplaysElement(teamIDs: Array<number>): HTMLElement {
@@ -280,6 +304,13 @@ export default class Stats {
     table.appendChild(row);
 
     return table;
+  }
+
+  private getByteCodeGraph(){
+    const canvas = document.createElement("canvas");
+    canvas.id = "byteGraph";
+    canvas.className = "graph";
+    return canvas;
   }
 
   private getIncomeUraniumGraph() {
@@ -439,27 +470,38 @@ export default class Stats {
     this.relativeBars = this.initRelativeBars(teamIDs);
     const relativeBarsElement = this.getRelativeBarsElement();
     relativeBarsElement.forEach((relBar: HTMLDivElement) => { this.div.appendChild(relBar);});
+    
+    this.div.appendChild(document.createElement("hr"));
 
     this.incomeDisplays = this.initIncomeDisplays(teamIDs);
     const incomeElement = this.getIncomeDisplaysElement(teamIDs);
-    this.div.appendChild(incomeElement);
+
+    const byteElement = this.getByteDisplaysElement(teamIDs);
+    
+    //this.div.appendChild(incomeElement);
 
     const graphs = document.createElement("div");
     graphs.style.display = 'flex';
     
     const leadWrapper = document.createElement("div");
     leadWrapper.style.width = "50%";
-    leadWrapper.style.float = "inherit";
-
-    
-    
+    leadWrapper.style.float = "left";
+    leadWrapper.appendChild(incomeElement);
 
     const canvasElementLead = this.getIncomeUraniumGraph();
+    leadWrapper.appendChild(canvasElementLead);
 
+    const byteWrapper = document.createElement("div");
+    byteWrapper.style.width = "50%";
+    byteWrapper.style.float = "right";
+
+    byteWrapper.appendChild(byteElement);
     
-
-    leadWrapper.appendChild(canvasElementLead);    
+    const canvasBytecodeElement = this.getByteCodeGraph();
+    byteWrapper.appendChild(canvasBytecodeElement);
+        
     graphs.appendChild(leadWrapper);
+    graphs.appendChild(byteWrapper);
 
     //const goldWrapper = document.createElement("div");
     //goldWrapper.style.width = "50%";
@@ -467,10 +509,8 @@ export default class Stats {
     //const canvasElementGold = this.getIncomeGoldGraph();
     //goldWrapper.appendChild(canvasElementGold);    
     //graphs.appendChild(goldWrapper);
-    this.div.appendChild(document.createElement("hr"));
 
     this.div.appendChild(graphs);
-
 
 
     this.incomeChartUranium = new Chart(canvasElementLead, {
@@ -493,6 +533,47 @@ export default class Stats {
       },
       options: {
           aspectRatio: 0.75,
+          scales: {
+            xAxes: [{
+              type: 'linear',
+              ticks: {
+                beginAtZero: true
+            },
+              scaleLabel: {
+                display: true,
+                labelString: "Turn"
+              }
+            }],
+              yAxes: [{
+                type: 'linear',
+                  ticks: {
+                      beginAtZero: true
+                  }
+              }]
+          }
+      }
+    });
+
+    this.bytecodeChart = new Chart(canvasBytecodeElement, {
+      type: 'line',
+      data: {
+          datasets: [{
+            label: 'Red',
+            data: [],
+            backgroundColor: 'rgba(255, 99, 132, 0)',
+            borderColor: 'rgb(131,24,27)',
+            pointRadius: 0,
+          },
+          {
+            label: 'Blue',
+            data: [],
+            backgroundColor: 'rgba(54, 162, 235, 0)',
+            borderColor: 'rgb(108, 140, 188)',
+            pointRadius: 0,
+          }]
+      },
+      options: {
+          aspectRatio: 0.7,
           scales: {
             xAxes: [{
               type: 'linear',
@@ -645,6 +726,49 @@ export default class Stats {
   this.div.appendChild(bluehistoWrapper);
   this.div.appendChild(document.createElement("br"));
 
+
+  }
+
+  private getTeamByteCodes(bytecodesUsed, teams, teamNum){
+    var total = 0;
+    for(let i = 0; i < teams.length; i++){
+      if(teams[i] == teamNum){
+        total += bytecodesUsed[i];
+      }
+    }
+    return total;
+  }
+
+  updateBytecode(bytecodesUsed, team, turn){
+    let bytecodesUsedRed = this.getTeamByteCodes(bytecodesUsed, team, 1);
+    let bytecodesUsedBlue = this.getTeamByteCodes(bytecodesUsed, team, 2);
+    console.log("updating bytecode");
+    console.log(bytecodesUsed);
+    console.log(bytecodesUsedRed);
+    console.log(bytecodesUsedBlue);
+    //@ts-ignore
+    this.bytecodeChart.data.datasets[0].data?.push({y: bytecodesUsedRed, x: turn});
+    //@ts-ignore
+    this.bytecodeChart.data.datasets[1].data?.push({y: bytecodesUsedBlue, x: turn});
+    this.bytecodeChart.update();
+
+    /*
+    data: {
+          datasets: [{
+            label: 'Red',
+            data: [],
+            backgroundColor: 'rgba(255, 99, 132, 0)',
+            borderColor: 'rgb(131,24,27)',
+            pointRadius: 0,
+          },
+          {
+            label: 'Blue',
+            data: [],
+            backgroundColor: 'rgba(54, 162, 235, 0)',
+            borderColor: 'rgb(108, 140, 188)',
+            pointRadius: 0,
+          }]
+    */
 
   }
 
