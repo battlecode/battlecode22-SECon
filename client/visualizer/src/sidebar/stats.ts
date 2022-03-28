@@ -467,7 +467,10 @@ export default class Stats {
     //const canvasElementGold = this.getIncomeGoldGraph();
     //goldWrapper.appendChild(canvasElementGold);    
     //graphs.appendChild(goldWrapper);
+    this.div.appendChild(document.createElement("hr"));
+
     this.div.appendChild(graphs);
+
 
 
     this.incomeChartUranium = new Chart(canvasElementLead, {
@@ -553,13 +556,14 @@ export default class Stats {
       }
     });
     */
+    this.div.appendChild(document.createElement("hr"));
+
     this.ECs = document.createElement("div");
-    this.ECs.style.height = "100px";
-    this.ECs.style.display = "flex";
+    //this.ECs.style.height = "100px";
+    //this.ECs.style.display = "flex";
     this.div.appendChild(this.getECDivElement());
 
-    this.div.appendChild(document.createElement("br"));
-
+    
 
     const redhistoWrapper = document.createElement("div");
     redhistoWrapper.style.width = "50%";
@@ -639,6 +643,8 @@ export default class Stats {
   });
 
   this.div.appendChild(bluehistoWrapper);
+  this.div.appendChild(document.createElement("br"));
+
 
   }
 
@@ -813,25 +819,29 @@ export default class Stats {
     let red_hps : Array<number> = [];
     let blue_hps : Array<number> = [];
     for(var i = 0; i < hp.length; i++){
+      if(hp[i] == 0){
+        continue;
+      }
       if(team[i] == 1){
         red_hps.push(hp[i]);
       } else{
         blue_hps.push(hp[i]);
       }
     }
+    
     //TODO: fetch histograms to update and pass them below
     this.updateTeamHistogram(red_hps, this.redHpHisto);
     this.updateTeamHistogram(blue_hps, this.blueHpHisto);
 
   }
 
-  private updateTeamHistogram(hps, histogram){
+  private updateTeamHistogram(hps: Array<number>, histogram: Chart){
     let lump_vals : Array<number> = [];
     let lump_labels : Array<number> = [];
-    let max_hp = Math.max(hps);
-    let min_hp = Math.min(hps);
-    let lump_size = Math.ceil((max_hp - min_hp) / this.num_lumps);
-    for(let i = 0; i < lump_size; i++){
+    let max_hp = hps.length >= 1? Math.max(...hps) : 1;
+    let min_hp = hps.length >= 1? Math.min(...hps) : 1;
+    let lump_size = Math.max(Math.ceil((max_hp - min_hp) / this.num_lumps), 1);
+    for(let i = 0; i < this.num_lumps; i++){
       lump_labels.push(min_hp + i * lump_size);
       lump_vals.push(0);
     }
@@ -839,12 +849,12 @@ export default class Stats {
       let bin_num = Math.floor((hps[i] - min_hp) / lump_size);
       lump_vals[bin_num] += 1;
     }
-    //TODO: uncomment and debug
-    /*
+    //@ts-ignore
     histogram.data.labels =  lump_labels;
+    //@ts-ignore
     histogram.data.datasets[0].data = lump_vals;
     histogram.update();
-    */
+    
   }
 
   setExtraInfo(info: string) {
