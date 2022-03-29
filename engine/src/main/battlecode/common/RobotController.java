@@ -20,6 +20,7 @@ public strictfp interface RobotController {
      *
      * @return the current round number, where round 1 is the first round of the
      * match
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -30,6 +31,7 @@ public strictfp interface RobotController {
      * 0 (inclusive) to the width (exclusive).
      *
      * @return the map width
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -40,6 +42,7 @@ public strictfp interface RobotController {
      * 0 (inclusive) to the height (exclusive).
      *
      * @return the map height
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -50,6 +53,7 @@ public strictfp interface RobotController {
      * If this number ever reaches zero for your team, you immediately lose.
      *
      * @return the number of robots on that team
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -60,6 +64,7 @@ public strictfp interface RobotController {
      *
      * @param team the team being queried.
      * @return the amount of uranium a team has in its reserves.
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -73,6 +78,7 @@ public strictfp interface RobotController {
      * Returns the ID of this robot.
      *
      * @return the ID of this robot
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -83,6 +89,7 @@ public strictfp interface RobotController {
      *
      * @param id of robot of interest
      * @return the robot's Team
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -93,6 +100,7 @@ public strictfp interface RobotController {
      *
      * @param id of robot of interest
      * @return a robot's Team
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -102,6 +110,7 @@ public strictfp interface RobotController {
      * Returns this robot's type (ROBOT).
      *
      * @return the robot's type
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -113,6 +122,7 @@ public strictfp interface RobotController {
      * @param id of robot of interest
      * @return the robot's type
      * @throws if id corresponds to controller robot
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -124,6 +134,7 @@ public strictfp interface RobotController {
      * @param id of robot of interest
      * @return the robot's current location
      * @throws if id corresponds to controller robot
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -132,8 +143,9 @@ public strictfp interface RobotController {
     /**
      * Returns a robot's current health.
      *
-    * @param id of robot of interest
+     * @param id of robot of interest
      * @return the robot's current health
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -148,6 +160,7 @@ public strictfp interface RobotController {
      *
      * @param loc the location to check
      * @return true if the location is on the map; false otherwise
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -159,6 +172,7 @@ public strictfp interface RobotController {
      * @param loc the location to check
      * @return true if a robot is at the location
      * @throws GameActionException if the location is not on the map
+     *    or if not called by controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -171,6 +185,7 @@ public strictfp interface RobotController {
      * @param loc the location to check
      * @return the robot at the given location
      * @throws GameActionException if the location is not on the map
+     *    or if not called by controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -181,6 +196,7 @@ public strictfp interface RobotController {
      *
      * @param id the ID of the robot to query
      * @return true if the given robot exists; false otherwise
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -192,6 +208,7 @@ public strictfp interface RobotController {
      * @param id the ID of the robot to query
      * @return a RobotInfo object for the sensed robot
      * @throws GameActionException if the robot doesn't exist
+     *   or if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -203,6 +220,7 @@ public strictfp interface RobotController {
      *
      * @return array of RobotInfo objects, which contain information about all
      * the robots
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -217,6 +235,7 @@ public strictfp interface RobotController {
      * the passed robot; if -1 is passed, all robots are returned;
      * @return array of RobotInfo objects of all the robots you saw
      * @throws GameActionException if radiusSquared is negative but not -1
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -233,6 +252,7 @@ public strictfp interface RobotController {
      * robots from any team are returned
      * @return array of RobotInfo objects of all the robots you saw
      * @throws GameActionException if radiusSquared is negative but not -1
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -250,6 +270,7 @@ public strictfp interface RobotController {
      * objects from all teams are returned
      * @return array of RobotInfo objects of the robots you saw
      * @throws GameActionException if radiusSquared is negative but not -1
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -261,6 +282,7 @@ public strictfp interface RobotController {
      * @param loc the given location
      * @return whether a wall exists
      * @throws GameActionException if the given location is invalid
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -272,6 +294,7 @@ public strictfp interface RobotController {
      * @param loc the given location
      * @return the amount of uranium at that location
      * @throws GameActionException if the given location is invalid
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -281,6 +304,7 @@ public strictfp interface RobotController {
      * Return all locations that contain a nonzero amount of uranium.
      *
      * @return all locations that contain a nonzero amount of uranium
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -295,6 +319,7 @@ public strictfp interface RobotController {
      * @param radiusSquared the squared radius of all locations to be returned
      * @return all locations that contain a nonzero amount of uranium within the radius
      * @throws GameActionException if the radius is negative but not -1 
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -309,6 +334,7 @@ public strictfp interface RobotController {
      * @param radiusSquared the squared radius of all locations to be returned
      * @return all locations that contain a nonzero amount of uranium within the radius
      * @throws GameActionException if the radius is negative but not -1 or center is invalid
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -324,6 +350,7 @@ public strictfp interface RobotController {
      * @param minLead the minimum amount of uranium
      * @return all locations that contain at least minUranium uranium within the radius
      * @throws GameActionException if the radius is negative but not -1
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -339,6 +366,7 @@ public strictfp interface RobotController {
      * @param minLead the minimum amount of uranium
      * @return all locations that contain at least minUranium uranium within the radius
      * @throws GameActionException if the radius is negative but not -1 or center is invalid
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -350,6 +378,7 @@ public strictfp interface RobotController {
      * @param id id of the robot of interest
      * @param dir the given direction
      * @return the location adjacent to the passed in robot's location in the given direction
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -364,6 +393,7 @@ public strictfp interface RobotController {
      * @param radiusSquared return locations within this distance away from center
      * @return list of locations on the map and within radiusSquared of center
      * @throws GameActionException if the radius is negative
+     *     if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -378,6 +408,8 @@ public strictfp interface RobotController {
      * 
      * @param id the id of the robot to check
      * @return true if the robot can do one and any of move, act, or mine.
+     *     if not called by a controller
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -388,6 +420,7 @@ public strictfp interface RobotController {
      * 
      * @param id the id of the robot to check
      * @return the number of cooldown robots for the robot.
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -406,6 +439,7 @@ public strictfp interface RobotController {
      * @param id id of robot of interest
      * @param dir the direction to move in
      * @return true if it is possible to call move without an exception
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -425,6 +459,7 @@ public strictfp interface RobotController {
      * @throws GameActionException if the robot cannot move one step in this
      * direction, such as cooldown being too high, the target location being
      * off the map, or the target destination being occupied by an allied robot
+     *   or if function is not called by controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -440,6 +475,7 @@ public strictfp interface RobotController {
      *
      * @param health, the health of the robot to build
      * @return whether it is possible to build a robot of this cost in your spawn location.
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -451,7 +487,8 @@ public strictfp interface RobotController {
      *
      * @param health, the health of the robot to build
      * @throws GameActionException if the conditions of canBuildRobot
-     * are not all satisfied
+     *    are not all satisfied, 
+     *     or if this is not called by controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -466,6 +503,7 @@ public strictfp interface RobotController {
      * 
      * Checks that no cooldown turns remain.
      * @return whether it is possible to explode
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -478,6 +516,7 @@ public strictfp interface RobotController {
      * @param id of robot of interest
      * @throws GameActionException if conditions for exploding are not satisfied
      *
+     *    or if not called by controller
      * @battlecode.doc.costlymethod
      */
     void explode(int id) throws GameActionException;
@@ -493,6 +532,7 @@ public strictfp interface RobotController {
      *
      * @param id of robot of interest
      * @return whether it is possible to mine at the current location
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -504,6 +544,7 @@ public strictfp interface RobotController {
      * @param id of robot of interest to perform mining
      * @throws GameActionException if conditions for mining are not satisfied
      *
+     *    or if not called by controller
      * @battlecode.doc.costlymethod
      */
     void mine(int id) throws GameActionException;
@@ -516,6 +557,7 @@ public strictfp interface RobotController {
     
      * Kills the robot with the given id
      * @param id id of the robot that you want to destroy
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -524,6 +566,7 @@ public strictfp interface RobotController {
     /**
     
      * Causes your team to lose the game. It's like typing "gg."
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -539,6 +582,7 @@ public strictfp interface RobotController {
      *
      * @param id of the robot to assign the indicator string
      * @param string the indicator string this round
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -552,6 +596,7 @@ public strictfp interface RobotController {
      * @param red the red component of the dot's color
      * @param green the green component of the dot's color
      * @param blue the blue component of the dot's color
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
@@ -566,6 +611,7 @@ public strictfp interface RobotController {
      * @param red the red component of the line's color
      * @param green the green component of the line's color
      * @param blue the blue component of the line's color
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
