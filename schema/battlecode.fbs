@@ -48,6 +48,14 @@ table SpawnedBodyTable {
     healths: [int];
 }
 
+/// A list of new bodies to be placed on the map.
+table SpawnLocationTable {
+    /// The teams of the new spawn locations.
+    teamIDs: [byte];
+    /// The locations of the spawn locations.
+    locs: VecTable;
+}
+
 /// The map a round is played on.
 table GameMap {
     /// The name of a map.
@@ -66,6 +74,8 @@ table GameMap {
     walls: [bool];
     /// The uranium on the map.
     uranium: [int];
+    /// The spawn locations.
+    spawnLocation: SpawnLocationTable;
 }
 
 /// Actions that can be performed.
@@ -93,10 +103,9 @@ enum Action : byte {
 /// Metadata about all bodies of a particular type.
 table BodyTypeMetadata {
     type: BodyType;
-    deathThreshold: float;
-    healthDecayPercentage: int;
-    actionRadiusSquared: int;
-    bytecodeLimit: int;
+    actionCooldown: int;
+    healthDecay: float;
+    healthLimit: float;
 }
 
 /// Data relevant to a particular team.
@@ -107,8 +116,8 @@ table TeamData {
     packageName: string;
     /// The ID of the team this data pertains to.
     teamID: byte;
-
-    
+    /// The bytecode limit of the team
+    bytecodeLimit: int;
 }
 
 // Profiler tables
@@ -172,7 +181,7 @@ table Constants {
     // number of rounds for passive uranium increase
     increasePeriod: int;
     // amounts of uranium added every increasePeriod rounds
-    uraniumAdditiveIncease: int;
+    uraniumAdditiveIncrease: int;
 }
 
 
@@ -221,8 +230,11 @@ table Round {
     /// The IDs of teams in the Game.
     teamIDs: [int];
 
-    /// The total amount of lead change of this team, this round
+    /// The total amount of uranium change of this team, this round
     teamUraniumChanges: [int];
+
+    /// The total amount of uranium mined by this team, this round
+    teamUraniumMined: [int];
 
     /// The IDs of bodies that moved.
     movedIDs: [int];
@@ -271,9 +283,7 @@ table Round {
     /// It should increase by one for each following round.
     roundID: int;
 
-    /// The IDs of player bodies.
-    bytecodeIDs: [int];
-    /// The bytecodes used by the player bodies.
+    /// The bytecodes used by the teams.
     bytecodesUsed: [int];
 }
 

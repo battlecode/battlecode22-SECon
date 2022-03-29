@@ -1,6 +1,7 @@
 package battlecode.world;
 
 import battlecode.common.*;
+import battlecode.common.GameActionException;
 import battlecode.server.GameMaker;
 import battlecode.world.control.RobotControlProvider;
 import org.junit.Ignore;
@@ -33,7 +34,7 @@ public class TestGame {
      *
      * @param map the game map
      */
-    public TestGame(LiveMap map) {
+    public TestGame(LiveMap map) throws GameActionException {
         world = new GameWorld(map,
                 new TestControlProvider(),
                 // this is a hack.
@@ -68,8 +69,8 @@ public class TestGame {
      * @param type type of the robot to spawn
      * @param team team of the robot to spawn
      */
-    public int spawn(int x, int y, RobotType type, Team team) {
-        return world.spawnRobot(type, new MapLocation(x, y), team);
+    public int spawn(RobotType type, Team team) throws GameActionException {
+        return world.spawnRobot(type, team, GameConstants.INITIAL_ROBOT_HEALTH);
     }
 
     /**

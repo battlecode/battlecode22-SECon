@@ -5,23 +5,19 @@ package battlecode.world;
  */
 public enum DominationFactor {
     /**
-     * Win by all enemy archons being destroyed (early end).
+     * Win by all enemy units being destroyed (early end).
      */
     ANNIHILATION,
     /**
-     * Win by having more Archons.
+     * Win by more uranium net worth (tiebreak 1).
      */
-    MORE_ARCHONS,
+    MORE_URANIUM_NET_WORTH,
     /**
-     * Win by more gold net worth (tiebreak 1).
+     * Win by more uranium mined total (tiebreak 2).
      */
-    MORE_GOLD_NET_WORTH,
+    MORE_URANIUM_MINED,
     /**
-     * Win by more lead net worth (tiebreak 2).
+     * Win because blue goes second (tiebreak 3).
      */
-    MORE_LEAD_NET_WORTH,
-    /**
-     * Win by coinflip (tiebreak 3).
-     */
-    WON_BY_DUBIOUS_REASONS,
+    WON_BY_BEING_BLUE,
 }

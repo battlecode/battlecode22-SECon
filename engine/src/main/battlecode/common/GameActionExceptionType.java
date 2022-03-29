@@ -43,5 +43,9 @@ public enum GameActionExceptionType {
     /**
      * Indicates when round number is out of range.
      */
-    ROUND_OUT_OF_RANGE
+    ROUND_OUT_OF_RANGE,
+    /**
+     * Indicates when trying to spawn when a friendly robot is on your spawn square.
+     */
+    FRIENDLY_ROBOT_PRESENT,
 }

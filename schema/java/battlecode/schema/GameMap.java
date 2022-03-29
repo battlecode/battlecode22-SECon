@@ -60,8 +60,13 @@ public final class GameMap extends Table {
   public int uraniumLength() { int o = __offset(18); return o != 0 ? __vector_len(o) : 0; }
   public ByteBuffer uraniumAsByteBuffer() { return __vector_as_bytebuffer(18, 4); }
   public ByteBuffer uraniumInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 18, 4); }
+  /**
+   * The spawn locations.
+   */
+  public SpawnLocationTable spawnLocation() { return spawnLocation(new SpawnLocationTable()); }
+  public SpawnLocationTable spawnLocation(SpawnLocationTable obj) { int o = __offset(20); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
 
-  public static void startGameMap(FlatBufferBuilder builder) { builder.startObject(8); }
+  public static void startGameMap(FlatBufferBuilder builder) { builder.startObject(9); }
   public static void addName(FlatBufferBuilder builder, int nameOffset) { builder.addOffset(0, nameOffset, 0); }
   public static void addMinCorner(FlatBufferBuilder builder, int minCornerOffset) { builder.addStruct(1, minCornerOffset, 0); }
   public static void addMaxCorner(FlatBufferBuilder builder, int maxCornerOffset) { builder.addStruct(2, maxCornerOffset, 0); }
@@ -74,6 +79,7 @@ public final class GameMap extends Table {
   public static void addUranium(FlatBufferBuilder builder, int uraniumOffset) { builder.addOffset(7, uraniumOffset, 0); }
   public static int createUraniumVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
   public static void startUraniumVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
+  public static void addSpawnLocation(FlatBufferBuilder builder, int spawnLocationOffset) { builder.addOffset(8, spawnLocationOffset, 0); }
   public static int endGameMap(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

@@ -22,16 +22,14 @@ public class GenerateMaps {
     @Test
     public void makeSimple() throws IOException {
         LiveMap map = new TestMapBuilder("maptest", 0, 0, 100, 100, 30)
-                .addArchon(
-                        0,
+                .addSpawnLoc(
                         Team.A,
                         new MapLocation(
                                 1,
                                 1
                         )
                 )
-                .addArchon(
-                        1,
+                .addSpawnLoc(
                         Team.B,
                         new MapLocation(
                                 99,

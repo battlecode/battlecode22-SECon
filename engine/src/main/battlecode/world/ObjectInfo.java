@@ -143,6 +143,14 @@ public strictfp class ObjectInfo {
     // *** ADDING OBJECTS *********
     // ****************************
 
+    public void spawnController(InternalRobot robot) {
+        incrementRobotCount(robot.getTeam());
+        incrementRobotTypeCount(robot.getTeam(), robot.getType());
+        int id = robot.getID();
+        gameRobotsByID.put(id, robot);
+        dynamicBodyExecOrder.add(id);
+    }
+
     public void spawnRobot(InternalRobot robot) {
         incrementRobotCount(robot.getTeam());
         incrementRobotTypeCount(robot.getTeam(), robot.getType());
@@ -167,6 +175,14 @@ public strictfp class ObjectInfo {
     // ****************************
     // *** DESTROYING OBJECTS *****
     // ****************************
+
+    public void destroyController(int id) {
+        InternalRobot robot = getRobotByID(id);
+        decrementRobotCount(robot.getTeam());
+        decrementRobotTypeCount(robot.getTeam(), robot.getType());
+        gameRobotsByID.remove(id);
+        dynamicBodyExecOrder.remove(id);
+    }
 
     public void destroyRobot(int id) {
         InternalRobot robot = getRobotByID(id);
