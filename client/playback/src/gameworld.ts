@@ -265,7 +265,7 @@ export default class GameWorld {
         }, 'id')
 
         this.indicatorStrings = {}
-        this.bytecodesUsed = [0,0]
+        this.bytecodesUsed = [0, 0]
         this.turn = 0
         this.minCorner = new Victor(0, 0)
         this.maxCorner = new Victor(0, 0)
@@ -396,11 +396,11 @@ export default class GameWorld {
         }
 
         // load teams bytecodes used
-        this.bytecodesUsed = [0,0]
+        this.bytecodesUsed = [0, 0]
         // this.bytecodesUsed = Array.from(delta.bytecodesUsedArray())
 
         // Health decay on all existing bodies
-        for(let i = 0;i < this.bodies.length; i++){
+        for (let i = 0; i < this.bodies.length; i++) {
             this.bodies.arrays.hp[i] *= 1 - .0007
         }
 
@@ -460,8 +460,11 @@ export default class GameWorld {
 
                     case schema.Action.MINE_URANIUM:
                         setAction()
-                        teamStatsObj.uraniumMined += 1
-                        this.mapStats.uraniumVals[target]--
+                        let bodyidx = this.mapStats.getIdx(body.x, body.y)
+                        if (this.mapStats.uraniumVals[bodyidx] > 0) {
+                            teamStatsObj.uraniumMined += 1
+                            this.mapStats.uraniumVals[bodyidx]--
+                        }
                         break
 
                     case schema.Action.SPAWN_UNIT:

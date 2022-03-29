@@ -732,7 +732,7 @@ export default class Stats {
   private getTeamByteCodes(bytecodesUsed, teams, teamNum){
     var total = 0;
     for(let i = 0; i < teams.length; i++){
-        console.log(i + " " + teams[i]);
+        // console.log(i + " " + teams[i]);
       if(teams[i] == teamNum){
         total += bytecodesUsed[i];
       }
@@ -743,10 +743,10 @@ export default class Stats {
   updateBytecode(bytecodesUsed, team, turn){
     let bytecodesUsedRed = this.getTeamByteCodes(bytecodesUsed, team, 1);
     let bytecodesUsedBlue = this.getTeamByteCodes(bytecodesUsed, team, 2);
-    console.log("updating bytecode");
-    console.log(bytecodesUsed);
-    console.log(bytecodesUsedRed);
-    console.log(bytecodesUsedBlue);
+    // console.log("updating bytecode");
+    // console.log(bytecodesUsed);
+    // console.log(bytecodesUsedRed);
+    // console.log(bytecodesUsedBlue);
     //@ts-ignore
     this.bytecodeChart.data.datasets[0].data?.push({y: bytecodesUsedRed, x: turn});
     //@ts-ignore

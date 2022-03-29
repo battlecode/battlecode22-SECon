@@ -120,7 +120,7 @@ export default class Renderer {
             //   else this.ctx.drawImage(tileImg, cy, cx, scale+ 1, scale+ 1)
             // ===========================================================================================
 
-            this.ctx.fillStyle = map.walls[idxVal] ? "black" : "white";
+            this.ctx.fillStyle = map.walls[idxVal] ? "black" : "white"
 
             if (!this.conf.doingRotate) this.ctx.fillRect(cx, cy, scale + 1, scale + 1)
             else this.ctx.fillRect(cy, cx, scale + 1, scale + 1)
@@ -137,7 +137,7 @@ export default class Renderer {
         }
 
         this.ctx.globalAlpha = .25
-        for(let loc of map.spawnLocations){
+        for (let loc of map.spawnLocations) {
             this.ctx.fillStyle = loc.color
             let plotJ = height - loc.y - 1
             const cx = (minX + loc.x) * scale, cy = (minY + plotJ) * scale
@@ -286,6 +286,13 @@ export default class Renderer {
             }
         }
 
+
+        let max_hp = 0
+        hps.forEach((h) => {
+            max_hp = Math.max(max_hp, h)
+        })
+        max_hp = Math.sqrt(max_hp)
+
         // Render the robots
         // render images with priority last to have them be on top of other units.
 
@@ -305,7 +312,7 @@ export default class Renderer {
 
             img = this.imgs.robots[cst.bodyTypeToString(types[i])][teams[i]]
 
-            if (actions[i] == schema.Action.MINE_URANIUM){
+            if (actions[i] == schema.Action.MINE_URANIUM) {
                 this.ctx.beginPath()
                 this.ctx.arc(realXs[i] + 0.5, realYs[i] + 0.5, .45, 0, 2 * Math.PI, false)
                 this.ctx.fillStyle = 'green'
@@ -314,8 +321,7 @@ export default class Renderer {
 
             this.ctx.save()
 
-            let max_hp = 10 //TODO keep track of spawn health or something
-            this.drawBot(img, realXs[i], realYs[i], hps[i], hps[i] / max_hp, cst.bodyTypeToSize(types[i]))
+            this.drawBot(img, realXs[i], realYs[i], hps[i], 6 * (Math.sqrt(hps[i]) / max_hp) - 3, cst.bodyTypeToSize(types[i]))
 
             this.drawSightRadii(realXs[i], realYs[i], types[i], ids[i] === this.lastSelectedID)
 
@@ -329,7 +335,7 @@ export default class Renderer {
                 this.ctx.stroke()
             }
 
-            
+
 
             // if (this.conf.showAnomalies) {
             //     if (actions[i] == schema.Action.LOCAL_ABYSS || actions[i] == schema.Action.LOCAL_CHARGE || actions[i] == schema.Action.LOCAL_FURY) {
@@ -454,11 +460,11 @@ export default class Renderer {
             return 1 / (1 + Math.exp(-x))
         }
         //this.ctx.filter = `brightness(${sigmoid(c - 100) * 30 + 90}%)`;
-        let size = sigmoid(ratio) * 0.5 + 0.5
+        let size = sigmoid(ratio) * 0.6 + 0.4
         this.ctx.drawImage(img, x + (1 - realWidth * size) / 2, y + (1 - realHeight * size) / 2, realWidth * size, realHeight * size)
-        
+
         //health bars
-        
+
         // this.ctx.beginPath()
         // this.ctx.moveTo(x + realWidth * size / 2 - realWidth * ratio / 2, y + 1)
         // this.ctx.lineTo(x + realWidth * size / 2 + realWidth * ratio / 2, y + 1)

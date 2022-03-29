@@ -452,7 +452,7 @@ export default class Controls {
     // infoString += `<span class="info-name">Level:</span> <span class="info-num">${level}</span> | `; 
     // if (portable !== undefined && prototype !== undefined) infoString += `<span class="info-name">Mode:</span> <span class="info-num">${portable ? 'Port' : prototype ? 'Prot' : 'Turr'}</span>`;
     infoString += `<br>`;
-    infoString += `<span class="info-name">HP:</span> <span class="info-num">${hp}</span>`; // / <span class="info-num">${max_hp}</span> |       
+    infoString += `<span class="info-name">HP:</span> <span class="info-num">${hp.toFixed(2)}</span>`; // / <span class="info-num">${max_hp}</span> |       
     // infoString += `<span class="info-name">DP:</span> <span class="info-num">${dp}</span> | `;    
     // infoString += `<span class="info-name">Bytecodes Used:</span> <span class="info-num">${bytecodes}</span>`;
     if (parent !== undefined) infoString += ` | <span class="info-name">Parent:</span> <span class="info-num">${parent}</span>`;
