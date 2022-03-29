@@ -109,7 +109,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public int getRobotCount() {
-        return this.gameWorld.getObjectInfo().getRobotCount(this.getTeam());
+        return this.gameWorld.getObjectInfo().getRobotTypeCount(this.getTeam(), RobotType.ROBOT);
     }
 
     @Override
@@ -530,8 +530,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         this.assertCanMove(dir);
         MapLocation center = this.adjacentLocation(dir);
         InternalRobot prevOccupied = this.gameWorld.getRobot(center);
-        this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), this.robot.getLocation());
-        this.gameWorld.moveRobot(this.getLocation(), center);
+        this.gameWorld.getMatchMaker().addMoved(this.robot.getID(), center);
 
         // process collisions
         boolean winner = true;
@@ -541,6 +540,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         }
         
         if (winner) {
+            this.gameWorld.moveRobot(this.getLocation(), center);
             this.robot.setLocation(center);
             this.robot.resetCooldownTurns();
         } 

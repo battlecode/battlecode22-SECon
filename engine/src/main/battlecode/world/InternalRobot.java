@@ -215,7 +215,6 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @return whether or not the current robot survives
      */
     public boolean collide(MapLocation loc, InternalRobot bot) throws GameActionException{
-        this.gameWorld.removeRobot(loc);
         if (Math.abs(bot.getHealth() - this.getHealth()) <= GameConstants.COLLISION_EQUALITY_THRESHOLD){
             this.gameWorld.destroyRobot(bot.getID());
             this.gameWorld.destroyRobot(this.getID());
