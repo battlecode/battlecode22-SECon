@@ -125,12 +125,11 @@ public strictfp class RobotPlayer {
             MapLocation loc = rc.getLocation(robotId);
             System.out.println("Controlling robot " + robotId + " at location " + loc + " and health " + rc.getHealth(robotId));
 
-            if (rngActionInt < 0 && rc.canMine(robotId)) {
+            if (rngActionInt < 100 && rc.canMine(robotId)) {
                 // Let's try to mine
                 rc.mine(robotId);
                 System.out.println("Mining, square amount: " + rc.senseUranium(loc) + ", Team Amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-            //} else if (rngActionInt < 70 && rc.senseNearbyRobots(rc.getLocation(robotId), 1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
-            } else if (rngActionInt < 100) {
+            } else if (rngActionInt < 70 && rc.senseNearbyRobots(rc.getLocation(robotId), 1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
                 System.out.println(rc.senseNearbyRobots(loc, 1, rc.getTeam() == Team.A ? Team.B : Team.A)[0]);
                 // Let's try to explode
                 System.out.println("Trying to explode");

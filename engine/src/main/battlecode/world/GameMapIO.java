@@ -299,7 +299,7 @@ public final strictfp class GameMapIO {
                 bodyTypes.add(FlatHelpers.getBodyTypeFromRobotType(robot.getType()));
                 bodyLocsXs.add(robot.getLocation().x);
                 bodyLocsYs.add(robot.getLocation().y);
-                bodyHealths.add(robot.getInitialHealth());
+                bodyHealths.add((int) (Math.ceil(robot.getHealth())));
             }
 
             for (MapLocation spawnLocation : gameMap.getSpawnLocs()) {
