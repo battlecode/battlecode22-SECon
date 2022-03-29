@@ -250,7 +250,6 @@ export default class Looper {
                 // let influence = bodies.influence[index];
                 // let conviction = bodies.conviction[index];
                 let hp = bodies.hp[index]; 
-                console.log(hp)
                 let bytecodes = 0;
                 // let level = bodies.level[index];
                 //let max_hp = level == 1 ? this.meta.types[type].health : level == 2 ? this.meta.types[type].level2Health : this.meta.types[type].level3Health;

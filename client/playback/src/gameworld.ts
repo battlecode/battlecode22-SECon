@@ -424,12 +424,6 @@ export default class GameWorld {
 
         // Map changes
 
-        if (delta.roundID() % this.meta.constants.increasePeriod() == 0) {
-            this.mapStats.uraniumVals.forEach((x, i) => {
-                this.mapStats.uraniumVals[i] = x > 0 ? x + this.meta.constants.uraniumAdditiveIncrease() : 0
-            })
-        }
-
         // Actions
         if (delta.actionsLength() > 0) {
             const arrays = this.bodies.arrays
@@ -494,6 +488,12 @@ export default class GameWorld {
             let statsObj = this.teamStats.get(teamID) as TeamStats
             statsObj.uraniumMinedHist.push(statsObj.uraniumMined)
             if (statsObj.uraniumMinedHist.length > 100) statsObj.uraniumMinedHist.shift()
+        }
+
+        if (delta.roundID() % this.meta.constants.increasePeriod() == 0) {
+            this.mapStats.uraniumVals.forEach((x, i) => {
+                this.mapStats.uraniumVals[i] = x > 0 ? x + this.meta.constants.uraniumAdditiveIncrease() : 0
+            })
         }
 
         // income
