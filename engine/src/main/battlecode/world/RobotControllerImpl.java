@@ -312,8 +312,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
             if (team != null && sensedRobot.getTeam() != team)
                 continue;
             // don't return controllers here
-            if (robot.getType() == RobotType.CONTROLLER)
+            if (sensedRobot.getType() == RobotType.CONTROLLER) {
+                System.out.println("found controller");
                 continue;
+            }
             validSensedRobots.add(sensedRobot.getRobotInfo());
         }
         return validSensedRobots.toArray(new RobotInfo[validSensedRobots.size()]);
