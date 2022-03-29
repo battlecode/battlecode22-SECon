@@ -244,24 +244,35 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     // should be called at the beginning of every round
     public void processBeginningOfRound() {
-        this.indicatorString = "";
+        if (this.type == RobotType.ROBOT) {
+            this.indicatorString = "";
+        }
     }
 
     public void processBeginningOfTurn() {
-        this.cooldownTurns = Math.max(0, this.cooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
-        this.currentBytecodeLimit = this.type.bytecodeLimit;
+        if (this.type == RobotType.ROBOT) {
+            this.cooldownTurns = Math.max(0, this.cooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
+        } else {
+            this.currentBytecodeLimit = this.type.bytecodeLimit;
+        }
     }
 
     public void processEndOfTurn() {
         // bytecode stuff!
-        this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
+        if (this.type == RobotType.CONTROLLER)
+            this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
         // indicator strings!
-        this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
+        if (this.type == RobotType.ROBOT)
+            this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
     }
 
     public void processEndOfRound() {
+        if (this.type == RobotType.CONTROLLER) {
+            return;
+        }
         this.damageHealth(this.type.healthDecay * this.getHealth());
         if (this.getHealth() < this.type.healthLimit){
+            System.out.println("Time to destroy myself " + this);
             this.gameWorld.destroyRobot(getID());
             return;
         }
