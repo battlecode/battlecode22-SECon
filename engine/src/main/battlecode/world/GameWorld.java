@@ -134,22 +134,14 @@ public strictfp class GameWorld {
     private void updateDynamicBodies(Team teamToPlay) {
         objectInfo.eachDynamicBodyByExecOrder((body) -> {
             if (body instanceof InternalRobot) {
-                try{
-                    return updateRobot((InternalRobot) body, teamToPlay);
-                }
-                catch (GameActionException e) {
-                    throw new RuntimeException("A GameActionException has occured." +
-                        "This is likely because a Robot tried to call a Controller function," +
-                        " or a Controller tried to control an enemy robot.");
-                }
-
+                return updateRobot((InternalRobot) body, teamToPlay);
             } else {
                 throw new RuntimeException("non-robot body registered as dynamic");
             }
         });
     }
 
-    private boolean updateRobot(InternalRobot robot, Team teamToPlay) throws GameActionException {
+    private boolean updateRobot(InternalRobot robot, Team teamToPlay) {
         if (robot.getTeam() == teamToPlay) {
             robot.processBeginningOfTurn();
             if (robot.getType() == RobotType.CONTROLLER) {

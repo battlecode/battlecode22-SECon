@@ -110,20 +110,25 @@ public strictfp class RobotPlayer {
 
     static void runController(RobotController rc, int idx) throws GameActionException {
 
-        System.out.println("I'm an all powerful controller. I have " + rc.getRobotCount() + " robot(s) under my control.");
-        if (rc.getTeamUraniumAmount(rc.getTeam()) > 0) {
-            int health = rng.nextInt(rc.getTeamUraniumAmount(rc.getTeam())) + 1;
+        // System.out.println("I'm an all powerful controller. (I think) " + rc.getType() + " I have " + rc.getRobotCount() + " robot(s) under my control.");
+        System.out.println("Amount uranium " + rc.getTeamUraniumAmount(rc.getTeam()));
+        if (rc.getTeamUraniumAmount(rc.getTeam()) > 1) {
+            int health = rng.nextInt(rc.getTeamUraniumAmount(rc.getTeam()) - 1) + 1;
+            if (!rc.isLocationOccupied(rc.getSpawnLoc())) {
+                rc.buildRobot(health);
+            }
             if (rc.canBuildRobot(health)) {
                 rc.buildRobot(health);
-                // System.out.println("Built new robot of health " + health);
+                System.out.println("Built new robot of health " + health);
             }
         }
         RobotInfo[] myRobots = rc.senseNearbyRobots(new MapLocation(0, 0), -1, rc.getTeam());
+        // System.out.println("I found " + myRobots.length + " robots to control.");
+
         for (int i = 0; i < myRobots.length; i ++) {
             int robotId = myRobots[idx].getID();
             int rngActionInt = rng.nextInt(100);
-            // System.out.println(myRobots[idx] + "\n");
-            // System.out.println("This robot's action is decided by arbitrary number " + rngActionInt);
+            System.out.println("This robot's action is decided by arbitrary number " + rngActionInt);
 
             if (rngActionInt < 50 && rc.canMine(robotId)) {
                 // Let's try to mine
@@ -138,13 +143,13 @@ public strictfp class RobotPlayer {
                     rc.explode(robotId);
                 }
             }  else if (rngActionInt < 100) {
-                // System.out.println("It's time to move!");
+                System.out.println("It's time to move!");
                 // Let's try to move
                 Direction dir = directions[rng.nextInt(directions.length)];
                 // System.out.println(dir);
                 if (rc.canMove(robotId, dir)) {
                     rc.move(robotId, dir);
-                    // System.out.println("Moving, final place: " + rc.getLocation(robotId));
+                    System.out.println("Moving, final place: " + rc.getLocation(robotId));
                 }
             }
             idx = (idx + 1) % myRobots.length;

@@ -203,11 +203,6 @@ public class SandboxedRobotPlayer {
 
             } catch (final RobotDeathException e) {
                 return;
-            } catch (final GameActionException e){
-                ErrorReporter.report(e, "A GameActionException occured." +
-                        "This is probably because you tried to control an enemy robot" +
-                        " by passing in its ID, or you tried to call a Controller" +
-                        " function with a Robot.", false); 
             } finally {
                 // Ensure that we know we're terminated.
                 this.terminated = true;
@@ -290,7 +285,7 @@ public class SandboxedRobotPlayer {
     /**
      * Take a step on the RobotPlayer thread, blocking until it's completed.
      */
-    public void step() throws GameActionException {
+    public void step() {
         // Is the RobotPlayer terminated?
         if (terminated) {
             return; // the player screwed up but they're not gonna lose the robot hehehe
@@ -424,7 +419,7 @@ public class SandboxedRobotPlayer {
      * Create a new System.out for this robot and round.
      * @return a stream to use for System.out in the sandboxed player
      */
-    private void updateOut() throws GameActionException {
+    private void updateOut() {
         //TODO this is ugly
         if (systemOut instanceof RoboPrintStream) {
             ((RoboPrintStream) systemOut).updateHeader(

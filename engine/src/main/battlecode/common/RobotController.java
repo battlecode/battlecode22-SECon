@@ -20,33 +20,30 @@ public strictfp interface RobotController {
      *
      * @return the current round number, where round 1 is the first round of the
      * match
-     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
-    int getRoundNum() throws GameActionException;
+    int getRoundNum();
 
     /**
      * Returns the width of the game map. Valid x coordinates range from
      * 0 (inclusive) to the width (exclusive).
      *
      * @return the map width
-     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
-    int getMapWidth() throws GameActionException;
+    int getMapWidth();
 
     /**
      * Returns the height of the game map. Valid y coordinates range from
      * 0 (inclusive) to the height (exclusive).
      *
      * @return the map height
-     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
-    int getMapHeight() throws GameActionException;
+    int getMapHeight();
 
     /**
      * Returns the number of robots on your team.
@@ -64,11 +61,10 @@ public strictfp interface RobotController {
      *
      * @param team the team being queried.
      * @return the amount of uranium a team has in its reserves.
-     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
-    int getTeamUraniumAmount(Team team) throws GameActionException;
+    int getTeamUraniumAmount(Team team);
 
     // *********************************
     // ****** UNIT QUERY METHODS *******
@@ -78,22 +74,20 @@ public strictfp interface RobotController {
      * Returns the ID of this robot.
      *
      * @return the ID of this robot
-     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
-    int getID() throws GameActionException;
+    int getID();
 
     /**
      * Returns this robot's Team.
      *
      * @param id of robot of interest
      * @return the robot's Team
-     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
-    Team getTeam() throws GameActionException;
+    Team getTeam();
 
     /**
      * Returns a robot's Team.
@@ -108,14 +102,13 @@ public strictfp interface RobotController {
     Team getTeam(int id) throws GameActionException;
 
     /**
-     * Returns this robot's type (ROBOT).
+     * Returns this robot's type.
      *
      * @return the robot's type
-     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
-    RobotType getType() throws GameActionException;
+    RobotType getType();
 
     /**
      * Returns a robot's type (ROBOT).
@@ -169,6 +162,15 @@ public strictfp interface RobotController {
      * @battlecode.doc.costlymethod
      */
     boolean onTheMap(MapLocation loc) throws GameActionException;
+
+    /**
+     * Returns the spawn location for your team.
+     *
+     * @return spawn location for your team
+     *
+     * @battlecode.doc.costlymethod
+     */
+    MapLocation getSpawnLoc();
 
     /**
      * Checks whether a robot is at a given location. Assumes the location is valid.

@@ -167,7 +167,7 @@ public class PlayerControlProvider implements RobotControlProvider {
     public void roundEnded() {}
 
     @Override
-    public void runRobot(InternalRobot robot) throws GameActionException {
+    public void runRobot(InternalRobot robot) {
         assert this.sandboxes.get(robot.getID()) != null;
 
         final SandboxedRobotPlayer player = this.sandboxes.get(robot.getID());

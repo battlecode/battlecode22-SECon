@@ -69,7 +69,7 @@ public interface RobotControlProvider {
      *
      * @param robot the robot to process
      */
-    void runRobot(InternalRobot robot) throws GameActionException;
+    void runRobot(InternalRobot robot);
 
     /**
      * Get the bytecodes used in the most recent round by the
