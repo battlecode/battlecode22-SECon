@@ -637,7 +637,7 @@ public strictfp class GameMaker {
             spawnedBodiesLocsYs.add(robot.getLocation().y);
             spawnedBodiesTeamIDs.add(TeamMapping.id(robot.getTeam()));
             spawnedBodiesTypes.add(FlatHelpers.getBodyTypeFromRobotType(robot.getType()));
-            spawnedBodiesHealths.add(robot.getRobotInfo().getInitialHealth());
+            spawnedBodiesHealths.add((int) (Math.ceil(robot.getRobotInfo().getHealth())));
         }
 
         private void clearData() {

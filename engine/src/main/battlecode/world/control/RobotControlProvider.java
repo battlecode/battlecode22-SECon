@@ -2,6 +2,7 @@ package battlecode.world.control;
 
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
+import battlecode.common.GameActionException;
 import battlecode.world.GameWorld;
 import battlecode.world.InternalRobot;
 
@@ -29,7 +30,7 @@ public interface RobotControlProvider {
      * Tells the provider that the match has ended, and it can
      * release its resources.
      */
-    void matchEnded();
+    void matchEnded() throws GameActionException;
 
     /**
      * Signals to the provider that it should prepare to
@@ -47,8 +48,11 @@ public interface RobotControlProvider {
      * gives it a handle to that robot.
      *
      * @param robot the newly spawned robot
+     * @throws GameActionException if the rules of the game are broken,
+     *  probably if a Robot tries to call a Controller function,
+     *  or a team tries to control an enemy robot
      */
-    void robotSpawned(InternalRobot robot);
+    void robotSpawned(InternalRobot robot) throws GameActionException;
 
     /**
      * Signals to the provider that the robot with the
@@ -58,7 +62,7 @@ public interface RobotControlProvider {
      *
      * @param robot the freshly executed robot
      */
-    void robotKilled(InternalRobot robot);
+    void robotKilled(InternalRobot robot) throws GameActionException;
 
     /**
      * Instructs the provider to process a round for the given robot.

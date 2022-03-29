@@ -9,7 +9,7 @@ package battlecode.common;
  */
 public enum RobotType {
 
-    // Action Cooldown, Health Decay, Health Limit
+    // Action Cooldown, Health Decay, Health Limit, Bytecode Limit
 
     /**
      * Robots are general-purpose units. They can mine uranium deposts around
@@ -18,8 +18,10 @@ public enum RobotType {
      *
      * @battlecode.doc.robottype
      */
-    ROBOT (  10, 0.0007f, 0.1f),
-    //       AC    HD     HL
+    ROBOT       (  10, 0.0007f, 0.1f,      0),
+    //           AC    HD     HL           BL
+    CONTROLLER  (    0,     0,     0, 100000),
+    //           AC    HD     HL           BL
     ;
 
     /**
@@ -37,9 +39,15 @@ public enum RobotType {
      */
     public final float healthLimit;
 
-    RobotType(int actionCooldown, float healthDecay, float healthLimit) {
+    /**
+     * Bytecode limit for this robot.
+     */
+    public final int bytecodeLimit;
+
+    RobotType(int actionCooldown, float healthDecay, float healthLimit, int bytecodeLimit) {
         this.actionCooldown                 = actionCooldown;
         this.healthDecay                    = healthDecay;
         this.healthLimit                    = healthLimit;
+        this.bytecodeLimit                  = bytecodeLimit;
     }
 }

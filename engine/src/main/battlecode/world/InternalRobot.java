@@ -4,6 +4,8 @@ import java.lang.Math;
 import battlecode.common.*;
 import battlecode.schema.Action;
 
+import battlecode.instrumenter.RobotDeathException;
+
 /**
  * The representation of a robot used by the server.
  * Comparable ordering:
@@ -56,7 +58,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.health = health;
 
         this.controlBits = 0;
-        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT;
+        this.currentBytecodeLimit = this.type.bytecodeLimit;
         this.bytecodesUsed = 0;
 
         this.roundsAlive = 0;
@@ -192,7 +194,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param healthAmount the amount to damage by
      * @param checkWin whether to end the game if the last robot dies
      */
-    public void damageHealth(float healthAmount) {
+    public void damageHealth(float healthAmount) throws GameActionException {
         float oldHealth = this.health;
         this.health -= healthAmount;
         if (this.health <= 0) {
@@ -212,8 +214,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * 
      * @return whether or not the current robot survives
      */
-    public boolean collide(MapLocation loc, InternalRobot bot){
-        this.gameWorld.removeRobot(loc);
+    public boolean collide(MapLocation loc, InternalRobot bot) throws GameActionException{
         if (Math.abs(bot.getHealth() - this.getHealth()) <= GameConstants.COLLISION_EQUALITY_THRESHOLD){
             this.gameWorld.destroyRobot(bot.getID());
             this.gameWorld.destroyRobot(this.getID());
@@ -242,24 +243,35 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
 
     // should be called at the beginning of every round
     public void processBeginningOfRound() {
-        this.indicatorString = "";
+        if (this.type == RobotType.ROBOT) {
+            this.indicatorString = "";
+        }
     }
 
     public void processBeginningOfTurn() {
-        this.cooldownTurns = Math.max(0, this.cooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
-        this.currentBytecodeLimit = GameConstants.BYTECODE_LIMIT; //TODO: move from here
+        if (this.type == RobotType.ROBOT) {
+            this.cooldownTurns = Math.max(0, this.cooldownTurns - GameConstants.COOLDOWNS_PER_TURN);
+        } else {
+            this.currentBytecodeLimit = this.type.bytecodeLimit;
+        }
     }
 
     public void processEndOfTurn() {
         // bytecode stuff!
-        this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
+        if (this.type == RobotType.CONTROLLER)
+            this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
         // indicator strings!
-        this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
+        if (this.type == RobotType.ROBOT)
+            this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
     }
 
-    public void processEndOfRound() {
+    public void processEndOfRound() throws GameActionException{
+        if (this.type == RobotType.CONTROLLER) {
+            return;
+        }
         this.damageHealth(this.type.healthDecay * this.getHealth());
         if (this.getHealth() < this.type.healthLimit){
+            System.out.println("Time to destroy myself " + this);
             this.gameWorld.destroyRobot(getID());
             return;
         }
@@ -287,7 +299,11 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     // ****** VARIOUS METHODS **********
     // *********************************
 
-    public void die_exception() {
+    public void disintegrate() {
+        throw new RobotDeathException();
+    }
+
+    public void die_exception() throws GameActionException {
         this.gameWorld.getMatchMaker().addAction(getID(), Action.DIE_EXCEPTION, -1);
         this.gameWorld.destroyRobot(getID());
     }

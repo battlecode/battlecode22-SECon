@@ -299,7 +299,7 @@ public final strictfp class GameMapIO {
                 bodyTypes.add(FlatHelpers.getBodyTypeFromRobotType(robot.getType()));
                 bodyLocsXs.add(robot.getLocation().x);
                 bodyLocsYs.add(robot.getLocation().y);
-                bodyHealths.add(robot.getInitialHealth());
+                bodyHealths.add((int) (Math.ceil(robot.getHealth())));
             }
 
             for (MapLocation spawnLocation : gameMap.getSpawnLocs()) {
@@ -362,7 +362,7 @@ public final strictfp class GameMapIO {
                 int bodyID = bodyTable.robotIDs(i);
                 int bodyX = locs.xs(i);
                 int bodyY = locs.ys(i);
-                float health = bodyTable.healths(i);
+                int health = bodyTable.healths(i);
                 Team bodyTeam = TeamMapping.team(bodyTable.teamIDs(i));
                 initialBodies.add(new RobotInfo(bodyID, bodyTeam, bodyType, health, new MapLocation(bodyX, bodyY)));
             }

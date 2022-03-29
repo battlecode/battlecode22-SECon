@@ -1,6 +1,8 @@
 package battlecode.world;
 
 import battlecode.common.*;
+import battlecode.common.GameActionException;
+import static battlecode.common.GameActionExceptionType.*;
 import battlecode.instrumenter.profiler.ProfilerCollection;
 import battlecode.schema.Action;
 import battlecode.server.ErrorReporter;
@@ -43,7 +45,7 @@ public strictfp class GameWorld {
     private final GameMaker.MatchMaker matchMaker;
 
     @SuppressWarnings("unchecked")
-    public GameWorld(LiveMap gm, RobotControlProvider cp, GameMaker.MatchMaker matchMaker) {
+    public GameWorld(LiveMap gm, RobotControlProvider cp, GameMaker.MatchMaker matchMaker) throws GameActionException {
         this.walls = gm.getWallArray();
         this.uranium = gm.getUraniumArray();
         this.spawnLocs = gm.getSpawnLocs();
@@ -62,6 +64,11 @@ public strictfp class GameWorld {
         this.matchMaker = matchMaker;
 
         controlProvider.matchStarted(this);
+
+        // Add the controller robots (one for each team) to the GameWorld
+        for (int i = 0; i < 2; i++) {
+            spawnRobot(RobotType.CONTROLLER, Team.values()[i], -1);
+        }
 
         // Add the robots contained in the LiveMap to this world.
         RobotInfo[] initialBodies = this.gameMap.getInitialBodies();
@@ -137,8 +144,10 @@ public strictfp class GameWorld {
     private boolean updateRobot(InternalRobot robot, Team teamToPlay) {
         if (robot.getTeam() == teamToPlay) {
             robot.processBeginningOfTurn();
-            this.controlProvider.runRobot(robot);
-            robot.setBytecodesUsed(this.controlProvider.getBytecodesUsed(robot));
+            if (robot.getType() == RobotType.CONTROLLER) {
+                this.controlProvider.runRobot(robot);
+                robot.setBytecodesUsed(this.controlProvider.getBytecodesUsed(robot));
+            }
             robot.processEndOfTurn();
         }
 
@@ -146,8 +155,8 @@ public strictfp class GameWorld {
         
         // If the robot terminates but the death signal has not yet
         // been visited:
-        if (this.controlProvider.getTerminated(robot) && objectInfo.getRobotByID(robot.getID()) != null)
-            destroyRobot(robot.getID());
+        // if (this.controlProvider.getTerminated(robot) && objectInfo.getRobotByID(robot.getID()) != null)
+        //     destroyRobot(robot.getID());
         return true;
     }
 
@@ -230,12 +239,12 @@ public strictfp class GameWorld {
     // ****** ROBOT METHODS **************
     // ***********************************
 
-    public InternalRobot getRobot(MapLocation loc) {
-        return this.robots[loc.x - this.gameMap.getOrigin().x][loc.y - this.gameMap.getOrigin().y];
+    public InternalRobot getRobotByID(int id){
+        return objectInfo.getRobotByID(id);
     }
 
-    public InternalRobot getRobotByID(int id) {
-        return this.objectInfo.getRobotByID(id);
+    public InternalRobot getRobot(MapLocation loc) {
+        return this.robots[loc.x - this.gameMap.getOrigin().x][loc.y - this.gameMap.getOrigin().y];
     }
 
     public void moveRobot(MapLocation start, MapLocation end) {
@@ -319,6 +328,40 @@ public strictfp class GameWorld {
         gameStats.setDominationFactor(d);
     }
 
+    private void initiateTieBreakers() {
+        if (!setWinnerIfMoreUraniumValue())
+            if (!setWinnerIfMoreUraniumMined())
+                setWinnerBlue();
+    }
+
+    /**
+     * @return whether a team wins based on one team no longer having robots
+     */
+    public boolean setWinnerIfNoMoreRobots() {
+
+        int[] totalRobots = new int[2];
+        
+        // sum live robots worth
+        for (InternalRobot robot : objectInfo.robotsArray()) {
+            if (robot.getType() == RobotType.CONTROLLER) {
+                continue;
+            }
+            totalRobots[robot.getTeam().ordinal()] += 1;
+        }
+        
+        if (totalRobots[0] == 0 && totalRobots[1] == 0) {
+            initiateTieBreakers();
+            return true;
+        } else if (totalRobots[0] == 0) {
+            setWinner(Team.B, DominationFactor.ANNIHILATION);
+            return true;
+        } else if (totalRobots[1] == 0) {
+            setWinner(Team.A, DominationFactor.ANNIHILATION);
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @return whether a team has a greater net Uranium value
      */
@@ -387,26 +430,33 @@ public strictfp class GameWorld {
 
         // Process end of each robot's round
         objectInfo.eachRobot((robot) -> {
-            robot.processEndOfRound();
+            try {
+                robot.processEndOfRound();
+            } catch (GameActionException e) {
+                throw new RuntimeException("A GameActionException has occured." +
+                    "This is likely because a Robot tried to call a Controller function," +
+                    " or a Controller tried to control an enemy robot.");
+            }
+
             return true;
         });
 
         // Add uranium resources to the map
-        if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) 
+        if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) {
             for (int i = 0; i < this.uranium.length; i++)
                 if (this.uranium[i] > 0)
                     this.uranium[i] += GameConstants.ADD_URANIUM;
+        }
 
         this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getRoundUraniumChange(Team.A), this.teamInfo.getRoundUraniumMined(Team.A));
         this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B));
         this.teamInfo.processEndOfRound();
 
         if (perceivedEndOfRound) {
+            setWinnerIfNoMoreRobots();
             // Check for end of match
             if (timeLimitReached() && gameStats.getWinner() == null)
-                if (!setWinnerIfMoreUraniumValue())
-                    if (!setWinnerIfMoreUraniumMined())
-                        setWinnerBlue();
+                initiateTieBreakers();
 
             if (gameStats.getWinner() != null)
                 running = false;
@@ -417,18 +467,22 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, RobotType type, Team team, int health) {
+    public int spawnRobot(int ID, RobotType type, Team team, int health) throws GameActionException {
+        if (type == RobotType.CONTROLLER) {
+            InternalRobot robot = new InternalRobot(this, ID, type, null, health, team);
+            objectInfo.spawnController(robot);
+            controlProvider.robotSpawned(robot);
+            return ID;
+        }
         MapLocation spawnLoc = getSpawnLoc(team);
         InternalRobot robot = new InternalRobot(this, ID, type, spawnLoc, health, team);
         objectInfo.spawnRobot(robot);
         addRobot(spawnLoc, robot);
-
-        controlProvider.robotSpawned(robot);
         matchMaker.addSpawnedRobot(robot);
         return ID;
     }
 
-    public int spawnRobot(RobotType type, Team team, int health) {
+    public int spawnRobot(RobotType type, Team team, int health) throws GameActionException {
         int ID = idGenerator.nextID();
         return spawnRobot(ID, type, team, health);
     }
@@ -437,15 +491,18 @@ public strictfp class GameWorld {
     // ****** DESTROYING ***************
     // *********************************
 
-    public void destroyRobot(int id) {
+    public void destroyRobot(int id) throws GameActionException {
         InternalRobot robot = objectInfo.getRobotByID(id);
         RobotType type = robot.getType();
-        Team team = robot.getTeam();
+
+        if (type == RobotType.CONTROLLER) {
+            objectInfo.destroyController(id);
+            controlProvider.robotKilled(robot);
+            return;
+        }
+
         removeRobot(robot.getLocation());
-
-        controlProvider.robotKilled(robot);
         objectInfo.destroyRobot(id);
-
         matchMaker.addDied(id);
     }
 
