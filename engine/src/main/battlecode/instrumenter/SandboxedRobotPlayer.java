@@ -7,6 +7,7 @@ import battlecode.instrumenter.stream.RoboPrintStream;
 import battlecode.instrumenter.stream.SilencedPrintStream;
 import battlecode.server.ErrorReporter;
 import battlecode.server.Config;
+import battlecode.common.GameActionException;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -105,6 +106,7 @@ public class SandboxedRobotPlayer {
      * @param robotOut          the output to write robot output to (with headers)
      * @throws InstrumentationException if the player doesn't work for some reason
      * @throws RuntimeException if our code fails for some reason
+     * @throws GameActionException if the player tries to do something not permitted by the game
      */
     public SandboxedRobotPlayer(String teamName,
                                 RobotController robotController,
@@ -112,7 +114,7 @@ public class SandboxedRobotPlayer {
                                 TeamClassLoaderFactory.Loader loader,
                                 OutputStream robotOut,
                                 Profiler profiler)
-            throws InstrumentationException {
+            throws InstrumentationException, GameActionException {
         this.robotController = robotController;
         this.seed = seed;
         this.terminated = false;
@@ -201,6 +203,11 @@ public class SandboxedRobotPlayer {
 
             } catch (final RobotDeathException e) {
                 return;
+            } catch (final GameActionException e){
+                ErrorReporter.report(e, "A GameActionException occured." +
+                        "This is probably because you tried to control an enemy robot" +
+                        " by passing in its ID, or you tried to call a Controller" +
+                        " function with a Robot.", false); 
             } finally {
                 // Ensure that we know we're terminated.
                 this.terminated = true;
@@ -283,7 +290,7 @@ public class SandboxedRobotPlayer {
     /**
      * Take a step on the RobotPlayer thread, blocking until it's completed.
      */
-    public void step() {
+    public void step() throws GameActionException {
         // Is the RobotPlayer terminated?
         if (terminated) {
             return; // the player screwed up but they're not gonna lose the robot hehehe
@@ -316,7 +323,7 @@ public class SandboxedRobotPlayer {
      * Kills a RobotPlayer control thread immediately.
      * Does nothing if the player is already killed.
      */
-    public void terminate() {
+    public void terminate() throws GameActionException {
         if (terminated) {
             return;
         }
@@ -393,7 +400,7 @@ public class SandboxedRobotPlayer {
         void kill();
     }
 
-    public PrintStream getOut(OutputStream wrapped) {
+    public PrintStream getOut(OutputStream wrapped) throws GameActionException {
         Config options = Config.getGlobalConfig();
 
         if (robotController.getTeam() == Team.A
@@ -417,7 +424,7 @@ public class SandboxedRobotPlayer {
      * Create a new System.out for this robot and round.
      * @return a stream to use for System.out in the sandboxed player
      */
-    private void updateOut() {
+    private void updateOut() throws GameActionException {
         //TODO this is ugly
         if (systemOut instanceof RoboPrintStream) {
             ((RoboPrintStream) systemOut).updateHeader(

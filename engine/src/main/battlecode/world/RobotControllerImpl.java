@@ -71,11 +71,11 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return this.robot.getType() == RobotType.CONTROLLER;
     }
 
-    private void assertValidIDUse() throws GameActionException {
+    private void assertValidIDUse(int id) throws GameActionException {
         assert(checkControllerType());
         // trying to control the other team's robot
-        if(getRobotByID(id).getTeam() != getTeam())
-            throw GameActionException(CANT_DO_THAT,
+        if (getRobotByID(id).getTeam() != getTeam())
+            throw new GameActionException(CANT_DO_THAT,
                 "You may not operate on another team's robot.");
     }
 
@@ -144,11 +144,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     @Override
-    public int getID() throws GameActionException {
-        if (checkControllerType()) {
-            throw new GameActionException(CANT_DO_THAT,
-                "Only controllers may call this function.");
-        }
+    public int getID() {
         return this.robot.getID();
     }
 
@@ -197,7 +193,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
         }
-        if (checkControllerType(getRobotByID(id))) {
+        if (this.getType(id) == RobotType.CONTROLLER) {
             throw new GameActionException(CANT_DO_THAT,
                 "Controllers don't have a location.");
         }
@@ -211,7 +207,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
         }
-        if (checkControllerType(getRobotByID(id))) {
+        if (this.getType(id) == RobotType.CONTROLLER) {
             throw new GameActionException(CANT_DO_THAT,
                 "Controllers don't have health.");
         }
@@ -815,7 +811,15 @@ public final strictfp class RobotControllerImpl implements RobotController {
         Team team = getTeam();
         gameWorld.getObjectInfo().eachRobot((robot) -> {
             if (robot.getTeam() == team) {
-                gameWorld.destroyRobot(robot.getID());
+                try {
+                    gameWorld.destroyRobot(robot.getID());
+                } catch (GameActionException e){
+                    throw new RuntimeException("A GameActionException has occured." +
+                        "This is likely because a Robot tried to call a Controller function," +
+                        " or a Controller tried to control an enemy robot.");
+
+                }
+
             }
             return true;
         });

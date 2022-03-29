@@ -194,7 +194,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * @param healthAmount the amount to damage by
      * @param checkWin whether to end the game if the last robot dies
      */
-    public void damageHealth(float healthAmount) {
+    public void damageHealth(float healthAmount) throws GameActionException {
         float oldHealth = this.health;
         this.health -= healthAmount;
         if (this.health <= 0) {
@@ -214,7 +214,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
      * 
      * @return whether or not the current robot survives
      */
-    public boolean collide(MapLocation loc, InternalRobot bot){
+    public boolean collide(MapLocation loc, InternalRobot bot) throws GameActionException{
         this.gameWorld.removeRobot(loc);
         if (Math.abs(bot.getHealth() - this.getHealth()) <= GameConstants.COLLISION_EQUALITY_THRESHOLD){
             this.gameWorld.destroyRobot(bot.getID());
@@ -259,7 +259,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);
     }
 
-    public void processEndOfRound() {
+    public void processEndOfRound() throws GameActionException {
         this.damageHealth(this.type.healthDecay * this.getHealth());
         if (this.getHealth() < this.type.healthLimit){
             this.gameWorld.destroyRobot(getID());
@@ -293,7 +293,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         throw new RobotDeathException();
     }
 
-    public void die_exception() {
+    public void die_exception() throws GameActionException {
         this.gameWorld.getMatchMaker().addAction(getID(), Action.DIE_EXCEPTION, -1);
         this.gameWorld.destroyRobot(getID());
     }
