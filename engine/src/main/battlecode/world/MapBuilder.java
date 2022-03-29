@@ -224,10 +224,13 @@ public class MapBuilder {
                                        GameConstants.MAP_MIN_HEIGHT + " and " + GameConstants.MAP_MAX_WIDTH + "x" +
                                        GameConstants.MAP_MAX_HEIGHT + ", inclusive");
 
-        // checks just 1 robot on each team and that it is on the spawn location
+        // checks just 1 robot of type robot on each team and that it is on the spawn location
         int numTeamARobots = 0;
         for (RobotInfo r : bodies) {
             if (r.getTeam() == Team.A) {
+                if (r.getType() == RobotType.CONTROLLER) {
+                    continue;
+                }
                 numTeamARobots++;
             }
 

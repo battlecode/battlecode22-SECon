@@ -7,6 +7,7 @@ import battlecode.instrumenter.stream.RoboPrintStream;
 import battlecode.instrumenter.stream.SilencedPrintStream;
 import battlecode.server.ErrorReporter;
 import battlecode.server.Config;
+import battlecode.common.GameActionException;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -105,6 +106,7 @@ public class SandboxedRobotPlayer {
      * @param robotOut          the output to write robot output to (with headers)
      * @throws InstrumentationException if the player doesn't work for some reason
      * @throws RuntimeException if our code fails for some reason
+     * @throws GameActionException if the player tries to do something not permitted by the game
      */
     public SandboxedRobotPlayer(String teamName,
                                 RobotController robotController,
@@ -112,7 +114,7 @@ public class SandboxedRobotPlayer {
                                 TeamClassLoaderFactory.Loader loader,
                                 OutputStream robotOut,
                                 Profiler profiler)
-            throws InstrumentationException {
+            throws InstrumentationException, GameActionException {
         this.robotController = robotController;
         this.seed = seed;
         this.terminated = false;
@@ -183,7 +185,7 @@ public class SandboxedRobotPlayer {
                 // If we get here, we've returned from the 'run' method. Tell the user.
                 System.out.println(robotController.getTeam().toString() + "'s "
                         + robotController.getType().toString() + " " +
-                        robotController.getID() + " at location " + robotController.getLocation().toString()
+                        robotController.getID()
                         + " froze in round " +robotController.getRoundNum() +
                         " because it returned from its run() method!");
             } catch (final IllegalAccessException e) {
@@ -216,7 +218,7 @@ public class SandboxedRobotPlayer {
                     notifier.notifyAll();
                 }
             }
-        }, teamName + "." + PLAYER_CLASS_NAME + " #"+ robotController.getID());
+        }, teamName + "." + PLAYER_CLASS_NAME);
 
 
         // Wait for thread to tell us it's ready
@@ -316,7 +318,7 @@ public class SandboxedRobotPlayer {
      * Kills a RobotPlayer control thread immediately.
      * Does nothing if the player is already killed.
      */
-    public void terminate() {
+    public void terminate() throws GameActionException {
         if (terminated) {
             return;
         }
@@ -393,7 +395,7 @@ public class SandboxedRobotPlayer {
         void kill();
     }
 
-    public PrintStream getOut(OutputStream wrapped) {
+    public PrintStream getOut(OutputStream wrapped) throws GameActionException {
         Config options = Config.getGlobalConfig();
 
         if (robotController.getTeam() == Team.A
