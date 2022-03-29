@@ -1,6 +1,7 @@
 package battlecode.world.control;
 
 import battlecode.common.Team;
+import battlecode.common.GameActionException;
 import battlecode.instrumenter.InstrumentationException;
 import battlecode.instrumenter.TeamClassLoaderFactory;
 import battlecode.instrumenter.SandboxedRobotPlayer;
@@ -22,7 +23,7 @@ import java.util.Map;
  *
  * @author james
  */
-public class PlayerControlProvider implements RobotControlProvider {
+public class PlayerControlProvider implements RobotControlProvider { 
 
     /**
      * Used to create ClassLoaders for this team.
@@ -102,7 +103,7 @@ public class PlayerControlProvider implements RobotControlProvider {
     }
 
     @Override
-    public void matchEnded() {
+    public void matchEnded() throws GameActionException {
         if (profilerCollection != null) {
             gameWorld.setProfilerCollection(team, profilerCollection);
             profilerCollection = new ProfilerCollection();
@@ -119,7 +120,7 @@ public class PlayerControlProvider implements RobotControlProvider {
     }
 
     @Override
-    public void robotSpawned(InternalRobot robot) {
+    public void robotSpawned(InternalRobot robot) throws GameActionException {
         try {
             Profiler profiler = null;
             if (profilerCollection != null && robot.getTeam() == team) {
@@ -146,7 +147,7 @@ public class PlayerControlProvider implements RobotControlProvider {
     }
 
     @Override
-    public void robotKilled(InternalRobot robot) {
+    public void robotKilled(InternalRobot robot) throws GameActionException {
         // Note that a robot may be killed even if it is not in Sandboxes, if
         // there was an error while loading it.
 
@@ -166,7 +167,7 @@ public class PlayerControlProvider implements RobotControlProvider {
     public void roundEnded() {}
 
     @Override
-    public void runRobot(InternalRobot robot) {
+    public void runRobot(InternalRobot robot) throws GameActionException {
         assert this.sandboxes.get(robot.getID()) != null;
 
         final SandboxedRobotPlayer player = this.sandboxes.get(robot.getID());

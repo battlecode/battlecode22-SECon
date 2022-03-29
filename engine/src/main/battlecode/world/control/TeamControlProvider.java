@@ -1,6 +1,7 @@
 package battlecode.world.control;
 
 import battlecode.common.Team;
+import battlecode.common.GameActionException;
 import battlecode.world.GameWorld;
 import battlecode.world.InternalRobot;
 
@@ -56,14 +57,14 @@ public final class TeamControlProvider implements RobotControlProvider {
     }
 
     @Override
-    public void matchEnded() {
+    public void matchEnded() throws GameActionException {
         for (RobotControlProvider provider : orderedProviders) {
             provider.matchEnded();
         }
     }
 
     @Override
-    public void robotSpawned(InternalRobot robot) {
+    public void robotSpawned(InternalRobot robot) throws GameActionException {
         Team team = robot.getTeam();
         assert teamProviderMap.containsKey(team);
 
@@ -71,7 +72,7 @@ public final class TeamControlProvider implements RobotControlProvider {
     }
 
     @Override
-    public void robotKilled(InternalRobot robot) {
+    public void robotKilled(InternalRobot robot) throws GameActionException {
         Team team = robot.getTeam();
         assert teamProviderMap.containsKey(team);
 
@@ -93,7 +94,7 @@ public final class TeamControlProvider implements RobotControlProvider {
     }
 
     @Override
-    public void runRobot(InternalRobot robot) {
+    public void runRobot(InternalRobot robot) throws GameActionException {
         Team team = robot.getTeam();
         assert teamProviderMap.containsKey(team);
 

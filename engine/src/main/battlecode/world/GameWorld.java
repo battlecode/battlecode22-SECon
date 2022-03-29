@@ -1,6 +1,8 @@
 package battlecode.world;
 
 import battlecode.common.*;
+import battlecode.common.GameActionException;
+import static battlecode.common.GameActionExceptionType.*;
 import battlecode.instrumenter.profiler.ProfilerCollection;
 import battlecode.schema.Action;
 import battlecode.server.ErrorReporter;
@@ -43,7 +45,7 @@ public strictfp class GameWorld {
     private final GameMaker.MatchMaker matchMaker;
 
     @SuppressWarnings("unchecked")
-    public GameWorld(LiveMap gm, RobotControlProvider cp, GameMaker.MatchMaker matchMaker) {
+    public GameWorld(LiveMap gm, RobotControlProvider cp, GameMaker.MatchMaker matchMaker) throws GameActionException {
         this.walls = gm.getWallArray();
         this.uranium = gm.getUraniumArray();
         this.spawnLocs = gm.getSpawnLocs();
@@ -132,14 +134,22 @@ public strictfp class GameWorld {
     private void updateDynamicBodies(Team teamToPlay) {
         objectInfo.eachDynamicBodyByExecOrder((body) -> {
             if (body instanceof InternalRobot) {
-                return updateRobot((InternalRobot) body, teamToPlay);
+                try{
+                    return updateRobot((InternalRobot) body, teamToPlay);
+                }
+                catch (GameActionException e) {
+                    throw new RuntimeException("A GameActionException has occured." +
+                        "This is likely because a Robot tried to call a Controller function," +
+                        " or a Controller tried to control an enemy robot.");
+                }
+
             } else {
                 throw new RuntimeException("non-robot body registered as dynamic");
             }
         });
     }
 
-    private boolean updateRobot(InternalRobot robot, Team teamToPlay) {
+    private boolean updateRobot(InternalRobot robot, Team teamToPlay) throws GameActionException {
         if (robot.getTeam() == teamToPlay) {
             robot.processBeginningOfTurn();
             if (robot.getType() == RobotType.CONTROLLER) {
@@ -428,7 +438,14 @@ public strictfp class GameWorld {
 
         // Process end of each robot's round
         objectInfo.eachRobot((robot) -> {
-            robot.processEndOfRound();
+            try {
+                robot.processEndOfRound();
+            } catch (GameActionException e) {
+                throw new RuntimeException("A GameActionException has occured." +
+                    "This is likely because a Robot tried to call a Controller function," +
+                    " or a Controller tried to control an enemy robot.");
+            }
+
             return true;
         });
 
@@ -458,14 +475,13 @@ public strictfp class GameWorld {
     // ****** SPAWNING *****************
     // *********************************
 
-    public int spawnRobot(int ID, RobotType type, Team team, int health) {
+    public int spawnRobot(int ID, RobotType type, Team team, int health) throws GameActionException {
         if (type == RobotType.CONTROLLER) {
             InternalRobot robot = new InternalRobot(this, ID, type, null, health, team);
             objectInfo.spawnController(robot);
             controlProvider.robotSpawned(robot);
             return ID;
         }
-
         MapLocation spawnLoc = getSpawnLoc(team);
         InternalRobot robot = new InternalRobot(this, ID, type, spawnLoc, health, team);
         objectInfo.spawnRobot(robot);
@@ -474,7 +490,7 @@ public strictfp class GameWorld {
         return ID;
     }
 
-    public int spawnRobot(RobotType type, Team team, int health) {
+    public int spawnRobot(RobotType type, Team team, int health) throws GameActionException {
         int ID = idGenerator.nextID();
         return spawnRobot(ID, type, team, health);
     }
@@ -483,7 +499,7 @@ public strictfp class GameWorld {
     // ****** DESTROYING ***************
     // *********************************
 
-    public void destroyRobot(int id) {
+    public void destroyRobot(int id) throws GameActionException {
         InternalRobot robot = objectInfo.getRobotByID(id);
         RobotType type = robot.getType();
 
