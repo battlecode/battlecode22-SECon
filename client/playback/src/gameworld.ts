@@ -20,13 +20,12 @@ export type BodiesSchema = {
     type: Int8Array,
     x: Int32Array,
     y: Int32Array,
-    bytecodesUsed: Int32Array, // TODO: is this needed?
     action: Int8Array,
     target: Int32Array,
     targetx: Int32Array,
     targety: Int32Array,
     parent: Int32Array,
-    hp: Int32Array,
+    hp: Float32Array,
 }
 
 // NOTE: consider changing MapStats to schema to use SOA for better performance, if it has large data
@@ -105,6 +104,11 @@ export default class GameWorld {
      * Stats for each team
      */
     teamStats: Map<number, TeamStats> // Team ID to their stats
+
+    /*
+     * Bytecodes for each team this round
+     */
+    bytecodesUsed: number[]
 
     /*
      * Stats for each team
@@ -200,13 +204,12 @@ export default class GameWorld {
             type: new Int8Array(0),
             x: new Int32Array(0),
             y: new Int32Array(0),
-            bytecodesUsed: new Int32Array(0),
             action: new Int8Array(0),
             target: new Int32Array(0),
             targetx: new Int32Array(0),
             targety: new Int32Array(0),
             parent: new Int32Array(0),
-            hp: new Int32Array(0),
+            hp: new Float32Array(0),
         }, 'id')
 
         // Instantiate teamStats
@@ -262,7 +265,7 @@ export default class GameWorld {
         }, 'id')
 
         this.indicatorStrings = {}
-
+        this.bytecodesUsed = [0,0]
         this.turn = 0
         this.minCorner = new Victor(0, 0)
         this.maxCorner = new Victor(0, 0)
@@ -347,6 +350,7 @@ export default class GameWorld {
         this.mapName = source.mapName
         this.diedBodies.copyFrom(source.diedBodies)
         this.bodies.copyFrom(source.bodies)
+        this.bytecodesUsed = source.bytecodesUsed
         this.indicatorDots.copyFrom(source.indicatorDots)
         this.indicatorLines.copyFrom(source.indicatorLines)
         this.indicatorStrings = Object.assign({}, source.indicatorStrings)
@@ -389,6 +393,15 @@ export default class GameWorld {
                 x: movedLocs.xsArray(),
                 y: movedLocs.ysArray(),
             })
+        }
+
+        // load teams bytecodes used
+        this.bytecodesUsed = [0,0]
+        // this.bytecodesUsed = Array.from(delta.bytecodesUsedArray())
+
+        // Health decay on all existing bodies
+        for(let i = 0;i < this.bodies.length; i++){
+            this.bodies.arrays.hp[i] *= 1 - .0007
         }
 
         // Spawned bodies
@@ -613,7 +626,7 @@ export default class GameWorld {
         // Store frequently used arrays
         var teams = bodies.teamIDsArray()
         var types = bodies.typesArray()
-        var hps = bodies.healthsArray()
+        var hps = Float32Array.from(bodies.healthsArray())
         // Update spawn stats
         for (let i = 0; i < bodies.robotIDsLength(); i++) {
             // if(teams[i] == 0) continue;
@@ -644,7 +657,6 @@ export default class GameWorld {
             type: types,
             x: locs.xsArray(),
             y: locs.ysArray(),
-            bytecodesUsed: new Int32Array(bodies.robotIDsLength()),
             action: (new Int8Array(bodies.robotIDsLength())).fill(-1),
             parent: new Int32Array(bodies.robotIDsLength()),
             hp: hps,

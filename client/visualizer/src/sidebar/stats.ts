@@ -732,6 +732,7 @@ export default class Stats {
   private getTeamByteCodes(bytecodesUsed, teams, teamNum){
     var total = 0;
     for(let i = 0; i < teams.length; i++){
+        console.log(i + " " + teams[i]);
       if(teams[i] == teamNum){
         total += bytecodesUsed[i];
       }

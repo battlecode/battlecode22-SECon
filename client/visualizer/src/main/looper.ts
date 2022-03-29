@@ -250,7 +250,8 @@ export default class Looper {
                 // let influence = bodies.influence[index];
                 // let conviction = bodies.conviction[index];
                 let hp = bodies.hp[index]; 
-                let bytecodes = bodies.bytecodesUsed[index];
+                console.log(hp)
+                let bytecodes = 0;
                 // let level = bodies.level[index];
                 //let max_hp = level == 1 ? this.meta.types[type].health : level == 2 ? this.meta.types[type].level2Health : this.meta.types[type].level3Health;
                 //let dp = level == 1 ? this.meta.types[type].damage : level == 2 ? this.meta.types[type].level2Damage : this.meta.types[type].level3Damage;
@@ -391,7 +392,7 @@ export default class Looper {
         
         const hps = world.bodies.arrays.hp;
         const teams = world.bodies.arrays.team;
-        const bytecodesUsed = world.bodies.arrays.bytecodesUsed;
+        const bytecodesUsed = world.bytecodesUsed;
         const types = world.bodies.arrays.type;
         const portables = world.bodies.arrays.portable;
         const levels = world.bodies.arrays.portable;

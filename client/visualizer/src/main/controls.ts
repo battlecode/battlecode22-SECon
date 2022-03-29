@@ -413,7 +413,11 @@ export default class Controls {
     let speedText = (lagging ? '(Lagging) ' : '') + `UPS: ${upsUnpaused | 0}` + (paused ? ' (Paused)' : '') + ` FPS: ${fps | 0}`;
     speedText = speedText.padStart(32);
     this.speedReadout.textContent = speedText;
-    this.timeReadout.innerHTML = (this.conf.tournamentMode ? `Round: <b>${time}</b>` : `Round: <b>${time}</b>/${loadedTime}`);
+   
+    // NORMAL ROUNDS
+    //this.timeReadout.innerHTML = (this.conf.tournamentMode ? `Round: <b>${time}</b>` : `Round: <b>${time}</b>/${loadedTime}`);
+    //TAKING TURNS
+    this.timeReadout.innerHTML = (this.conf.tournamentMode ? `Round: <b>${Math.floor(time/2)}(${time%2?"B":"R"})</b>` : `Round: <b>${Math.floor(time/2)}(${time%2?"B":"R"})</b>/${Math.floor(loadedTime/2)}`);
 
   }
 
