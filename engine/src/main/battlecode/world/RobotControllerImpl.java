@@ -437,6 +437,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (checkRobotType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only Robots may call this function.");
+        }
         return this.getLocation().add(dir);
     }
 
