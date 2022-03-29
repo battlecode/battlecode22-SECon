@@ -163,16 +163,6 @@ public strictfp interface RobotController {
     boolean isLocationOccupied(MapLocation loc) throws GameActionException;
 
     /**
-     * Checks whether a robot is at a given location. Assume the location is valid.
-     *
-     * @param loc the location to check
-     * @return true if a robot is at the location, false if there is no robot or the location is not on the map.
-     *
-     * @battlecode.doc.costlymethod
-     */
-    boolean canSenseRobotAtLocation(MapLocation loc);
-
-    /**
      * Senses the robot at the given location, or null if there is no robot
      * there.
      *
@@ -217,12 +207,12 @@ public strictfp interface RobotController {
     RobotInfo[] senseAllRobots();
 
     /**
-     * Returns all robots within a certain distance of this
+     * Returns all robots within a certain distance of passed in
      * robot. The objects are returned in no particular order.
      *
-     * @param id of robot that is center used for radius
-     * @param radiusSquared return robots wihtin this distance rom the center of
-     * this robot; if -1 is passed, all robots are returned;
+     * @param id id of robot that is center used for radius
+     * @param radiusSquared return robots within this distance from the center of
+     * the passed robot; if -1 is passed, all robots are returned;
      * @return array of RobotInfo objects of all the robots you saw
      * @throws GameActionException if radiusSquared is negative but not -1
      *
@@ -232,11 +222,11 @@ public strictfp interface RobotController {
 
     /**
      * Returns all robots of a given team within a certain
-     * distance of this robot. The objects are returned in no particular order.
+     * distance of passed in robot. The objects are returned in no particular order.
      *
-     * @param id of robot that is center used for radius
+     * @param id id of robot that is center used for radius
      * @param radiusSquared return robots within this distance away from the center of
-     * this robot; if -1 is passed, all robots are returned;
+     * passed in robot; if -1 is passed, all robots are returned;
      * @param team filter game objects by the given team; if null is passed,
      * robots from any team are returned
      * @return array of RobotInfo objects of all the robots you saw
@@ -296,13 +286,13 @@ public strictfp interface RobotController {
 
     /**
      * Return all locations that contain a nonzero amount of uranium, within a
-     * specified radius of your robot location.
+     * specified radius of the passed in robot's location.
      * If radiusSquared is -1, all locations are returned.
      *
-     * @param id of robot that gives center for the radius
+     * @param id id of robot that gives center for the radius
      * @param radiusSquared the squared radius of all locations to be returned
      * @return all locations that contain a nonzero amount of uranium within the radius
-     * @throws GameActionException if the radius is negative 
+     * @throws GameActionException if the radius is negative but not -1 
      *
      * @battlecode.doc.costlymethod
      */
@@ -316,7 +306,7 @@ public strictfp interface RobotController {
      * @param center the center of the search area
      * @param radiusSquared the squared radius of all locations to be returned
      * @return all locations that contain a nonzero amount of uranium within the radius
-     * @throws GameActionException if the radius is negative
+     * @throws GameActionException if the radius is negative but not -1 or center is invalid
      *
      * @battlecode.doc.costlymethod
      */
@@ -324,14 +314,14 @@ public strictfp interface RobotController {
 
     /**
      * Return all locations that contain at least a certain amount of uranium, within a
-     * specified radius of your robot location.
+     * specified radius of passed in robot's location.
      * If radiusSquared is -1, all locations are returned.
 
-     * @param id of robot that gives center for the radius
+     * @param id id of robot that gives center for the radius
      * @param radiusSquared the squared radius of all locations to be returned
      * @param minLead the minimum amount of uranium
      * @return all locations that contain at least minUranium uranium within the radius
-     * @throws GameActionException if the radius is negative
+     * @throws GameActionException if the radius is negative but not -1
      *
      * @battlecode.doc.costlymethod
      */
@@ -346,18 +336,18 @@ public strictfp interface RobotController {
      * @param radiusSquared the squared radius of all locations to be returned
      * @param minLead the minimum amount of uranium
      * @return all locations that contain at least minUranium uranium within the radius
-     * @throws GameActionException if the radius is negative or center is invalid
+     * @throws GameActionException if the radius is negative but not -1 or center is invalid
      *
      * @battlecode.doc.costlymethod
      */
     MapLocation[] senseNearbyLocationsWithUranium(MapLocation center, int radiusSquared, int minUranium) throws GameActionException;
 
     /**
-     * Returns the location adjacent a robot's current location in the given direction.
+     * Returns the location adjacent to passed in robot's current location in the given direction.
      *
-     * @param id of the robot of interest
+     * @param id id of the robot of interest
      * @param dir the given direction
-     * @return the location adjacent to current location in the given direction
+     * @return the location adjacent to the passed in robot's location in the given direction
      *
      * @battlecode.doc.costlymethod
      */
@@ -382,25 +372,36 @@ public strictfp interface RobotController {
     // ***********************************
 
     /**
-     * Tests whether this team can ask a robot can do one and any of move, act, or mine.
+     * Tests whether this robot can do one and any of move, act, or mine.
      * 
+     * @param id the id of the robot to check
      * @return true if the robot can do one and any of move, act, or mine.
      *
      * @battlecode.doc.costlymethod
      */
-    boolean isReady();
+    boolean isReady(int id);
+
+    /**
+     * Returns the number of cooldown turns for the passed in robot.
+     * 
+     * @param id the id of the robot to check
+     * @return the number of cooldown robots for the robot.
+     *
+     * @battlecode.doc.costlymethod
+     */
+    int getCooldownTurns(int id);
 
     // ***********************************
     // ****** MOVEMENT METHODS ***********
     // ***********************************
 
     /**
-     * Checks whether a robot can move one step in the given direction.
-     * Returns false if the robot is not in a mode that can move, if the target
-     * location is not on the map, if the target location is occupied by an ally, 
+     * Checks whether the robot passed in can move one step in the given direction.
+     * Returns false if the target location is not on the map, 
+     * if the target location is occupied by an ally, 
      * or if there are cooldown turns remaining.
      *
-     * @param id of robot of interest
+     * @param id id of robot of interest
      * @param dir the direction to move in
      * @return true if it is possible to call <code>move</code> without an exception
      *
@@ -466,7 +467,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canExplode();
+    boolean canExplode(int id);
 
     /** 
      * Explode, dealing damage equal to half of the robot's current health to enemy robots on the 
