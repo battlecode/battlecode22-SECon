@@ -44,6 +44,8 @@ table SpawnedBodyTable {
     types: [BodyType];
     /// The locations of the bodies.
     locs: VecTable;
+    /// The healths of these newly spawned robots
+    healths: [int];
 }
 
 /// A list of new bodies to be placed on the map.

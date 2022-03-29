@@ -113,12 +113,12 @@ public strictfp class RobotPlayer {
                 System.out.println("Build new robot of health " + health);
             }
         }
-        if (rngActionInt < 30 && rc.canMine()) {
+        if (rngActionInt < 50 && rc.canMine()) {
             // Let's try to mine
             System.out.println("Mining, original amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
             rc.mine();
             System.out.println("Mined, final amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-        } else if (rngActionInt < 60 && rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
+        } else if (rngActionInt < 70 && rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
             System.out.println(rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A)[0]);
             // Let's try to explode
             if (rc.canExplode()) {

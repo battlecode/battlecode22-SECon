@@ -238,6 +238,10 @@ public strictfp class GameWorld {
         return this.robots[loc.x - this.gameMap.getOrigin().x][loc.y - this.gameMap.getOrigin().y];
     }
 
+    public InternalRobot getRobotByID(int id) {
+        return this.objectInfo.getRobotByID(id);
+    }
+
     public void moveRobot(MapLocation start, MapLocation end) {
         addRobot(end, getRobot(start));
         removeRobot(start);
@@ -385,13 +389,11 @@ public strictfp class GameWorld {
         // Robots only see a round every 2 rounds, so on even rounds they end their perceived round
         boolean perceivedEndOfRound = this.currentRound % 2 == 0;
 
-        if (perceivedEndOfRound) {
-            // Process end of each robot's round
-            objectInfo.eachRobot((robot) -> {
-                robot.processEndOfRound();
-                return true;
-            });
-        }
+        // Process end of each robot's round
+        objectInfo.eachRobot((robot) -> {
+            robot.processEndOfRound();
+            return true;
+        });
 
         // Add uranium resources to the map
         if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) 
