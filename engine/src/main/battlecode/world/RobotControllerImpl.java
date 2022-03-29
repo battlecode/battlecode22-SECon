@@ -1,6 +1,7 @@
 package battlecode.world;
 
 import battlecode.common.*;
+import battlecode.instrumenter.RobotDeathException;
 import static battlecode.common.GameActionExceptionType.*;
 import battlecode.schema.Action;
 
