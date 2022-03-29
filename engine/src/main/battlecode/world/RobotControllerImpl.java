@@ -120,6 +120,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // *********************************
 
     private MapLocation getLocation() {
+        assert(checkRobotType());
         return this.robot.getLocation();
     }
 
@@ -327,6 +328,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private MapLocation adjacentLocation(Direction dir) {
+        assert(checkRobotType());
         return this.getLocation().add(dir);
     }
 
@@ -351,12 +353,14 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     private void assertIsReady() throws GameActionException {
+        assert(checkRobotType());
         if (!this.robot.isReady())
             throw new GameActionException(IS_NOT_READY,
                     "This robot's cooldown has not expired.");
     }
 
     private boolean isReady() {
+        assert(checkRobotType());
         try {
             assertIsReady();
             return true;
@@ -370,6 +374,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private int getCooldownTurns() {
+        assert(checkRobotType());
         return this.robot.getCooldownTurns();
     }
 
@@ -384,13 +389,14 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     private void assertCanMove(Direction dir) throws GameActionException {
+        assert(checkRobotType());
         assertNotNull(dir);
         assertIsReady();
         MapLocation loc = adjacentLocation(dir);
         if (!onTheMap(loc))
             throw new GameActionException(OUT_OF_RANGE,
                     "Can only move to locations on the map; " + loc + " is not on the map.");
-        if (isLocationOccupied(loc) && this.gameWorld.getRobot(loc).getTeam() == this.getRobotByID(id).getTeam()){
+        if (isLocationOccupied(loc) && this.gameWorld.getRobot(loc).getTeam() == this.robot.getTeam()){
             throw new GameActionException(CANT_MOVE_THERE,
                  "Cannot move to location " + loc +" due to friendly robot occupying it.");
         }
@@ -401,6 +407,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private boolean canMove(Direction dir) {
+        assert(checkRobotType());
         try {
             assertCanMove(dir);
             return true;
@@ -414,6 +421,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private void move(Direction dir) throws GameActionException {
+        assert(checkRobotType());
         this.assertCanMove(dir);
         MapLocation center = this.adjacentLocation(dir);
         InternalRobot prevOccupied = this.gameWorld.getRobot(center);
@@ -444,6 +452,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     private void assertCanBuildRobot(int health) throws GameActionException {
+        assert(checkRobotType());
         Team team = getTeam();
         if (this.gameWorld.getTeamInfo().getUranium(team) < health)
             throw new GameActionException(NOT_ENOUGH_RESOURCE,
@@ -490,10 +499,12 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // *****************************
 
     private void assertCanExplode() throws GameActionException {
+        assert(checkRobotType());
         assertIsReady();
     }
 
     private boolean canExplode() {
+        assert(checkRobotType());
         try {
             assertCanExplode();
             return true;
@@ -507,6 +518,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private void explode() throws GameActionException {
+        assert(checkRobotType());
         assertCanExplode();
         this.robot.resetCooldownTurns();
         for (Direction dir : Direction.cardinalDirections()){
@@ -535,6 +547,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************
 
     private void assertCanMine(MapLocation loc) throws GameActionException {
+        assert(checkRobotType());
         assertNotNull(loc);
         assertOnTheMap(loc);
         assertIsReady();
@@ -544,6 +557,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private boolean canMine() {
+        assert(checkRobotType());
         try {
             assertCanMine(this.robot.getLocation());
             return true;
@@ -557,6 +571,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private void mine() throws GameActionException {
+        assert(checkRobotType());
         MapLocation loc = this.robot.getLocation();
         assertCanMine(loc);
         this.robot.resetCooldownTurns();
@@ -580,6 +595,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     private void disintegrate() {
+        assert(checkRobotType());
         throw new RobotDeathException();
     }
 
@@ -606,6 +622,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     private void setIndicatorString(String string) {
+        assert(checkRobotType());
         if (string.length() > GameConstants.INDICATOR_STRING_MAX_LENGTH) {
             string = string.substring(0, GameConstants.INDICATOR_STRING_MAX_LENGTH);
         }
@@ -619,6 +636,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private void setIndicatorDot(MapLocation loc, int red, int green, int blue) {
+        assert(checkRobotType());
         assertNotNull(loc);
         this.gameWorld.getMatchMaker().addIndicatorDot(getID(), loc, red, green, blue);
     }
@@ -630,6 +648,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     }
 
     private void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) {
+        assert(checkRobotType());
         assertNotNull(startLoc);
         assertNotNull(endLoc);
         this.gameWorld.getMatchMaker().addIndicatorLine(getID(), startLoc, endLoc, red, green, blue);

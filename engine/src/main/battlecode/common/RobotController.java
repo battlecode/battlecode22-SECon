@@ -112,20 +112,22 @@ public strictfp interface RobotController {
      *
      * @param id of robot of interest
      * @return the robot's type
+     * @throws if id corresponds to controller robot
      *
      * @battlecode.doc.costlymethod
      */
-    RobotType getType(int id);
+    RobotType getType(int id) throws GameActionException;
 
     /**
      * Returns a robot's current location.
      *
      * @param id of robot of interest
      * @return the robot's current location
+     * @throws if id corresponds to controller robot
      *
      * @battlecode.doc.costlymethod
      */
-    MapLocation getLocation(int id);
+    MapLocation getLocation(int id) throws GameActionException;
 
     /**
      * Returns a robot's current health.
@@ -135,7 +137,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    float getHealth(int id);
+    float getHealth(int id) throws GameActionException;
 
     // ***********************************
     // ****** GENERAL VISION METHODS *****
@@ -403,7 +405,7 @@ public strictfp interface RobotController {
      *
      * @param id id of robot of interest
      * @param dir the direction to move in
-     * @return true if it is possible to call <code>move</code> without an exception
+     * @return true if it is possible to call move without an exception
      *
      * @battlecode.doc.costlymethod
      */
