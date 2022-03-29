@@ -50,10 +50,12 @@ public strictfp class RobotPlayer {
 
         // Hello world! Standard output is very useful for debugging.
         // Everything you say here will be directly viewable in your terminal when you run a match!
-        System.out.println("I'm a " + rc.getType() + " and I just got created! I have health " + rc.getHealth());
+        System.out.println("I'm a " + rc.getType() + " and I just got created!");
 
         // You can also use indicators to save debug notes in replays.
-        rc.setIndicatorString("Hello world!");
+        // rc.setIndicatorString("Hello world!");
+
+        int idx = 0;
 
         while (true) {
             // This code runs during the entire lifespan of the robot, which is why it is in an infinite
@@ -61,8 +63,9 @@ public strictfp class RobotPlayer {
             // loop, we call Clock.yield(), signifying that we've done everything we want to do.
 
             turnCount += 1;  // We have now been alive for one more turn!
-            System.out.println("Age: " + turnCount + "; Location: " + rc.getLocation());
+            System.out.println("Age: " + turnCount);
 
+            System.out.println("index is: " + idx);
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode.
             try {
                 // The same run() function is called for every robot on your team, even if they are
@@ -71,6 +74,7 @@ public strictfp class RobotPlayer {
                 // this into a different control structure!
                 switch (rc.getType()) {
                     case ROBOT:     runRobot(rc);  break;
+                    case CONTROLLER: runController(rc, idx); break;
                 }
             } catch (GameActionException e) {
                 // Oh no! It looks like we did something illegal in the Battlecode world. You should
@@ -101,39 +105,82 @@ public strictfp class RobotPlayer {
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     static void runRobot(RobotController rc) throws GameActionException {
-        int rngActionInt = rng.nextInt(100);
-        System.out.println("I'm robot " + rc.getID() + " at " + rc.getLocation());
-        System.out.println("My action is decided by arbitrary number " + rngActionInt);
-        System.out.println("I have " + rc.getTeamUraniumAmount(rc.getTeam()) + " uranium and " + rc.getHealth() + " health");
-        // Try to build, this doesn't add to cooldown
+        System.out.println("Pls no!");
+    }
+
+    static void runController(RobotController rc, int idx) throws GameActionException {
+
+        System.out.println("I'm an all powerful controller. I have " + rc.getRobotCount() + " robot(s) under my control.");
         if (rc.getTeamUraniumAmount(rc.getTeam()) > 0) {
             int health = rng.nextInt(rc.getTeamUraniumAmount(rc.getTeam())) + 1;
             if (rc.canBuildRobot(health)) {
                 rc.buildRobot(health);
-                System.out.println("Build new robot of health " + health);
+                // System.out.println("Built new robot of health " + health);
             }
         }
-        if (rngActionInt < 50 && rc.canMine()) {
-            // Let's try to mine
-            System.out.println("Mining, original amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-            rc.mine();
-            System.out.println("Mined, final amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-        } else if (rngActionInt < 70 && rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
-            System.out.println(rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A)[0]);
-            // Let's try to explode
-            if (rc.canExplode()) {
-                System.out.println("Exploding");
-                rc.explode();
+        RobotInfo[] myRobots = rc.senseNearbyRobots(new MapLocation(0, 0), -1, rc.getTeam());
+        for (int i = 0; i < myRobots.length; i ++) {
+            int robotId = myRobots[idx].getID();
+            int rngActionInt = rng.nextInt(100);
+            // System.out.println(myRobots[idx] + "\n");
+            // System.out.println("This robot's action is decided by arbitrary number " + rngActionInt);
+
+            if (rngActionInt < 50 && rc.canMine(robotId)) {
+                // Let's try to mine
+                // System.out.println("Mining, original amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
+                rc.mine(robotId);
+                // System.out.println("Mined, final amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
+            } else if (rngActionInt < 70 && rc.senseNearbyRobots(rc.getLocation(robotId), 1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
+                System.out.println(rc.senseNearbyRobots(rc.getLocation(robotId), 1, rc.getTeam() == Team.A ? Team.B : Team.A)[0]);
+                // Let's try to explode
+                if (rc.canExplode(robotId)) {
+                    System.out.println("Exploding");
+                    rc.explode(robotId);
+                }
+            }  else if (rngActionInt < 100) {
+                // System.out.println("It's time to move!");
+                // Let's try to move
+                Direction dir = directions[rng.nextInt(directions.length)];
+                // System.out.println(dir);
+                if (rc.canMove(robotId, dir)) {
+                    rc.move(robotId, dir);
+                    // System.out.println("Moving, final place: " + rc.getLocation(robotId));
+                }
             }
-        }  else if (rngActionInt < 100) {
-            System.out.println("It's time to move!");
-            // Let's try to move
-            Direction dir = directions[rng.nextInt(directions.length)];
-            System.out.println(dir);
-            if (rc.canMove(dir)) {
-                rc.move(dir);
-                System.out.println("Moving, final place: " + rc.getLocation());
-            }
+            idx = (idx + 1) % myRobots.length;
         }
+        // System.out.println("I'm robot " + rc.getID() + " at " + rc.getLocation());
+        // System.out.println("My action is decided by arbitrary number " + rngActionInt);
+        // System.out.println("I have " + rc.getTeamUraniumAmount(rc.getTeam()) + " uranium and " + rc.getHealth() + " health");
+        // // Try to build, this doesn't add to cooldown
+        // if (rc.getTeamUraniumAmount(rc.getTeam()) > 0) {
+        //     int health = rng.nextInt(rc.getTeamUraniumAmount(rc.getTeam())) + 1;
+        //     if (rc.canBuildRobot(health)) {
+        //         rc.buildRobot(health);
+        //         System.out.println("Build new robot of health " + health);
+        //     }
+        // }
+        // if (rngActionInt < 50 && rc.canMine()) {
+        //     // Let's try to mine
+        //     System.out.println("Mining, original amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
+        //     rc.mine();
+        //     System.out.println("Mined, final amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
+        // } else if (rngActionInt < 70 && rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
+        //     System.out.println(rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A)[0]);
+        //     // Let's try to explode
+        //     if (rc.canExplode()) {
+        //         System.out.println("Exploding");
+        //         rc.explode();
+        //     }
+        // }  else if (rngActionInt < 100) {
+        //     System.out.println("It's time to move!");
+        //     // Let's try to move
+        //     Direction dir = directions[rng.nextInt(directions.length)];
+        //     System.out.println(dir);
+        //     if (rc.canMove(dir)) {
+        //         rc.move(dir);
+        //         System.out.println("Moving, final place: " + rc.getLocation());
+        //     }
+        // }
     }
 }
