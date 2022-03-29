@@ -23,7 +23,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    int getRoundNum();
+    int getRoundNum() throws GameActionException;
 
     /**
      * Returns the width of the game map. Valid x coordinates range from
@@ -33,7 +33,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    int getMapWidth();
+    int getMapWidth() throws GameActionException;
 
     /**
      * Returns the height of the game map. Valid y coordinates range from
@@ -43,7 +43,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    int getMapHeight();
+    int getMapHeight() throws GameActionException;
 
     /**
      * Returns the number of robots on your team.
@@ -53,7 +53,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    int getRobotCount();
+    int getRobotCount() throws GameActionException;
 
     /**
      * Returns the amount of uranium a team has in its reserves.
@@ -63,7 +63,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    int getTeamUraniumAmount(Team team);
+    int getTeamUraniumAmount(Team team) throws GameActionException;
 
     // *********************************
     // ****** UNIT QUERY METHODS *******
@@ -76,7 +76,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    int getID();
+    int getID() throws GameActionException;
 
     /**
      * Returns this robot's Team.
@@ -86,7 +86,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    Team getTeam();
+    Team getTeam() throws GameActionException;
 
     /**
      * Returns a robot's Team.
@@ -96,7 +96,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    Team getTeam(int id);
+    Team getTeam(int id) throws GameActionException;
 
     /**
      * Returns this robot's type (ROBOT).
@@ -105,7 +105,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    RobotType getType();
+    RobotType getType() throws GameActionException;
 
     /**
      * Returns a robot's type (ROBOT).
@@ -151,7 +151,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean onTheMap(MapLocation loc);
+    boolean onTheMap(MapLocation loc) throws GameActionException;
 
     /**
      * Checks whether a robot is at a given location. Assumes the location is valid.
@@ -184,7 +184,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canSenseRobot(int id);
+    boolean canSenseRobot(int id) throws GameActionException;
 
     /**
      * Senses information about a particular robot given its ID.
@@ -206,7 +206,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    RobotInfo[] senseAllRobots();
+    RobotInfo[] senseAllRobots() throws GameActionException;
 
     /**
      * Returns all robots within a certain distance of passed in
@@ -284,7 +284,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    MapLocation[] senseNearbyLocationsWithUranium();
+    MapLocation[] senseNearbyLocationsWithUranium() throws GameActionException;;
 
     /**
      * Return all locations that contain a nonzero amount of uranium, within a
@@ -353,7 +353,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    MapLocation adjacentLocation(int id, Direction dir);
+    MapLocation adjacentLocation(int id, Direction dir) throws GameActionException;
 
     /**
      * Returns a list of all locations within the given radiusSquared of a location.
@@ -381,7 +381,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean isReady(int id);
+    boolean isReady(int id) throws GameActionException;
 
     /**
      * Returns the number of cooldown turns for the passed in robot.
@@ -391,7 +391,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    int getCooldownTurns(int id);
+    int getCooldownTurns(int id) throws GameActionException;
 
     // ***********************************
     // ****** MOVEMENT METHODS ***********
@@ -409,7 +409,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canMove(int id, Direction dir);
+    boolean canMove(int id, Direction dir) throws GameActionException;
 
     /**
      * Moves the robot given by `id` one step in the given direction. If there is an enemy robot in the 
@@ -443,7 +443,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canBuildRobot(int health);
+    boolean canBuildRobot(int health) throws GameActionException;
 
     /**
      * Builds a robot at the given location. The robot has the specified health specified 
@@ -469,7 +469,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canExplode(int id);
+    boolean canExplode(int id) throws GameActionException;
 
     /** 
      * Explode, dealing damage equal to half of the robot's current health to enemy robots on the 
@@ -496,7 +496,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    boolean canMine(int id);
+    boolean canMine(int id) throws GameActionException;
 
     /** 
      * Mine at the current location.
@@ -519,7 +519,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void disintegrate(int id);
+    void disintegrate(int id) throws GameActionException;
 
     /**
     
@@ -527,7 +527,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void resign();
+    void resign() throws GameActionException;
 
     // ***********************************
     // ******** DEBUG METHODS ************
@@ -542,7 +542,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorString(int id, String string);
+    void setIndicatorString(int id, String string) throws GameActionException;
 
     /**
      * Draw a dot on the game map for debugging purposes.
@@ -555,7 +555,7 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorDot(int id, MapLocation loc, int red, int green, int blue);
+    void setIndicatorDot(int id, MapLocation loc, int red, int green, int blue) throws GameActionException;
 
     /**
      * Draw a line on the game map for debugging purposes.
@@ -569,5 +569,5 @@ public strictfp interface RobotController {
      *
      * @battlecode.doc.costlymethod
      */
-    void setIndicatorLine(int id, MapLocation startLoc, MapLocation endLoc, int red, int green, int blue);
+    void setIndicatorLine(int id, MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) throws GameActionException;
 }
