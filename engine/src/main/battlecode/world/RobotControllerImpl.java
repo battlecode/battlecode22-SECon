@@ -150,10 +150,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public Team getTeam() throws GameActionException {
-        if (checkControllerType()) {
-            throw new GameActionException(CANT_DO_THAT,
-                "Only controllers may call this function.");
-        }
         return this.robot.getTeam();
     }
 
@@ -169,10 +165,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotType getType() throws GameActionException {
-        if (checkControllerType()) {
-            throw new GameActionException(CANT_DO_THAT,
-                "Only controllers may call this function.");
-        }
         return this.robot.getType();
     }
 
