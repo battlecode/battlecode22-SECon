@@ -468,7 +468,7 @@ export default class GameWorld {
                         break
 
                     case schema.Action.SPAWN_UNIT:
-                        setAction()
+                        // setAction()
                         this.bodies.alter({ id: target, parent: robotID })
                         break
 
