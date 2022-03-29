@@ -514,6 +514,15 @@ public strictfp interface RobotController {
     
     /**
     
+     * Kills the robot with the given id
+     * @param id id of the robot that you want to destroy
+     *
+     * @battlecode.doc.costlymethod
+     */
+    void disintegrate(int id);
+
+    /**
+    
      * Causes your team to lose the game. It's like typing "gg."
      *
      * @battlecode.doc.costlymethod
