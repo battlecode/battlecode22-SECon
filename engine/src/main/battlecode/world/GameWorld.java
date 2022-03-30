@@ -66,8 +66,10 @@ public strictfp class GameWorld {
         controlProvider.matchStarted(this);
 
         // Add the controller robots (one for each team) to the GameWorld
+        int[] controllerIDs = new int[2];
         for (int i = 0; i < 2; i++) {
-            spawnRobot(RobotType.CONTROLLER, Team.values()[i], -1);
+            int controllerID = spawnRobot(RobotType.CONTROLLER, Team.values()[i], -1);
+            controllerIDs[i] = controllerID;
         }
 
         // Add the robots contained in the LiveMap to this world.
@@ -76,7 +78,7 @@ public strictfp class GameWorld {
             RobotInfo robot = initialBodies[i];
             spawnRobot(robot.ID, robot.type, robot.team, GameConstants.INITIAL_ROBOT_HEALTH);
         }
-        this.teamInfo = new TeamInfo(this);
+        this.teamInfo = new TeamInfo(this, controllerIDs); //Change back for future years to not take controllerIDs
 
         // Add initial amounts of resource
         this.teamInfo.addUranium(Team.A, GameConstants.INITIAL_URANIUM_AMOUNT);
@@ -450,8 +452,8 @@ public strictfp class GameWorld {
                     this.uranium[i] += GameConstants.ADD_URANIUM;
         }
 
-        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getRoundUraniumChange(Team.A), this.teamInfo.getRoundUraniumMined(Team.A));
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B));
+        this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getRoundUraniumChange(Team.A), this.teamInfo.getRoundUraniumMined(Team.A), this.teamInfo.getControllerID(Team.A));
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B), this.teamInfo.getControllerID(Team.B));
         this.teamInfo.processEndOfRound();
 
         if (perceivedEndOfRound) {

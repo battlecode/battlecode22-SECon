@@ -342,6 +342,7 @@ public strictfp class GameMaker {
         private TIntArrayList teamIDs;
         private TIntArrayList teamUraniumChanges;
         private TIntArrayList teamUraniumMined;
+        private TIntArrayList teamBytecodesUsed;
 
         private TIntArrayList indicatorStringIDs;
         private ArrayList<String> indicatorStrings;
@@ -364,10 +365,6 @@ public strictfp class GameMaker {
         private TIntArrayList indicatorLineRGBsGreen;
         private TIntArrayList indicatorLineRGBsBlue;
 
-        // Robot IDs and their bytecode usage
-        private TIntArrayList bytecodeIDs;
-        private TIntArrayList bytecodesUsed;
-
         // Used to write logs.
         private final ByteArrayOutputStream logger;
 
@@ -388,6 +385,7 @@ public strictfp class GameMaker {
             this.teamIDs = new TIntArrayList();
             this.teamUraniumChanges = new TIntArrayList();
             this.teamUraniumMined = new TIntArrayList();
+            this.teamBytecodesUsed = new TIntArrayList();
             this.indicatorStringIDs = new TIntArrayList();
             this.indicatorStrings = new ArrayList<>();
             this.indicatorDotIDs = new TIntArrayList();
@@ -404,8 +402,6 @@ public strictfp class GameMaker {
             this.indicatorLineRGBsRed = new TIntArrayList();
             this.indicatorLineRGBsBlue = new TIntArrayList();
             this.indicatorLineRGBsGreen = new TIntArrayList();
-            this.bytecodeIDs = new TIntArrayList();
-            this.bytecodesUsed = new TIntArrayList();
             this.logger = new ByteArrayOutputStream();
         }
 
@@ -503,6 +499,8 @@ public strictfp class GameMaker {
                 int teamIDsP = Round.createTeamIDsVector(builder, teamIDs.toArray());
                 int teamUraniumChangesP = Round.createTeamUraniumChangesVector(builder, teamUraniumChanges.toArray());
                 int teamUraniumMinedP = Round.createTeamUraniumMinedVector(builder, teamUraniumMined.toArray());
+                int teamBytecodesUsedP = Round.createTeamBytecodeUsedVector(builder, teamBytecodesUsed.toArray());
+
 
                 // The bodies that moved
                 int movedIDsP = Round.createMovedIDsVector(builder, movedIDs.toArray());
@@ -539,6 +537,7 @@ public strictfp class GameMaker {
                 Round.addTeamIDs(builder, teamIDsP);
                 Round.addTeamUraniumChanges(builder, teamUraniumChangesP);
                 Round.addTeamUraniumMined(builder, teamUraniumMinedP);
+                Round.addTeamBytecodesUsed(builder, teamBytecodesUsedP);
                 Round.addMovedIDs(builder, movedIDsP);
                 Round.addMovedLocs(builder, movedLocsP);
                 Round.addSpawnedBodies(builder, spawnedBodiesP);
@@ -586,10 +585,11 @@ public strictfp class GameMaker {
             actionTargets.add(targetID);
         }
 
-        public void addTeamInfo(Team team, int uraniumChange, int uraniumMined) {
+        public void addTeamInfo(Team team, int uraniumChange, int uraniumMined, int bytecodesUsed) {
             teamIDs.add(TeamMapping.id(team));
             teamUraniumChanges.add(uraniumChange);
             teamUraniumMined.add(uraniumMined);
+            teamBytecodesUsed.add(bytecodesUsed);
         }
 
         public void addIndicatorString(int id, String string) {
@@ -626,11 +626,6 @@ public strictfp class GameMaker {
             indicatorLineRGBsBlue.add(blue);
         }
 
-        public void addBytecodes(int id, int bytecodes) {
-            bytecodeIDs.add(id);
-            bytecodesUsed.add(bytecodes);
-        }
-
         public void addSpawnedRobot(InternalRobot robot) {
             spawnedBodiesRobotIDs.add(robot.getID());
             spawnedBodiesLocsXs.add(robot.getLocation().x);
@@ -657,6 +652,7 @@ public strictfp class GameMaker {
             teamIDs.clear();
             teamUraniumChanges.clear();
             teamUraniumMined.clear();
+            teamBytecodesUsed.clear();
             indicatorStringIDs.clear();
             indicatorStrings.clear();
             indicatorDotIDs.clear();
@@ -673,8 +669,6 @@ public strictfp class GameMaker {
             indicatorLineRGBsRed.clear();
             indicatorLineRGBsBlue.clear();
             indicatorLineRGBsGreen.clear();
-            bytecodeIDs.clear();
-            bytecodesUsed.clear();
         }
     }
 }
