@@ -428,18 +428,20 @@ public strictfp class GameWorld {
         // Robots only see a round every 2 rounds, so on even rounds they end their perceived round
         boolean perceivedEndOfRound = this.currentRound % 2 == 0;
 
-        // Process end of each robot's round
-        objectInfo.eachRobot((robot) -> {
-            try {
-                robot.processEndOfRound();
-            } catch (GameActionException e) {
-                throw new RuntimeException("A GameActionException has occured." +
-                    "This is likely because a Robot tried to call a Controller function," +
-                    " or a Controller tried to control an enemy robot.");
-            }
+        if (perceivedEndOfRound) {
+            // Process end of each robot's round
+            objectInfo.eachRobot((robot) -> {
+                try {
+                    robot.processEndOfRound();
+                } catch (GameActionException e) {
+                    throw new RuntimeException("A GameActionException has occured." +
+                        "This is likely because a Robot tried to call a Controller function," +
+                        " or a Controller tried to control an enemy robot.");
+                }
 
-            return true;
-        });
+                return true;
+            });
+        }
 
         // Add uranium resources to the map
         if (this.currentRound % GameConstants.ADD_URANIUM_EVERY_ROUNDS == 0) {
