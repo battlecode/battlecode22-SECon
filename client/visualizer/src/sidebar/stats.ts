@@ -959,11 +959,11 @@ export default class Stats {
     this.updateTeamHistogram(blue_hps, this.blueHpHisto);
 
   }
-  
+
 
   private updateTeamHistogram(hps: Array<number>, histogram: Chart){
-    let granuality = 1000 //should be a power of 10
-    let granuality_str = "K"
+    let granuality = 10 //should be a power of 10
+    let granuality_str = ""
 
 
     let lump_vals : Array<number> = [];
@@ -978,7 +978,7 @@ export default class Stats {
     
     for(let i = 0; i < this.num_lumps; i++){
       let lump_start = base + i * lump_size;
-      let label = Math.round(lump_start / granuality).toString() + granuality_str;
+      let label = (granuality * Math.round(lump_start / granuality)).toString() + granuality_str;
       lump_labels.push(label);
       lump_vals.push(0);
     }
