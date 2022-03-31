@@ -19,6 +19,7 @@ public class BuildMaps {
     public static void main(String[] args) {
         MapTestSmall.main(args);
         MapTestSparse.main(args);
+        MapTestWalls.main(args);
     }
 
 }
