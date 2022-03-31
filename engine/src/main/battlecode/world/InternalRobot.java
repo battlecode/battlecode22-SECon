@@ -259,7 +259,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
     public void processEndOfTurn() {
         // bytecode stuff!
         if (this.type == RobotType.CONTROLLER)
-            this.gameWorld.getMatchMaker().addBytecodes(this.ID, this.bytecodesUsed);
+            return;
         // indicator strings!
         if (this.type == RobotType.ROBOT)
             this.gameWorld.getMatchMaker().addIndicatorString(this.ID, this.indicatorString);

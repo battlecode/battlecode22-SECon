@@ -14,6 +14,7 @@ public class TeamInfo {
     private GameWorld gameWorld;
     private int[] uraniumCounts;
     private int[] uraniumMined;
+    private final int[] controllerIDs;
 
     // for reporting round statistics to client
     private int[] oldUraniumCounts;
@@ -24,12 +25,13 @@ public class TeamInfo {
      *
      * @param gameWorld the gameWorld the teams exist in
      */
-    public TeamInfo(GameWorld gameWorld) {
+    public TeamInfo(GameWorld gameWorld, int[] controllerIDs) {
         this.gameWorld = gameWorld;
         this.uraniumCounts = new int[2];
         this.uraniumMined = new int[2];
         this.oldUraniumCounts = new int[2];
         this.oldUraniumMined = new int[2];
+        this.controllerIDs = controllerIDs.clone();
     }
     
     // *********************************
@@ -54,6 +56,16 @@ public class TeamInfo {
      */
     public int getUraniumMined(Team team) {
         return this.uraniumMined[team.ordinal()];
+    }
+
+    /**
+     * Get the id for the controller.
+     *
+     * @param team the team to query
+     * @return the id of the controller
+     */
+    public int getControllerID(Team team) {
+        return this.controllerIDs[team.ordinal()];
     }
 
     // *********************************
