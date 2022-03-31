@@ -739,9 +739,9 @@ export default class Stats {
       if(teams[i] == teamNum){
         total += bytecodesUsed[i];
       }
-      if(bytecodesUsed[i] != 0){
-        nonzero = true;
-      }
+    //   if(bytecodesUsed[i] != 0){
+    //     let nonzero = true;
+    //   }
     }
     //if(!nonzero){
     //  console.log("waaarning zero bytecodes");
