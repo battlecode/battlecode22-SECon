@@ -374,6 +374,7 @@ export default class GameWorld {
         }
 
         // Process team info changes
+        this.bytecodesUsed = [0, 0]
         for (var i = 0; i < delta.teamIDsLength(); i++) {
             let teamID = delta.teamIDs(i)
             let statObj = this.teamStats.get(teamID)
@@ -382,6 +383,8 @@ export default class GameWorld {
             statObj.uraniumChange = delta.teamUraniumChanges(i)
             statObj.uraniumMined = 0
 
+            this.bytecodesUsed[teamID] = delta.teamBytecodesUsed(i)
+            console.log(this.bytecodesUsed[teamID])
             this.teamStats.set(teamID, statObj)
         }
 
@@ -394,10 +397,6 @@ export default class GameWorld {
                 y: movedLocs.ysArray(),
             })
         }
-
-        // load teams bytecodes used
-        this.bytecodesUsed = [0, 0]
-        // this.bytecodesUsed = Array.from(delta.bytecodesUsedArray())
 
         // Health decay on all existing bodies
         for (let i = 0; i < this.bodies.length; i++) {

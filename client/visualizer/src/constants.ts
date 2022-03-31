@@ -117,9 +117,8 @@ MapType.CUSTOM
 ]
 
 export const SERVER_MAPS: Map<string, MapType> = new Map<string, MapType>([
-    ["testmap", MapType.DEFAULT],
-    ["maze2", MapType.DEFAULT],
-    ["small", MapType.DEFAULT],
+    ["maptestsmall", MapType.DEFAULT],
+    ["maptestsparse", MapType.DEFAULT],
     //   ["colosseum", MapType.SPRINT_1],
     //   ["fortress", MapType.SPRINT_1],
     //   ["jellyfish", MapType.SPRINT_1],
