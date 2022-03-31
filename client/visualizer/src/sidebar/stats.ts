@@ -570,7 +570,8 @@ export default class Stats {
             backgroundColor: 'rgba(54, 162, 235, 0)',
             borderColor: 'rgb(108, 140, 188)',
             pointRadius: 0,
-          }]
+          }
+        ]
       },
       options: {
           aspectRatio: 0.7,
@@ -588,7 +589,8 @@ export default class Stats {
               yAxes: [{
                 type: 'linear',
                   ticks: {
-                      beginAtZero: true
+                      beginAtZero: true,
+                      max: 100000,
                   }
               }]
           }
@@ -731,12 +733,19 @@ export default class Stats {
 
   private getTeamByteCodes(bytecodesUsed, teams, teamNum){
     var total = 0;
+    //var nonzero = false;
     for(let i = 0; i < teams.length; i++){
         // console.log(i + " " + teams[i]);
       if(teams[i] == teamNum){
         total += bytecodesUsed[i];
       }
+      if(bytecodesUsed[i] != 0){
+        nonzero = true;
+      }
     }
+    //if(!nonzero){
+    //  console.log("waaarning zero bytecodes");
+    //}
     return total;
   }
 
@@ -970,7 +979,10 @@ export default class Stats {
     let lump_labels : Array<string> = [];
     let max_hp = hps.length >= 1? Math.max(...hps) : 1;
     let min_hp = hps.length >= 1? Math.min(...hps) : 1;
-    
+    if (min_hp < 0){
+      //console.log("wwwaaaarning---------");
+      //console.log("min hp is " + min_hp.toString());
+    }
     let base = granuality *  Math.floor(min_hp / granuality) 
     
     let lump_size = granuality * Math.max(Math.ceil((max_hp - min_hp) / (granuality * this.num_lumps)), 1);
