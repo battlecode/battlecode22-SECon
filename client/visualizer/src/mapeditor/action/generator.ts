@@ -134,6 +134,11 @@ export default class MapGenerator {
 
         const walls = schema.GameMap.createWallsVector(builder, map.walls);
         const uranium = schema.GameMap.createUraniumVector(builder, map.uraniumVals);
+
+        schema.SpawnLocationTable.startSpawnLocationTable(builder)
+        schema.SpawnLocationTable.addTeamIDs(builder, teamIDsVectorB)
+        schema.SpawnLocationTable.addLocs(builder, locsVecTableB)
+        const spawnloc = schema.SpawnLocationTable.endSpawnLocationTable(builder)
         // const anomalies = schema.GameMap.createAnomaliesVector(builder, map.anomalies);
         // const anomalyRounds = schema.GameMap.createAnomalyRoundsVector(builder, map.anomalyRounds);
 
@@ -145,6 +150,7 @@ export default class MapGenerator {
         schema.GameMap.addMaxCorner(builder, schema.Vec.createVec(builder, maxCornerX, maxCornerY))
         schema.GameMap.addSymmetry(builder, map.symmetry)
         schema.GameMap.addBodies(builder, bodies)
+        schema.GameMap.addSpawnLocation(builder, spawnloc)
         schema.GameMap.addRandomSeed(builder, randomSeed)
         schema.GameMap.addUranium(builder, uranium);
         schema.GameMap.addWalls(builder, walls);
