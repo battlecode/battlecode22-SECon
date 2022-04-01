@@ -289,7 +289,7 @@ public strictfp class GameWorld {
         int width = this.gameMap.getWidth();
         int height = this.gameMap.getHeight();
         
-        int ceiledRadius = (int) Math.ceil(Math.sqrt(radiusSquared)) + 1; // add +1 just to be safe
+        int ceiledRadius = (int) Math.ceil(Math.sqrt(radiusSquared));
         int minX = Math.max(center.x - ceiledRadius, origin.x);
         int minY = Math.max(center.y - ceiledRadius, origin.y);
         int maxX = Math.min(center.x + ceiledRadius, origin.x + width - 1);
@@ -453,7 +453,7 @@ public strictfp class GameWorld {
         }
 
         this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getRoundUraniumChange(Team.A), this.teamInfo.getRoundUraniumMined(Team.A), getRobotByID(this.teamInfo.getControllerID(Team.A)).getBytecodesUsed());
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B), getRobotByID(this.teamInfo.getControllerID(Team.A)).getBytecodesUsed());
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B), getRobotByID(this.teamInfo.getControllerID(Team.B)).getBytecodesUsed());
         this.teamInfo.processEndOfRound();
 
         if (perceivedEndOfRound) {
