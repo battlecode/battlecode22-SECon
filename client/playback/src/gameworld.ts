@@ -173,6 +173,8 @@ export default class GameWorld {
      */
     logsShift: number = 1;
 
+    explosions: {x:number, y:number, team:number}[] = [];
+
 
     // Cache fields
     // We pass these into flatbuffers functions to avoid allocations, 
@@ -186,7 +188,7 @@ export default class GameWorld {
      * IDs of robots who performed a temporary ability in the previous round,
      * which should be removed in the current round.
      */
-    private actionRobots: number[] = [];
+    private actionRobots: number[][] = [[],[]];
     //   private bidRobots: number[] = [];
 
     constructor(meta: Metadata, config: playbackConfig) {
@@ -385,8 +387,6 @@ export default class GameWorld {
 
             this.bytecodesUsed[teamID] = delta.teamBytecodesUsed(i)
 
-
-            // console.log(this.bytecodesUsed[teamID])
             this.teamStats.set(teamID, statObj)
         }
 
@@ -414,16 +414,21 @@ export default class GameWorld {
         // Remove abilities from previous round
         this.bodies.alterBulk(
             {
-                id: new Int32Array(this.actionRobots), action: (new Int8Array(this.actionRobots.length)).fill(-1),
-                target: new Int32Array(this.actionRobots.length), targetx: new Int32Array(this.actionRobots.length), targety: new Int32Array(this.actionRobots.length)
+                id: new Int32Array(this.actionRobots[0]), action: (new Int8Array(this.actionRobots[0].length)).fill(-1),
+                target: new Int32Array(this.actionRobots[0].length), targetx: new Int32Array(this.actionRobots[0].length), targety: new Int32Array(this.actionRobots[0].length)
             })
-        this.actionRobots = []
+        this.actionRobots[0] = this.actionRobots[1]
+        this.actionRobots[1] = []
+        
+
 
         // // Remove bids from previous round
         // this.bodies.alterBulk({ id: new Int32Array(this.bidRobots), bid: new Int32Array(this.bidRobots.length) })
         // this.bidRobots = []
 
         // Map changes
+
+        this.explosions = []
 
         // Actions
         if (delta.actionsLength() > 0) {
@@ -442,7 +447,7 @@ export default class GameWorld {
                         const target_body = this.bodies.lookup(target)
                         this.bodies.alter({ id: robotID, targetx: target_body.x, targety: target_body.y })
                     }
-                    this.actionRobots.push(robotID)
+                    this.actionRobots[1].push(robotID)
                 } // should be called for actions performed *by* the robot
 
                 switch (action) {
@@ -451,6 +456,7 @@ export default class GameWorld {
 
                     case schema.Action.EXPLODE:
                         setAction()
+                        this.explosions.push({x:body.x, y:body.y, team: body.team})
                         break
 
                     case schema.Action.MINE_URANIUM:

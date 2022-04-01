@@ -20,8 +20,8 @@ if (!project.hasProperty("maps")) {
 }
 
 if (project.hasProperty("release_version")) {
-    if (!project.property("release_version").startsWith("2022")) {
-        throw new StopExecutionException("release version must start with 2022!")
+    if (!project.property("release_version").startsWith("2022sec")) {
+        throw new StopExecutionException("release version must start with 2022sec!")
     }
 }
 
@@ -275,7 +275,7 @@ task releaseClientLinux32(type: Zip, dependsOn: ['prodClient']) {
 publishing {
   repositories {
     maven {
-      url = "https://us-east1-maven.pkg.dev/battlecode18/battlecode22-engine"
+      url = "https://us-east1-maven.pkg.dev/battlecode18/battlecode22se-engine"
       credentials {
         username = "_json_key_base64"
         password = System.getenv("ARTIFACT_REGISTRY_MAVEN_SECRET")
@@ -289,7 +289,7 @@ publishing {
   publications {
     server(MavenPublication) {
       groupId 'org.battlecode'
-      artifactId 'battlecode22'
+      artifactId 'battlecode22se'
       version project.findProperty('release_version') ?: 'NONSENSE'
 
       artifact release_main
@@ -304,7 +304,7 @@ publishing {
 
     clientWin(MavenPublication) {
       groupId 'org.battlecode'
-      artifactId 'battlecode22-client-win'
+      artifactId 'battlecode22se-client-win'
       version project.findProperty('release_version') ?: 'NONSENSE'
 
       artifact releaseClientWin
@@ -312,7 +312,7 @@ publishing {
     
     clientMac(MavenPublication) {
       groupId 'org.battlecode'
-      artifactId 'battlecode22-client-mac'
+      artifactId 'battlecode22se-client-mac'
       version project.findProperty('release_version') ?: 'NONSENSE'
 
       artifact releaseClientMac
@@ -320,7 +320,7 @@ publishing {
 
     clientLinux(MavenPublication) {
       groupId 'org.battlecode'
-      artifactId 'battlecode22-client-linux'
+      artifactId 'battlecode22se-client-linux'
       version project.findProperty('release_version') ?: 'NONSENSE'
 
       artifact releaseClientLinux
@@ -328,7 +328,7 @@ publishing {
 
     clientWin32(MavenPublication) {
       groupId 'org.battlecode'
-      artifactId 'battlecode22-client-win-32'
+      artifactId 'battlecode22se-client-win-32'
       version project.findProperty('release_version') ?: 'NONSENSE'
 
       artifact releaseClientWin32
@@ -336,7 +336,7 @@ publishing {
 
     clientLinux32(MavenPublication) {
       groupId 'org.battlecode'
-      artifactId 'battlecode22-client-linux-32'
+      artifactId 'battlecode22se-client-linux-32'
       version project.findProperty('release_version') ?: 'NONSENSE'
 
       artifact releaseClientLinux32

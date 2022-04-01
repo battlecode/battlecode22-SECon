@@ -733,23 +733,9 @@ export default class Stats {
 
   private getTeamByteCodes(bytecodesUsed, teams, teamNum){
     var total = 0;
-    var nonzero = false;
-    for(let i = 0; i < teams.length; i++){
-        // console.log(i + " " + teams[i]);
-      if(teams[i] == teamNum){
-        total += bytecodesUsed[i];
-      }
-       if(bytecodesUsed[i] != 0){
-         nonzero = true;
-       }
-    }
+    total = bytecodesUsed[teamNum]
     if (total > this.max_bytecode){
       this.max_bytecode = total;
-    }
-    if(!nonzero){
-      console.log("waaarning zero bytecodes");
-    }else{
-      console.log("Woooooorks000000000");
     }
     return total;
   }
@@ -758,6 +744,7 @@ export default class Stats {
     let bytecodesUsedRed = this.getTeamByteCodes(bytecodesUsed, team, 1);
     let bytecodesUsedBlue = this.getTeamByteCodes(bytecodesUsed, team, 2);
     let maxBytcodes = 1; 
+
     let percentageUsedRed = bytecodesUsedRed / maxBytcodes;
     let percentageUsedBlue = bytecodesUsedBlue / maxBytcodes;
     // console.log("updating bytecode");

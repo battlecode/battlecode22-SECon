@@ -74,13 +74,21 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertValidIDUse(int id) throws GameActionException {
         assert(checkControllerType());
         // trying to control the other team's robot
-        if (getRobotByID(id).getTeam() != getTeam())
+        if (getRobotByID(id) == null) {
+            throw new GameActionException(CANT_DO_THAT,
+                "You may not operate on a robot that has been destroyed or does not exist.");
+        } else if (getRobotByID(id).getTeam() != getTeam()) {
             throw new GameActionException(CANT_DO_THAT,
                 "You may not operate on another team's robot.");
+        }
     }
 
     private RobotControllerImpl getController(int id) {
-        return getRobotByID(id).getController();
+        try {
+            return getRobotByID(id).getController();
+        } catch (GameActionException willNeverHappen) {
+            throw new RuntimeException("impossible", willNeverHappen);
+        }
     }
 
     @Override
@@ -141,7 +149,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public Team getTeam(int id) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -156,7 +163,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotType getType(int id) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -166,7 +172,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public MapLocation getLocation(int id) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -180,7 +185,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
  
     @Override
     public float getHealth(int id) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -192,9 +196,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
         return this.getRobotByID(id).getHealth();
     }
 
-    private InternalRobot getRobotByID(int id) {
+    private InternalRobot getRobotByID(int id) throws GameActionException {
         if (!this.gameWorld.getObjectInfo().existsRobot(id))
-            return null;
+            throw new GameActionException(CANT_SENSE_THAT, "Robot with that ID doesn't exist. It may have died");
         return this.gameWorld.getObjectInfo().getRobotByID(id);
     }
 
@@ -242,18 +246,20 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public boolean canSenseRobot(int id) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
         }
-        InternalRobot sensedRobot = getRobotByID(id);
-        return (sensedRobot == null);
+        try {
+            InternalRobot sensedRobot = getRobotByID(id);
+            return true;
+        } catch (GameActionException notValidID) {
+            return false;
+        }
     }
 
     @Override
     public RobotInfo senseRobot(int id) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -279,7 +285,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotInfo[] senseNearbyRobots(int id, int radiusSquared) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -293,7 +298,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotInfo[] senseNearbyRobots(int id, int radiusSquared, Team team) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -325,7 +329,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 continue;
             // don't return controllers here
             if (sensedRobot.getType() == RobotType.CONTROLLER) {
-                System.out.println("found controller");
                 continue;
             }
             validSensedRobots.add(sensedRobot.getRobotInfo());
@@ -360,7 +363,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public MapLocation[] senseNearbyLocationsWithUranium(int id, int radiusSquared) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -383,7 +385,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public MapLocation[] senseNearbyLocationsWithUranium(int id, int radiusSquared, int minUranium) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -422,7 +423,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public MapLocation adjacentLocation(int id, Direction dir) throws GameActionException {
-        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -553,7 +553,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         }
         if (this.getType(id) == RobotType.CONTROLLER) {
             throw new GameActionException(CANT_DO_THAT,
-                "Controllers don't have cooldown.");
+                "Controllers can't move.");
         }
         return getController(id).canMove(dir);
     }
@@ -571,7 +571,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         // process collisions
         boolean winner = true;
         if (prevOccupied != null) {
-            System.out.println("Collision!");
             winner = this.robot.collide(center, prevOccupied);
         }
         
@@ -585,10 +584,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
     @Override
     public void move(int id, Direction dir) throws GameActionException {
         assertValidIDUse(id);
-        assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
+        }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers can't move.");
         }
         getController(id).move(dir);
     }
@@ -599,6 +601,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanBuildRobot(int health) throws GameActionException {
         Team team = getTeam();
+        if (health < 1) {
+            throw new GameActionException(CANT_DO_THAT, "Can't spawn robot with less than 1 health.");
+        }
         if (this.gameWorld.getTeamInfo().getUranium(team) < health)
             throw new GameActionException(NOT_ENOUGH_RESOURCE,
                     "Insufficient amount of uranium.");
@@ -638,10 +643,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot spawnedBot = this.gameWorld.getRobotByID(newId);
 
         // process collisions (auto-collision with enemy)
-        boolean winner = true;
         if (prevOccupied != null) {
-            System.out.println("Initial Collision!");
-            winner = spawnedBot.collide(loc, prevOccupied);
+            spawnedBot.collide(loc, prevOccupied);
         }
     }
 
@@ -675,6 +678,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT,
                 "Only Controllers may call this function.");
         }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers can't explode.");
+        }
         return getController(id).canExplode();
     }
 
@@ -695,7 +702,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 continue;
             bot.damageHealth(this.robot.getHealth() / 2);
         }
-        System.out.println("Exploding! Here's my ID " + getID());
         this.gameWorld.getMatchMaker().addAction(getID(), Action.EXPLODE, -1);
         this.gameWorld.destroyRobot(getID());
     }
@@ -750,6 +756,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT,
                 "Only Controllers may call this function.");
         }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers can't mine.");
+        }
         return getController(id).canMine();
     }
 
@@ -757,7 +767,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkRobotType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only robots may call this function.");
-        } 
+        }
         MapLocation loc = this.robot.getLocation();
         assertCanMine(loc);
         this.robot.resetCooldownTurns();
@@ -772,6 +782,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only Controllers may call this function.");
+        }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers can't mine.");
         }
         getController(id).mine();
     }
@@ -798,6 +812,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only Controllers may call this function.");
+        } 
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers can't disintegrate.");
         }
         getController(id).disintegrate();
     }
