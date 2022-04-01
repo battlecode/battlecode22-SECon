@@ -329,7 +329,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 continue;
             // don't return controllers here
             if (sensedRobot.getType() == RobotType.CONTROLLER) {
-                System.out.println("found controller");
                 continue;
             }
             validSensedRobots.add(sensedRobot.getRobotInfo());
@@ -575,7 +574,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
         // process collisions
         boolean winner = true;
         if (prevOccupied != null) {
-            System.out.println("Collision!");
             winner = this.robot.collide(center, prevOccupied);
         }
         
@@ -603,6 +601,9 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     private void assertCanBuildRobot(int health) throws GameActionException {
         Team team = getTeam();
+        if (health < 1) {
+            throw new GameActionException(CANT_DO_THAT, "Can't spawn robot with less than 1 health.");
+        }
         if (this.gameWorld.getTeamInfo().getUranium(team) < health)
             throw new GameActionException(NOT_ENOUGH_RESOURCE,
                     "Insufficient amount of uranium.");
@@ -642,10 +643,8 @@ public final strictfp class RobotControllerImpl implements RobotController {
         InternalRobot spawnedBot = this.gameWorld.getRobotByID(newId);
 
         // process collisions (auto-collision with enemy)
-        boolean winner = true;
         if (prevOccupied != null) {
-            System.out.println("Initial Collision!");
-            winner = spawnedBot.collide(loc, prevOccupied);
+            spawnedBot.collide(loc, prevOccupied);
         }
     }
 
@@ -699,7 +698,6 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 continue;
             bot.damageHealth(this.robot.getHealth() / 2);
         }
-        System.out.println("Exploding! Here's my ID " + getID());
         this.gameWorld.getMatchMaker().addAction(getID(), Action.EXPLODE, -1);
         this.gameWorld.destroyRobot(getID());
     }
