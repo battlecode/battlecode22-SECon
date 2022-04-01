@@ -242,7 +242,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public boolean canSenseRobot(int id) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -253,7 +253,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotInfo senseRobot(int id) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -279,7 +279,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotInfo[] senseNearbyRobots(int id, int radiusSquared) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -293,7 +293,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotInfo[] senseNearbyRobots(int id, int radiusSquared, Team team) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -360,7 +360,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public MapLocation[] senseNearbyLocationsWithUranium(int id, int radiusSquared) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -383,7 +383,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public MapLocation[] senseNearbyLocationsWithUranium(int id, int radiusSquared, int minUranium) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -422,7 +422,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public MapLocation adjacentLocation(int id, Direction dir) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");

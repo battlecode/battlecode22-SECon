@@ -41,7 +41,7 @@ public final strictfp class GameMapIO {
     /**
      * The file extension for battlecode secon 2022 match files.
      */
-    public static final String MAP_EXTENSION = ".mapsecon22";
+    public static final String MAP_EXTENSION = ".map22";
 
     /**
      * The package we check for maps in if they can't be found in the file system.
