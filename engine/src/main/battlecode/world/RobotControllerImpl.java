@@ -122,6 +122,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // *********************************
 
     private MapLocation getLocation() throws GameActionException {
+        if (!checkRobotType()) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Only robots may call this function.");
+        }
         return this.robot.getLocation();
     }
 
@@ -203,7 +207,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
     // ***********************************
 
     @Override
-    public boolean onTheMap(MapLocation loc) throws GameActionException {
+    public boolean onTheMap(MapLocation loc) {
         assertNotNull(loc);
         return this.gameWorld.getGameMap().onTheMap(loc);
     }
@@ -280,6 +284,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
         }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers don't have a location.");
+        }
         return senseNearbyRobots(id, radiusSquared, null);
     }
 
@@ -289,6 +297,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
+        }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers don't have a location.");
         }
         return senseNearbyRobots(this.getLocation(id), radiusSquared, team);
     }
@@ -353,6 +365,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
         }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers don't have location.");
+        }
         return senseNearbyLocationsWithUranium(this.getLocation(id), radiusSquared, 1);
     }
 
@@ -371,6 +387,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
+        }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers don't have location.");
         }
         return senseNearbyLocationsWithUranium(this.getLocation(id), radiusSquared, minUranium);
     }
@@ -406,6 +426,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
+        }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers don't have location.");
         }
         return getLocation(id).add(dir);
     }
@@ -455,6 +479,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
         }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers don't have cooldown.");
+        }
         return getController(id).isReady();
     }
 
@@ -472,6 +500,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
+        }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers don't have cooldown.");
         }
         return getController(id).getCooldownTurns();
     }
@@ -518,6 +550,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
+        }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers don't have cooldown.");
         }
         return getController(id).canMove(dir);
     }
@@ -669,6 +705,10 @@ public final strictfp class RobotControllerImpl implements RobotController {
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only Controllers may call this function.");
+        }
+        if (this.getType(id) == RobotType.CONTROLLER) {
+            throw new GameActionException(CANT_DO_THAT,
+                "Controllers can't explode.");
         }
         getController(id).explode();
     }
