@@ -695,6 +695,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
                 continue;
             bot.damageHealth(this.robot.getHealth() / 2);
         }
+        System.out.println("Exploding! Here's my ID " + getID());
         this.gameWorld.getMatchMaker().addAction(getID(), Action.EXPLODE, -1);
         this.gameWorld.destroyRobot(getID());
     }

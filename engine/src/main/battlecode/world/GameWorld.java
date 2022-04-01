@@ -453,7 +453,7 @@ public strictfp class GameWorld {
         }
 
         this.matchMaker.addTeamInfo(Team.A, this.teamInfo.getRoundUraniumChange(Team.A), this.teamInfo.getRoundUraniumMined(Team.A), getRobotByID(this.teamInfo.getControllerID(Team.A)).getBytecodesUsed());
-        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B), getRobotByID(this.teamInfo.getControllerID(Team.A)).getBytecodesUsed());
+        this.matchMaker.addTeamInfo(Team.B, this.teamInfo.getRoundUraniumChange(Team.B), this.teamInfo.getRoundUraniumMined(Team.B), getRobotByID(this.teamInfo.getControllerID(Team.B)).getBytecodesUsed());
         this.teamInfo.processEndOfRound();
 
         if (perceivedEndOfRound) {
