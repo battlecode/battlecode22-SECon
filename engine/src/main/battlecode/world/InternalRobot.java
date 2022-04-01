@@ -200,7 +200,7 @@ public strictfp class InternalRobot implements Comparable<InternalRobot> {
         if (this.health <= 0) {
             this.gameWorld.destroyRobot(this.ID);
         } else if (this.health != oldHealth) {
-            this.gameWorld.getMatchMaker().addAction(getID(), Action.CHANGE_HEALTH, (int)(this.health - oldHealth));
+            this.gameWorld.getMatchMaker().addAction(getID(), Action.CHANGE_HEALTH, (int)((this.health - oldHealth) * 1000));
         }
     }
 
