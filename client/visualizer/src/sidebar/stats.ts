@@ -748,9 +748,9 @@ export default class Stats {
       this.max_bytecode = total;
     }
     if(!nonzero){
-      console.log("waaarning zero bytecodes");
+    //   console.log("waaarning zero bytecodes");
     }else{
-      console.log("Woooooorks000000000");
+    //   console.log("Woooooorks000000000");
     }
     return total;
   }
