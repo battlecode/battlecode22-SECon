@@ -362,7 +362,7 @@ public final strictfp class GameMapIO {
                 int bodyID = bodyTable.robotIDs(i);
                 int bodyX = locs.xs(i);
                 int bodyY = locs.ys(i);
-                int health = bodyTable.healths(i);
+                int health = GameConstants.INITIAL_ROBOT_HEALTH;
                 Team bodyTeam = TeamMapping.team(bodyTable.teamIDs(i));
                 initialBodies.add(new RobotInfo(bodyID, bodyTeam, bodyType, health, new MapLocation(bodyX, bodyY)));
             }

@@ -141,7 +141,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public Team getTeam(int id) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -156,7 +156,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public RobotType getType(int id) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -166,7 +166,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
 
     @Override
     public MapLocation getLocation(int id) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
@@ -180,7 +180,7 @@ public final strictfp class RobotControllerImpl implements RobotController {
  
     @Override
     public float getHealth(int id) throws GameActionException {
-        assertValidIDUse(id);
+        //assertValidIDUse(id);
         if (!checkControllerType()) {
             throw new GameActionException(CANT_DO_THAT,
                 "Only controllers may call this function.");
