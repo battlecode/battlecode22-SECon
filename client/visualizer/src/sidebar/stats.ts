@@ -266,14 +266,13 @@ export default class Stats {
     title.colSpan = 4;
     const label = document.createElement('div');
     label.className = "stats-header";
-    label.innerText = 'Bytecodes Percentage used Per Turn';
+    label.innerText = 'Bytecodes used Per Turn';
 
     const row = document.createElement("tr");
 
     title.appendChild(label);
     table.appendChild(title);
     table.appendChild(row);
-
     return table;
   }
 
@@ -575,7 +574,7 @@ export default class Stats {
         ]
       },
       options: {
-          aspectRatio: 0.75,
+          aspectRatio: 0.7,
           scales: {
             xAxes: [{
               type: 'linear',
@@ -591,7 +590,7 @@ export default class Stats {
                 type: 'linear',
                   ticks: {
                       beginAtZero: true,
-                      max: 1,
+                      max: 100000, 
                   }
               }]
           }
@@ -758,7 +757,7 @@ export default class Stats {
   updateBytecode(bytecodesUsed, team, turn){
     let bytecodesUsedRed = this.getTeamByteCodes(bytecodesUsed, team, 1);
     let bytecodesUsedBlue = this.getTeamByteCodes(bytecodesUsed, team, 2);
-    let maxBytcodes = 100000;
+    let maxBytcodes = 1; 
     let percentageUsedRed = bytecodesUsedRed / maxBytcodes;
     let percentageUsedBlue = bytecodesUsedBlue / maxBytcodes;
     // console.log("updating bytecode");
