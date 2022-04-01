@@ -23,6 +23,7 @@ battlecode/common/MapLocation/toString                                  2    fal
 battlecode/common/MapLocation/translate                                 2    false
 battlecode/common/MapLocation/valueOf                                   25   false
 battlecode/common/RobotController/adjacentLocation                      1    true
+battlecode/common/RobotController/getSpawnLoc                           1    true
 battlecode/common/RobotController/buildRobot                            0    true
 battlecode/common/RobotController/canMine                               10   true
 battlecode/common/RobotController/canBuildRobot                         10   true
