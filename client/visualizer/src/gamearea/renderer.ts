@@ -6,6 +6,7 @@ import { GameWorld, Metadata, schema, Game } from 'battlecode-playback'
 import { AllImages } from '../imageloader'
 import Victor = require('victor')
 import { constants } from 'buffer'
+import { debug } from 'console'
 
 /**
  * Renders the world.
@@ -306,8 +307,19 @@ export default class Renderer {
         this.ctx.lineWidth = cst.SIGHT_RADIUS_LINE_WIDTH
         this.ctx.globalAlpha = 1
 
-        const renderBot = (i: number) => {
+        if (world.explosions) {
+            world.explosions.forEach(e => {
+                // draw effect
+                this.ctx.beginPath()
+                this.ctx.arc(e.x + 0.5, this.flip(e.y, minY, maxY) + 0.5, 1, 0, 2 * Math.PI, false)
+                this.ctx.strokeStyle = e.team == 1 ? 'red' : 'blue'
+                this.ctx.stroke()
+            })
+        }
 
+        const renderBot = (i: number) => {
+            if (actions[i] != -1 && actions[i] != 2)
+                console.log(actions[i])
             let img: HTMLImageElement
 
             img = this.imgs.robots[cst.bodyTypeToString(types[i])][teams[i]]
@@ -326,16 +338,6 @@ export default class Renderer {
             this.drawSightRadii(realXs[i], realYs[i], types[i], ids[i] === this.lastSelectedID)
 
             this.ctx.restore()
-
-            // draw effect
-            if (actions[i] == schema.Action.EXPLODE) {
-                this.ctx.beginPath()
-                this.ctx.arc(realXs[i] + 0.5, realYs[i] + 0.5, 1, 0, 2 * Math.PI, false)
-                this.ctx.strokeStyle = teams[i] == 1 ? 'red' : 'blue'
-                this.ctx.stroke()
-            }
-
-
 
             // if (this.conf.showAnomalies) {
             //     if (actions[i] == schema.Action.LOCAL_ABYSS || actions[i] == schema.Action.LOCAL_CHARGE || actions[i] == schema.Action.LOCAL_FURY) {

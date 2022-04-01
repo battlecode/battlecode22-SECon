@@ -173,6 +173,8 @@ export default class GameWorld {
      */
     logsShift: number = 1;
 
+    explosions: {x:number, y:number, team:number}[] = [];
+
 
     // Cache fields
     // We pass these into flatbuffers functions to avoid allocations, 
@@ -425,6 +427,8 @@ export default class GameWorld {
 
         // Map changes
 
+        this.explosions = []
+
         // Actions
         if (delta.actionsLength() > 0) {
             const arrays = this.bodies.arrays
@@ -451,6 +455,7 @@ export default class GameWorld {
 
                     case schema.Action.EXPLODE:
                         setAction()
+                        this.explosions.push({x:body.x, y:body.y, team: body.team})
                         break
 
                     case schema.Action.MINE_URANIUM:
