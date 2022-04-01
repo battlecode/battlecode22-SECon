@@ -384,7 +384,9 @@ export default class GameWorld {
             statObj.uraniumMined = 0
 
             this.bytecodesUsed[teamID] = delta.teamBytecodesUsed(i)
-            console.log(this.bytecodesUsed[teamID])
+
+
+            // console.log(this.bytecodesUsed[teamID])
             this.teamStats.set(teamID, statObj)
         }
 
@@ -400,7 +402,7 @@ export default class GameWorld {
 
         // Health decay on all existing bodies
         for (let i = 0; i < this.bodies.length; i++) {
-            this.bodies.arrays.hp[i] *= 1 - .0007
+            // this.bodies.arrays.hp[i] *= 1 - .0007
         }
 
         // Spawned bodies
@@ -466,8 +468,8 @@ export default class GameWorld {
                         break
 
                     case schema.Action.CHANGE_HEALTH:
-                        this.bodies.alter({ id: robotID, hp: body.hp + target })
-                        teamStatsObj.total_hp[body.type][0] += target //second index ([0]) was to specify what level this robot is
+                        this.bodies.alter({ id: robotID, hp: body.hp + target / 1000 })
+                        teamStatsObj.total_hp[body.type][0] += target / 1000 //second index ([0]) was to specify what level this robot is
                         break
 
                     case schema.Action.DIE_EXCEPTION:
