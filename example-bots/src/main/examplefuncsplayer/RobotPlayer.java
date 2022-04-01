@@ -43,6 +43,7 @@ public strictfp class RobotPlayer {
      *
      * @param rc  The RobotController object. You use it to perform actions from this robot, and to get
      *            information on its current status. Essentially your portal to interacting with the world.
+     * @throws GameActionException if invalid action is done
      **/
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {
@@ -106,79 +107,54 @@ public strictfp class RobotPlayer {
     }
 
     static void runController(RobotController rc) throws GameActionException {
+        System.out.println("I'm an all powerful controller. (I think) " + rc.getType() + " I have " + rc.getRobotCount() + " robot(s) under my control.");
+        System.out.println("I have " + rc.getTeamUraniumAmount(rc.getTeam()) + " uranium!");
 
-        // System.out.println("I'm an all powerful controller. (I think) " + rc.getType() + " I have " + rc.getRobotCount() + " robot(s) under my control.");
-        System.out.println("Amount uranium " + rc.getTeamUraniumAmount(rc.getTeam()));
-        if (rc.getTeamUraniumAmount(rc.getTeam()) > 1 && rc.getRobotCount() < 10) {
-            int health = rng.nextInt(rc.getTeamUraniumAmount(rc.getTeam()) - 1) + 1;
+        // Try to build a robot with all of our resources, if possible
+        if (rc.getTeamUraniumAmount(rc.getTeam()) > 0) {
+            int health = rc.getTeamUraniumAmount(rc.getTeam());
             if (rc.canBuildRobot(health)) {
                 rc.buildRobot(health);
                 System.out.println("Built new robot of health " + health);
             }
         }
-        RobotInfo[] myRobots = rc.senseNearbyRobots(new MapLocation(0, 0), -1, rc.getTeam());
-        System.out.println("I found " + myRobots.length + " robots to control.");
 
-        for (int i = 0; i < myRobots.length; i ++) {
+        // Get all your robots
+        RobotInfo[] myRobots = rc.senseNearbyRobots(new MapLocation(0, 0), -1, rc.getTeam());
+
+        // Give orders to each robot
+        for (int i = 0; i < myRobots.length; i++) {
             int robotId = myRobots[i].getID();
-            int rngActionInt = rng.nextInt(100);
             MapLocation loc = rc.getLocation(robotId);
             System.out.println("Controlling robot " + robotId + " at location " + loc + " and health " + rc.getHealth(robotId));
-
-            if (rngActionInt < 100 && rc.canMine(robotId)) {
+            
+            if (rc.canMine(robotId)) {
                 // Let's try to mine
                 rc.mine(robotId);
                 System.out.println("Mining, square amount: " + rc.senseUranium(loc) + ", Team Amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-            } else if (rngActionInt < 70 && rc.senseNearbyRobots(rc.getLocation(robotId), 1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
-                System.out.println(rc.senseNearbyRobots(loc, 1, rc.getTeam() == Team.A ? Team.B : Team.A)[0]);
-                // Let's try to explode
-                System.out.println("Trying to explode");
-                if (rc.canExplode(robotId)) {
-                    System.out.println("Exploding");
-                    rc.explode(robotId);
+            } else {
+                // Check if an enemy robot is nearby; if so, run into it
+                for (Direction dir : directions) {
+                    MapLocation adjacent = rc.adjacentLocation(robotId, dir);
+                    if (!rc.onTheMap(adjacent)) {
+                        continue;
+                    }
+                    RobotInfo enemyRobot = rc.senseRobotAtLocation(adjacent);
+                    if (enemyRobot != null && enemyRobot.getTeam() != rc.getTeam() && rc.canMove(robotId, dir)) {
+                        rc.move(robotId, dir);
+                        break;
+                    }
                 }
-            }  else if (rngActionInt < 100) {
+
+                // Move a random direction
                 Direction dir = directions[rng.nextInt(directions.length)];
-                System.out.println("It's time to move " + dir);
-                // Let's try to move
+                System.out.println("Trying to move " + dir);
+
+                // Let's try to move. If the robot already moved to attack it cannot move. 
                 if (rc.canMove(robotId, dir)) {
                     rc.move(robotId, dir);
-                    System.out.println("Can move! Moved to " + rc.getLocation(robotId));
                 }
             }
         }
-        // System.out.println("I'm robot " + rc.getID() + " at " + rc.getLocation());
-        // System.out.println("My action is decided by arbitrary number " + rngActionInt);
-        // System.out.println("I have " + rc.getTeamUraniumAmount(rc.getTeam()) + " uranium and " + rc.getHealth() + " health");
-        // // Try to build, this doesn't add to cooldown
-        // if (rc.getTeamUraniumAmount(rc.getTeam()) > 0) {
-        //     int health = rng.nextInt(rc.getTeamUraniumAmount(rc.getTeam())) + 1;
-        //     if (rc.canBuildRobot(health)) {
-        //         rc.buildRobot(health);
-        //         System.out.println("Build new robot of health " + health);
-        //     }
-        // }
-        // if (rngActionInt < 50 && rc.canMine()) {
-        //     // Let's try to mine
-        //     System.out.println("Mining, original amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-        //     rc.mine();
-        //     System.out.println("Mined, final amount: " + rc.getTeamUraniumAmount(rc.getTeam()));
-        // } else if (rngActionInt < 70 && rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A).length > 0) {
-        //     System.out.println(rc.senseNearbyRobots(1, rc.getTeam() == Team.A ? Team.B : Team.A)[0]);
-        //     // Let's try to explode
-        //     if (rc.canExplode()) {
-        //         System.out.println("Exploding");
-        //         rc.explode();
-        //     }
-        // }  else if (rngActionInt < 100) {
-        //     System.out.println("It's time to move!");
-        //     // Let's try to move
-        //     Direction dir = directions[rng.nextInt(directions.length)];
-        //     System.out.println(dir);
-        //     if (rc.canMove(dir)) {
-        //         rc.move(dir);
-        //         System.out.println("Moving, final place: " + rc.getLocation());
-        //     }
-        // }
     }
 }

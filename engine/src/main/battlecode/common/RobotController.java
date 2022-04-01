@@ -82,7 +82,6 @@ public strictfp interface RobotController {
     /**
      * Returns this robot's Team.
      *
-     * @param id of robot of interest
      * @return the robot's Team
      *
      * @battlecode.doc.costlymethod
@@ -115,8 +114,8 @@ public strictfp interface RobotController {
      *
      * @param id of robot of interest
      * @return the robot's type
-     * @throws if id corresponds to controller robot
-     * @throws GameActionException if not called by a controller
+     * @throws GameActionException if not called by a controller 
+     *  or id corresponds to controller robot
      *  or if called on an ID of a robot you don't own
      * 
      * @battlecode.doc.costlymethod
@@ -316,10 +315,12 @@ public strictfp interface RobotController {
      *
      * @return all locations that contain a nonzero amount of uranium
      *     if not called by a controller
+     * 
+     * @throws GameActionException if not called by a controller
      *
      * @battlecode.doc.costlymethod
      */
-    MapLocation[] senseNearbyLocationsWithUranium() throws GameActionException;;
+    MapLocation[] senseNearbyLocationsWithUranium() throws GameActionException;
 
     /**
      * Return all locations that contain a nonzero amount of uranium, within a
@@ -360,7 +361,7 @@ public strictfp interface RobotController {
 
      * @param id id of robot that gives center for the radius
      * @param radiusSquared the squared radius of all locations to be returned
-     * @param minLead the minimum amount of uranium
+     * @param minUranium the minimum amount of uranium
      * @return all locations that contain at least minUranium uranium within the radius
      * @throws GameActionException if the radius is negative but not -1
      *     if not called by a controller
@@ -378,7 +379,7 @@ public strictfp interface RobotController {
      *
      * @param center the center of the search area
      * @param radiusSquared the squared radius of all locations to be returned
-     * @param minLead the minimum amount of uranium
+     * @param minUranium the minimum amount of uranium
      * @return all locations that contain at least minUranium uranium within the radius
      * @throws GameActionException if the radius is negative but not -1 or center is invalid
      *     if not called by a controller
@@ -527,6 +528,7 @@ public strictfp interface RobotController {
      * Tests whether any robot can explode.
      * 
      * Checks that no cooldown turns remain.
+     * @param id of robot of interest
      * @return whether it is possible to explode
      * @throws GameActionException if not called by a controller
      *  or if called on an ID of a robot you don't own

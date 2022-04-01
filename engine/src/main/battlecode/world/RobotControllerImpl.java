@@ -74,9 +74,13 @@ public final strictfp class RobotControllerImpl implements RobotController {
     private void assertValidIDUse(int id) throws GameActionException {
         assert(checkControllerType());
         // trying to control the other team's robot
-        if (getRobotByID(id).getTeam() != getTeam())
+        if (getRobotByID(id) == null) {
+            throw new GameActionException(CANT_DO_THAT,
+                "You may not operate on a robot that has been destroyed or does not exist.");
+        } else if (getRobotByID(id).getTeam() != getTeam()) {
             throw new GameActionException(CANT_DO_THAT,
                 "You may not operate on another team's robot.");
+        }
     }
 
     private RobotControllerImpl getController(int id) {
