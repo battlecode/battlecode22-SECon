@@ -73,6 +73,7 @@ export default class Stats {
   private redHpHisto: Chart;
   private blueHpHisto: Chart;
   private num_lumps = 20;
+  private max_bytecode = 1;
   //private incomeChartLead: Chart;
   //private incomeChartGold: Chart;
 
@@ -265,7 +266,7 @@ export default class Stats {
     title.colSpan = 4;
     const label = document.createElement('div');
     label.className = "stats-header";
-    label.innerText = 'Bytecodes used Per Turn';
+    label.innerText = 'Bytecodes Percentage used Per Turn';
 
     const row = document.createElement("tr");
 
@@ -574,7 +575,7 @@ export default class Stats {
         ]
       },
       options: {
-          aspectRatio: 0.7,
+          aspectRatio: 0.75,
           scales: {
             xAxes: [{
               type: 'linear',
@@ -590,7 +591,7 @@ export default class Stats {
                 type: 'linear',
                   ticks: {
                       beginAtZero: true,
-                      max: 100000,
+                      max: 1,
                   }
               }]
           }
@@ -733,33 +734,41 @@ export default class Stats {
 
   private getTeamByteCodes(bytecodesUsed, teams, teamNum){
     var total = 0;
-    //var nonzero = false;
+    var nonzero = false;
     for(let i = 0; i < teams.length; i++){
         // console.log(i + " " + teams[i]);
       if(teams[i] == teamNum){
         total += bytecodesUsed[i];
       }
-    //   if(bytecodesUsed[i] != 0){
-    //     let nonzero = true;
-    //   }
+       if(bytecodesUsed[i] != 0){
+         nonzero = true;
+       }
     }
-    //if(!nonzero){
-    //  console.log("waaarning zero bytecodes");
-    //}
+    if (total > this.max_bytecode){
+      this.max_bytecode = total;
+    }
+    if(!nonzero){
+      console.log("waaarning zero bytecodes");
+    }else{
+      console.log("Woooooorks000000000");
+    }
     return total;
   }
 
   updateBytecode(bytecodesUsed, team, turn){
     let bytecodesUsedRed = this.getTeamByteCodes(bytecodesUsed, team, 1);
     let bytecodesUsedBlue = this.getTeamByteCodes(bytecodesUsed, team, 2);
+    let maxBytcodes = 100000;
+    let percentageUsedRed = bytecodesUsedRed / maxBytcodes;
+    let percentageUsedBlue = bytecodesUsedBlue / maxBytcodes;
     // console.log("updating bytecode");
     // console.log(bytecodesUsed);
     // console.log(bytecodesUsedRed);
     // console.log(bytecodesUsedBlue);
     //@ts-ignore
-    this.bytecodeChart.data.datasets[0].data?.push({y: bytecodesUsedRed, x: turn});
+    this.bytecodeChart.data.datasets[0].data?.push({y: percentageUsedRed, x: turn});
     //@ts-ignore
-    this.bytecodeChart.data.datasets[1].data?.push({y: bytecodesUsedBlue, x: turn});
+    this.bytecodeChart.data.datasets[1].data?.push({y: percentageUsedBlue, x: turn});
     this.bytecodeChart.update();
 
     /*
