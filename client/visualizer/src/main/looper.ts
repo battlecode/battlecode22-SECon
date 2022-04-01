@@ -15,8 +15,6 @@ import WebSocketListener from '../main/websocket';
 import { TeamStats } from 'battlecode-playback/out/gameworld';
 
 import { Tournament, readTournament } from '../main/tournament';
-import { ARCHON } from '../constants';
-
 
 import * as bcg from "../../../../schema/ts/battlecode_generated";
 let anomConsts = bcg.battlecode.schema.Action;
@@ -86,9 +84,9 @@ export default class Looper {
             this.lastSelectedID = id;
             this.console.setIDFilter(id);
         };
-        const onMouseover = (x: number, y: number, xrel: number, yrel: number, rubble: number, lead: number, gold: number) => {
+        const onMouseover = (x: number, y: number, xrel: number, yrel: number, wall: number, uranium: number) => {
             // Better make tile type and hand that over
-            controls.setTileInfo(x, y, xrel, yrel, rubble, lead, gold);
+            controls.setTileInfo(x, y, xrel, yrel, wall, uranium);
         };
 
         // Configure renderer for this match
@@ -252,19 +250,16 @@ export default class Looper {
                 // let influence = bodies.influence[index];
                 // let conviction = bodies.conviction[index];
                 let hp = bodies.hp[index]; 
-                let bytecodes = bodies.bytecodesUsed[index];
-                let level = bodies.level[index];
-                let max_hp = level == 1 ? this.meta.types[type].health : level == 2 ? this.meta.types[type].level2Health : this.meta.types[type].level3Health;
-                let dp = level == 1 ? this.meta.types[type].damage : level == 2 ? this.meta.types[type].level2Damage : this.meta.types[type].level3Damage;
+                let bytecodes = 0;
+                // let level = bodies.level[index];
+                //let max_hp = level == 1 ? this.meta.types[type].health : level == 2 ? this.meta.types[type].level2Health : this.meta.types[type].level3Health;
+                //let dp = level == 1 ? this.meta.types[type].damage : level == 2 ? this.meta.types[type].level2Damage : this.meta.types[type].level3Damage;
                 let parent = bodies.parent[index];
-                let prototype = bodies.prototype[index];
-                let portable = bodies.portable[index];
+
                 let indicatorString = this.match.current.indicatorStrings[id]
                 // let bid = bodies.bid[index];
-                let is_building = cst.buildingTypeList.includes(type);
 
-                this.controls.setInfoString(id, x, y, hp, max_hp, dp, cst.bodyTypeToString(type), bytecodes, level, indicatorString,
-                    parent !== 0 ? parent : undefined, is_building ? portable == 1 : undefined, is_building ? prototype == 1 : undefined);
+                this.controls.setInfoString(id, x, y, hp, cst.bodyTypeToString(type), bytecodes, indicatorString, parent !== 0 ? parent : undefined);
             }
         }
 
@@ -319,19 +314,19 @@ export default class Looper {
         //let testAnom = [anomConsts.ABYSS, anomConsts.CHARGE];
         //let testAnomRounds = [300, 1000];
         // TODO: move this to controls
-        for(var i = 0; i < world.anomalies.length; i++){
-            let anom = world.anomalies[i] + anomConsts.ABYSS;
-            let anomRound = world.anomalyRounds[i];
-            this.controls.ctx.save();
-            this.controls.ctx.strokeStyle = (anom === anomConsts.ABYSS) ? "Blue" : (anom === anomConsts.CHARGE) ? "Yellow" : (anom === anomConsts.FURY) ? "Red" : (anom === anomConsts.VORTEX) ? "Purple" : "White";
-            var pos = Math.round(anomRound/ (this.conf.tournamentMode ? this.match.maxTurn : this.match.lastTurn) * this.controls.canvas.width);
-            this.controls.ctx.beginPath();
-            this.controls.ctx.moveTo(pos, 0);
-            this.controls.ctx.lineTo(pos, 1);
-            this.controls.ctx.lineWidth = 4;
-            this.controls.ctx.stroke();
-            this.controls.ctx.restore();
-        }
+        // for(var i = 0; i < world.anomalies.length; i++){
+        //     let anom = world.anomalies[i] + anomConsts.ABYSS;
+        //     let anomRound = world.anomalyRounds[i];
+        //     this.controls.ctx.save();
+        //     this.controls.ctx.strokeStyle = (anom === anomConsts.ABYSS) ? "Blue" : (anom === anomConsts.CHARGE) ? "Yellow" : (anom === anomConsts.FURY) ? "Red" : (anom === anomConsts.VORTEX) ? "Purple" : "White";
+        //     var pos = Math.round(anomRound/ (this.conf.tournamentMode ? this.match.maxTurn : this.match.lastTurn) * this.controls.canvas.width);
+        //     this.controls.ctx.beginPath();
+        //     this.controls.ctx.moveTo(pos, 0);
+        //     this.controls.ctx.lineTo(pos, 1);
+        //     this.controls.ctx.lineWidth = 4;
+        //     this.controls.ctx.stroke();
+        //     this.controls.ctx.restore();
+        // }
     }
 
     /**
@@ -350,8 +345,7 @@ export default class Looper {
         //     }
         // }
 
-        let teamLead: number[] = [];
-        let teamGold: number[] = [];
+        let teamUranium: number[] = [];
         for (let team in meta.teams) {
             let teamID = meta.teams[team].teamID;
             let teamStats = world.teamStats.get(teamID) as TeamStats;
@@ -383,34 +377,33 @@ export default class Looper {
             // this.stats.setBuffs(teamID, teamStats.numBuffs);
             // this.stats.setBid(teamID, teamStats.bid);
             const average = (array) => array.length > 0 ? array.reduce((a, b) => a + b) / array.length : 0;
-            this.stats.setIncome(teamID, average(teamStats.leadMinedHist), average(teamStats.goldMinedHist), world.turn);
+            this.stats.setIncome(teamID, average(teamStats.uraniumMinedHist), world.turn);
             // this.stats.setIncome(teamID, 3 + teamID, 5 + teamID, world.turn);
         }
 
         for(var a = 0; a < teamIDs.length; a++){
             //@ts-ignore
-            teamLead.push(world.teamStats.get(teamIDs[a]).lead);
-            //@ts-ignore
-            teamGold.push(world.teamStats.get(teamIDs[a]).gold);
-            //@ts-ignore
-            //console.log(world.teamStats.get(teamIDs[a]).lead, world.teamStats.get(teamIDs[a]).gold, teamIDs[a]);
+            teamUranium.push(world.teamStats.get(teamIDs[a]).uranium);
         }
     
-        this.stats.updateBars(teamLead, teamGold);
-        this.stats.resetECs();
+        this.stats.updateBars(teamUranium);
+        // this.stats.resetECs();
+        
         const hps = world.bodies.arrays.hp;
         const teams = world.bodies.arrays.team;
+        const bytecodesUsed = world.bytecodesUsed;
         const types = world.bodies.arrays.type;
         const portables = world.bodies.arrays.portable;
         const levels = world.bodies.arrays.portable;
-        teamIDs.forEach((team) => { 
-            for(var i = 0; i < hps.length; i++){
-                if(types[i] == ARCHON && teams[i] == team) {
-                    this.stats.addEC(teams[i], hps[i], portables[i], levels[i]);
-                }
-            }
-        });
-
+        this.stats.updateHistograms(hps, teams);
+        this.stats.updateBytecode(bytecodesUsed, teams, world.turn);
+        // teamIDs.forEach((team) => { 
+        //     for(var i = 0; i < hps.length; i++){
+        //         if(types[i] == ARCHON && teams[i] == team) {
+        //             this.stats.addEC(teams[i], hps[i], portables[i], levels[i]);
+        //         }
+        //     }
+        // });
         if (this.match.winner && this.match.current.turn == this.match.lastTurn) {
             this.stats.setWinner(this.match.winner, teamNames, teamIDs);
         }

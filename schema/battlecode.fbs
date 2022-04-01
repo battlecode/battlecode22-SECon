@@ -236,6 +236,9 @@ table Round {
     /// The total amount of uranium mined by this team, this round
     teamUraniumMined: [int];
 
+    /// The bytecodes used by the teams.
+    teamBytecodesUsed: [int];
+
     /// The IDs of bodies that moved.
     movedIDs: [int];
     /// The new locations of bodies that have moved.
@@ -282,9 +285,6 @@ table Round {
     /// created by the MatchHeader, can be thought to have index 0.)
     /// It should increase by one for each following round.
     roundID: int;
-
-    /// The bytecodes used by the teams.
-    bytecodesUsed: [int];
 }
 
 /// Necessary due to flatbuffers requiring unions to be wrapped in tables.

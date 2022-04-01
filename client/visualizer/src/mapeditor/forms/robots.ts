@@ -22,7 +22,7 @@ export default class RobotForm {
   readonly height: () => number;
 
   // Constant
-  private readonly ROBOT_TYPES: schema.BodyType[] = cst.initialBodyTypeList;
+  private readonly ROBOT_TYPES: schema.BodyType[] = cst.bodyTypeList;
 
   private readonly TEAMS = {
     "1": "Red",

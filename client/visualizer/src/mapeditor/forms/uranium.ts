@@ -4,7 +4,7 @@ import {schema} from 'battlecode-playback';
 
 import {MapUnit} from '../index';
 
-export default class RobotForm {
+export default class UraniumForm {
 
   // The public div
   readonly div: HTMLDivElement;
@@ -63,7 +63,7 @@ export default class RobotForm {
     // form.appendChild(influence);
     form.appendChild(document.createElement("br"));
 
-    lead.appendChild(document.createTextNode("Lead: "));
+    lead.appendChild(document.createTextNode("Uranium: "));
     lead.appendChild(this.lead);
 
     // X coordinate
@@ -104,7 +104,7 @@ export default class RobotForm {
 
   }
 
-  getLead(): number {
+  getUranium(): number {
     return parseInt(this.lead.value);
   }
 

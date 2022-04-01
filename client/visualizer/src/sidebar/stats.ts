@@ -4,7 +4,6 @@ import { AllImages } from '../imageloader';
 import { schema } from 'battlecode-playback';
 import Runner from '../runner';
 import Chart = require('chart.js');
-import { ARCHON } from '../constants';
 
 const hex: Object = {
   1: "#db3627",
@@ -23,8 +22,7 @@ type BuffDisplay = {
 }
 
 type IncomeDisplay = {
-  leadIncome: HTMLSpanElement
-  goldIncome: HTMLSpanElement
+  uraniumIncome: HTMLSpanElement
 }
 
 /**
@@ -49,7 +47,7 @@ export default class Stats {
   private robotTds: Map<number, Map<string, Map<number, HTMLTableCellElement>>> = new Map();
 
   private archonBars: ArchonBar[];
-  private maxVotes: number;
+  //private maxVotes: number;
 
   private incomeDisplays: IncomeDisplay[];
 
@@ -67,8 +65,17 @@ export default class Stats {
 
   private tourneyUpload: HTMLDivElement;
 
-  private incomeChartLead: Chart;
-  private incomeChartGold: Chart;
+
+  private incomeChartUranium: Chart;
+
+  private bytecodeChart: Chart;
+
+  private redHpHisto: Chart;
+  private blueHpHisto: Chart;
+  private num_lumps = 20;
+  private max_bytecode = 1;
+  //private incomeChartLead: Chart;
+  //private incomeChartGold: Chart;
 
   private ECs: HTMLDivElement;
   
@@ -170,11 +177,13 @@ export default class Stats {
   }
 
   private initRelativeBars(teamIDs: Array<number>) {
-    let metalIDs = [0, 1];
+    //let metalIDs = [0, 1];
+    let metalIDs = [0];
     let colors = ["#AA9700", "#696969"];
     const relativeBars: HTMLDivElement[] = [];
     teamIDs.forEach((teamID: number) => metalIDs.forEach((id: number) => {
       const bar = document.createElement("div");
+      //bar.setAttribute("align", ((teamID === teamIDs[0]) ? alignment[0] : alignment[1]));
       bar.style.backgroundColor = colors[id];
       bar.style.border = "5px solid " + ((teamID === teamIDs[0]) ? "#C00040" : "#4000C0");
       bar.style.width = `90%`;
@@ -187,70 +196,85 @@ export default class Stats {
   }
 
   private getRelativeBarsElement(){
-    let metalIDs = [0, 1];
+    //let metalIDs = [0, 1];
+    let metalIDs = [0];
     const divleft = document.createElement("div");
     divleft.setAttribute("align", "center");
     divleft.id = "relative-bars-left";
 
     const labelleft = document.createElement('div');
     labelleft.className = "stats-header";
-    labelleft.innerText = 'Gold';
+    labelleft.innerText = 'Total Red Uranium';
 
     const frameleft = document.createElement("div");
     frameleft.style.width = "100%";
 
     frameleft.appendChild(this.relativeBars[0]);
-    frameleft.appendChild(this.relativeBars[1]);
+    //frameleft.appendChild(this.relativeBars[1]);
 
     divleft.appendChild(labelleft);
     divleft.appendChild(frameleft);
-
+    
     const divright = document.createElement("div");
     divright.setAttribute("align", "center");
     divright.id = "relative-bars-right";
 
     const labelright = document.createElement('div');
     labelright.className = "stats-header";
-    labelright.innerText = 'Lead';
+    labelright.innerText = 'Total Blue Uranium';
 
     const frameright = document.createElement("div");
     frameright.style.width = "100%";
 
-    frameright.appendChild(this.relativeBars[2]);
-    frameright.appendChild(this.relativeBars[3]);
+    frameright.appendChild(this.relativeBars[1]);
+    //frameright.appendChild(this.relativeBars[3]);
 
     divright.appendChild(labelright);
     divright.appendChild(frameright);
+    
+    //return [divleft, divright];
     return [divleft, divright];
   }
 
-  private updateRelBars(teamLead: Array<number>, teamGold: Array<number>){
-    for(var a = 0; a < teamGold.length; a++){
-      this.relativeBars[a].innerHTML = teamGold[a].toString();
-      this.relativeBars[a].style.width = (Math.max(teamGold[0], teamGold[1]) === 0 ? 90:(90.0*teamGold[a]/Math.max(teamGold[0], teamGold[1]))).toString() + "%";
-    }
-    for(var a = 0; a < teamLead.length; a++){
-      this.relativeBars[a+2].innerHTML = teamLead[a].toString();
-      this.relativeBars[a+2].style.width = (Math.max(teamLead[0], teamLead[1]) === 0 ? 90:(90.0*teamLead[a]/Math.max(teamLead[0], teamLead[1]))).toString() + "%";
+  private updateRelBars(teamUranium: Array<number>){
+    for(var a = 0; a < teamUranium.length; a++){
+      this.relativeBars[a].innerHTML = teamUranium[a].toString();
+      this.relativeBars[a].style.width = (Math.max(teamUranium[0], teamUranium[1]) === 0 ? 90:(90.0*teamUranium[a]/Math.max(teamUranium[0], teamUranium[1]))).toString() + "%";
     }
   }
 
   private initIncomeDisplays(teamIDs: Array<number>) {
     const incomeDisplays: IncomeDisplay[] = [];
     teamIDs.forEach((id: number) => {
-      const leadIncome = document.createElement("span");
-      const goldIncome = document.createElement("span");
-      leadIncome.style.color = hex[id];
-      leadIncome.style.fontWeight = "bold";
-      leadIncome.textContent = "L: 0";
-      leadIncome.style.padding = "10px";
-      goldIncome.style.color = hex[id];
-      goldIncome.style.fontWeight = "bold";
-      goldIncome.textContent = "G: 0";
-      goldIncome.style.padding = "10px";
-      incomeDisplays[id] = {leadIncome: leadIncome, goldIncome: goldIncome};
+      const uraniumIncome = document.createElement("span");
+      uraniumIncome.style.color = hex[id];
+      uraniumIncome.style.fontWeight = "bold";
+      uraniumIncome.textContent = "U: 0";
+      uraniumIncome.style.padding = "10px";
+      incomeDisplays[id] = {uraniumIncome: uraniumIncome};
     });
     return incomeDisplays;
+  }
+
+
+  private getByteDisplaysElement(teamIDs: Array<number>): HTMLElement {
+    const table = document.createElement("table");
+    table.id = "byte-table";
+    table.style.width = "100%";
+
+    const title = document.createElement('td');
+    title.colSpan = 4;
+    const label = document.createElement('div');
+    label.className = "stats-header";
+    label.innerText = 'Bytecodes Percentage used Per Turn';
+
+    const row = document.createElement("tr");
+
+    title.appendChild(label);
+    table.appendChild(title);
+    table.appendChild(row);
+
+    return table;
   }
 
   private getIncomeDisplaysElement(teamIDs: Array<number>): HTMLElement {
@@ -262,28 +286,18 @@ export default class Stats {
     title.colSpan = 4;
     const label = document.createElement('div');
     label.className = "stats-header";
-    label.innerText = 'Total Lead & Gold Income Per Turn';
+    label.innerText = 'Uranium Income Per Turn';
 
     const row = document.createElement("tr");
 
-    const cellLead = document.createElement("td");
+    const cellUranium = document.createElement("td");
     teamIDs.forEach((id: number) => {
       
       // cell.appendChild(document.createTextNode("1.001"));
       // cell.appendChild(this.buffDisplays[id].numBuffs);
       // cell.appendChild(document.createTextNode(" = "));
-      cellLead.appendChild(this.incomeDisplays[id].leadIncome);
-      row.appendChild(cellLead);
-    });
-
-    const cellGold = document.createElement("td");
-    teamIDs.forEach((id: number) => {
-      
-      // cell.appendChild(document.createTextNode("1.001"));
-      // cell.appendChild(this.buffDisplays[id].numBuffs);
-      // cell.appendChild(document.createTextNode(" = "));
-      cellGold.appendChild(this.incomeDisplays[id].goldIncome);
-      row.appendChild(cellGold);
+      cellUranium.appendChild(this.incomeDisplays[id].uraniumIncome);
+      row.appendChild(cellUranium);
     });
 
     title.appendChild(label);
@@ -293,25 +307,41 @@ export default class Stats {
     return table;
   }
 
-  private getIncomeLeadGraph() {
+  private getByteCodeGraph(){
     const canvas = document.createElement("canvas");
-    canvas.id = "leadGraph";
+    canvas.id = "byteGraph";
     canvas.className = "graph";
     return canvas;
   }
 
-  private getIncomeGoldGraph() {
+  private getIncomeUraniumGraph() {
     const canvas = document.createElement("canvas");
-    canvas.id = "goldGraph";
+    //canvas.id = "leadGraph";
+    canvas.id = "uraniumGraph";
     canvas.className = "graph";
     return canvas;
   }
+
+  private getHpHistogram(team) {
+    const canvas = document.createElement("canvas");
+    //canvas.id = "leadGraph";
+    canvas.id = team.concat("-hp-histogram");
+    canvas.className = "histogram";
+    return canvas;
+  }
+
+//   private getIncomeGoldGraph() {
+//     const canvas = document.createElement("canvas");
+//     canvas.id = "goldGraph";
+//     canvas.className = "graph";
+//     return canvas;
+//   }
 
   private getECDivElement() {
     const div = document.createElement('div');
     const label = document.createElement('div');
     label.className = "stats-header";
-    label.innerText = 'Archon Status';
+    label.innerText = 'Unit Size Histograms';
     div.appendChild(label);
     div.appendChild(this.ECs);
     return div;
@@ -373,7 +403,7 @@ export default class Stats {
       this.div.removeChild(this.div.firstChild);
     }
     this.relativeBars = [];
-    this.maxVotes = 750;
+    //this.maxVotes = 750; //TODO SECON 
     this.teamMapToTurnsIncomeSet = new Map();
 
     this.div.appendChild(document.createElement("br"));
@@ -441,39 +471,61 @@ export default class Stats {
     this.relativeBars = this.initRelativeBars(teamIDs);
     const relativeBarsElement = this.getRelativeBarsElement();
     relativeBarsElement.forEach((relBar: HTMLDivElement) => { this.div.appendChild(relBar);});
+    
+    this.div.appendChild(document.createElement("hr"));
 
     this.incomeDisplays = this.initIncomeDisplays(teamIDs);
     const incomeElement = this.getIncomeDisplaysElement(teamIDs);
-    this.div.appendChild(incomeElement);
+
+    const byteElement = this.getByteDisplaysElement(teamIDs);
+    
+    //this.div.appendChild(incomeElement);
 
     const graphs = document.createElement("div");
     graphs.style.display = 'flex';
+    
     const leadWrapper = document.createElement("div");
     leadWrapper.style.width = "50%";
     leadWrapper.style.float = "left";
-    const canvasElementLead = this.getIncomeLeadGraph();
-    leadWrapper.appendChild(canvasElementLead);    
+    leadWrapper.appendChild(incomeElement);
+
+    const canvasElementLead = this.getIncomeUraniumGraph();
+    leadWrapper.appendChild(canvasElementLead);
+
+    const byteWrapper = document.createElement("div");
+    byteWrapper.style.width = "50%";
+    byteWrapper.style.float = "right";
+
+    byteWrapper.appendChild(byteElement);
+    
+    const canvasBytecodeElement = this.getByteCodeGraph();
+    byteWrapper.appendChild(canvasBytecodeElement);
+        
     graphs.appendChild(leadWrapper);
-    const goldWrapper = document.createElement("div");
-    goldWrapper.style.width = "50%";
-    goldWrapper.style.float = "right";
-    const canvasElementGold = this.getIncomeGoldGraph();
-    goldWrapper.appendChild(canvasElementGold);    
-    graphs.appendChild(goldWrapper);
+    graphs.appendChild(byteWrapper);
+
+    //const goldWrapper = document.createElement("div");
+    //goldWrapper.style.width = "50%";
+    //goldWrapper.style.float = "right";
+    //const canvasElementGold = this.getIncomeGoldGraph();
+    //goldWrapper.appendChild(canvasElementGold);    
+    //graphs.appendChild(goldWrapper);
+
     this.div.appendChild(graphs);
 
-    this.incomeChartLead = new Chart(canvasElementLead, {
+
+    this.incomeChartUranium = new Chart(canvasElementLead, {
       type: 'line',
       data: {
           datasets: [{
-            label: 'Red Lead',
+            label: 'Red',
             data: [],
             backgroundColor: 'rgba(255, 99, 132, 0)',
             borderColor: 'rgb(131,24,27)',
             pointRadius: 0,
           },
           {
-            label: 'Blue Lead',
+            label: 'Blue',
             data: [],
             backgroundColor: 'rgba(54, 162, 235, 0)',
             borderColor: 'rgb(108, 140, 188)',
@@ -503,6 +555,49 @@ export default class Stats {
       }
     });
 
+    this.bytecodeChart = new Chart(canvasBytecodeElement, {
+      type: 'line',
+      data: {
+          datasets: [{
+            label: 'Red',
+            data: [],
+            backgroundColor: 'rgba(255, 99, 132, 0)',
+            borderColor: 'rgb(131,24,27)',
+            pointRadius: 0,
+          },
+          {
+            label: 'Blue',
+            data: [],
+            backgroundColor: 'rgba(54, 162, 235, 0)',
+            borderColor: 'rgb(108, 140, 188)',
+            pointRadius: 0,
+          }
+        ]
+      },
+      options: {
+          aspectRatio: 0.75,
+          scales: {
+            xAxes: [{
+              type: 'linear',
+              ticks: {
+                beginAtZero: true
+            },
+              scaleLabel: {
+                display: true,
+                labelString: "Turn"
+              }
+            }],
+              yAxes: [{
+                type: 'linear',
+                  ticks: {
+                      beginAtZero: true,
+                      max: 1,
+                  }
+              }]
+          }
+      }
+    });
+    /*
     this.incomeChartGold = new Chart(canvasElementGold, {
       type: 'line',
       data: {
@@ -544,13 +639,156 @@ export default class Stats {
           }
       }
     });
+    */
+    this.div.appendChild(document.createElement("hr"));
 
     this.ECs = document.createElement("div");
-    this.ECs.style.height = "100px";
-    this.ECs.style.display = "flex";
+    //this.ECs.style.height = "100px";
+    //this.ECs.style.display = "flex";
     this.div.appendChild(this.getECDivElement());
 
-    this.div.appendChild(document.createElement("br"));
+    
+
+    const redhistoWrapper = document.createElement("div");
+    redhistoWrapper.style.width = "50%";
+    redhistoWrapper.style.float = "left";
+
+    const canvasElementRedHisto = this.getHpHistogram("red");
+
+    redhistoWrapper.appendChild(canvasElementRedHisto);
+
+
+    var xValues : Array<number> = [];
+    var yValues : Array<number> = [];
+    var barColors  : Array<string> = [];
+    for(let i = 0; i < this.num_lumps; i++){
+      xValues.push(i);
+      yValues.push(i);
+      barColors.push("red");
+    }
+
+
+    this.redHpHisto =  new Chart(canvasElementRedHisto, {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      legend: {display: false},
+      title: {
+        display: false,
+        text: "World Wine Production 2018"
+      }
+    }
+  });
+
+    this.div.appendChild(redhistoWrapper);
+
+//-------------------------------------------
+    const bluehistoWrapper = document.createElement("div");
+    bluehistoWrapper.style.width = "50%";
+    bluehistoWrapper.style.float = "right";
+
+    const canvasElementBlueHisto = this.getHpHistogram("blue");
+
+    bluehistoWrapper.appendChild(canvasElementBlueHisto);
+
+
+    var xValues : Array<number> = [];
+    var yValues : Array<number> = [];
+    var barColors  : Array<string> = [];
+    for(let i = 0; i < this.num_lumps; i++){
+      xValues.push(i);
+      yValues.push(i);
+      barColors.push("blue");
+    }
+
+
+    this.blueHpHisto =  new Chart(canvasElementBlueHisto, {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      legend: {display: false},
+      title: {
+        display: false,
+        text: "World Wine Production 2018"
+      }
+    }
+  });
+
+  this.div.appendChild(bluehistoWrapper);
+  this.div.appendChild(document.createElement("br"));
+
+
+  }
+
+  private getTeamByteCodes(bytecodesUsed, teams, teamNum){
+    var total = 0;
+    var nonzero = false;
+    for(let i = 0; i < teams.length; i++){
+        // console.log(i + " " + teams[i]);
+      if(teams[i] == teamNum){
+        total += bytecodesUsed[i];
+      }
+       if(bytecodesUsed[i] != 0){
+         nonzero = true;
+       }
+    }
+    if (total > this.max_bytecode){
+      this.max_bytecode = total;
+    }
+    if(!nonzero){
+      console.log("waaarning zero bytecodes");
+    }else{
+      console.log("Woooooorks000000000");
+    }
+    return total;
+  }
+
+  updateBytecode(bytecodesUsed, team, turn){
+    let bytecodesUsedRed = this.getTeamByteCodes(bytecodesUsed, team, 1);
+    let bytecodesUsedBlue = this.getTeamByteCodes(bytecodesUsed, team, 2);
+    let maxBytcodes = 100000;
+    let percentageUsedRed = bytecodesUsedRed / maxBytcodes;
+    let percentageUsedBlue = bytecodesUsedBlue / maxBytcodes;
+    // console.log("updating bytecode");
+    // console.log(bytecodesUsed);
+    // console.log(bytecodesUsedRed);
+    // console.log(bytecodesUsedBlue);
+    //@ts-ignore
+    this.bytecodeChart.data.datasets[0].data?.push({y: percentageUsedRed, x: turn});
+    //@ts-ignore
+    this.bytecodeChart.data.datasets[1].data?.push({y: percentageUsedBlue, x: turn});
+    this.bytecodeChart.update();
+
+    /*
+    data: {
+          datasets: [{
+            label: 'Red',
+            data: [],
+            backgroundColor: 'rgba(255, 99, 132, 0)',
+            borderColor: 'rgb(131,24,27)',
+            pointRadius: 0,
+          },
+          {
+            label: 'Blue',
+            data: [],
+            backgroundColor: 'rgba(54, 162, 235, 0)',
+            borderColor: 'rgb(108, 140, 188)',
+            pointRadius: 0,
+          }]
+    */
+
   }
 
   tourIndexJumpFun(e) {
@@ -594,6 +832,8 @@ export default class Stats {
   /**
    * Change the votes of the given team
    */
+ 
+ /*
   setVotes(teamID: number, count: number) {
     // TODO: figure out if statbars.get(id) can actually be null??
     const statBar: ArchonBar = this.archonBars[teamID];
@@ -610,7 +850,7 @@ export default class Stats {
     //   this.images.star.remove();
     // }
   }
-
+  */
   /** setTeamInfluence(teamID: number, influence: number, totalInfluence: number) {
     const relBar: HTMLDivElement = this.relativeBars[teamID];
     relBar.innerText = String(influence);
@@ -618,36 +858,34 @@ export default class Stats {
     else relBar.style.width = String(Math.round(influence * 100 / totalInfluence)) + "%";
   }*/
 
-  setIncome(teamID: number, leadIncome: number, goldIncome: number, turn: number) { // incomes
-    this.incomeDisplays[teamID].leadIncome.textContent = "L: " + String(leadIncome.toFixed(2)); // change incomeDisplays later
-    this.incomeDisplays[teamID].goldIncome.textContent = "G: " + String(goldIncome.toFixed(2));
+  setIncome(teamID: number, uraniumIncome: number, turn: number) { // incomes
+    this.incomeDisplays[teamID].uraniumIncome.textContent = "L: " + String(uraniumIncome.toFixed(2)); // change incomeDisplays later
     if (!this.teamMapToTurnsIncomeSet.has(teamID)) {
       this.teamMapToTurnsIncomeSet.set(teamID, new Set());
     }
     let teamTurnsIncomeSet = this.teamMapToTurnsIncomeSet.get(teamID);
     
-    if (!teamTurnsIncomeSet!.has(turn)) {
-      //@ts-ignore
-      this.incomeChartLead.data.datasets![teamID - 1].data?.push({y: leadIncome, x: turn});
-      //@ts-ignore
-      this.incomeChartGold.data.datasets![teamID - 1].data?.push({y: goldIncome, x: turn});
-      this.incomeChartLead.data.datasets?.forEach((d) => {
-        d.data?.sort((a, b) => a.x - b.x);
-      });
-      this.incomeChartGold.data.datasets?.forEach((d) => {
-        d.data?.sort((a, b) => a.x - b.x);
-      });
-      teamTurnsIncomeSet?.add(turn);
-      this.incomeChartLead.update();
-      this.incomeChartGold.update();
+     if (!teamTurnsIncomeSet!.has(turn)) {
+       //@ts-ignore
+       this.incomeChartUranium.data.datasets![teamID - 1].data?.push({y: uraniumIncome, x: turn});
+       //@ts-ignore
+       this.incomeChartUranium.data.datasets?.forEach((d) => {
+         d.data?.sort((a, b) => a.x - b.x);
+       });
+//       this.incomeChartGold.data.datasets?.forEach((d) => {
+//         d.data?.sort((a, b) => a.x - b.x);
+//       });
+       teamTurnsIncomeSet?.add(turn);
+       this.incomeChartUranium.update();
+//       this.incomeChartGold.update();
+     }
+//     // update bars here
+      //console.log(teamID, count, "fsdfsdf");
+//     //if(robotType === ARCHON) this.updateRelBars(teamID, count);
     }
-    // update bars here
-    //console.log(teamID, count, "fsdfsdf");
-    //if(robotType === ARCHON) this.updateRelBars(teamID, count);
-  }
   
-  updateBars(teamLead: Array<number>, teamGold: Array<number>){
-    this.updateRelBars(teamLead, teamGold);
+  updateBars(teamUranium: Array<number>){
+    this.updateRelBars(teamUranium);
   }
 
   setWinner(teamID: number, teamNames: Array<string>, teamIDs: Array<number>) {
@@ -669,6 +907,114 @@ export default class Stats {
     // }
   }*/
 
+  /*
+  private cleateHistograms(teamRed, teamBlue){
+    const num_lumps = 10;
+
+    const divleft = document.createElement("div");
+    divleft.setAttribute("align", "center");
+    divleft.id = "hp-histogram-left";
+
+    const labelleft = document.createElement('div');
+    labelleft.className = "stats-header";
+    labelleft.innerText = teamRed.concat(" hp histogram");
+
+    const frameleft = document.createElement("div");
+    frameleft.style.width = "100%";
+
+    var xValues : Array<number> = [];
+    var yValues : Array<number> = [];
+    var barColors  : Array<string> = [];
+    for(let i = 0; i < num_lumps; i++){
+      xValues.push(i);
+      yValues.push(0);
+      barColors.push("red");
+    }
+
+    let red_chart = new Chart("red-hp-chart", {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      legend: {display: false},
+      title: {
+        display: false,
+        text: "World Wine Production 2018"
+      }
+    }
+  });
+ 
+
+
+    frameleft.appendChild(red_chart);
+    
+    divleft.appendChild(labelleft);
+    divleft.appendChild(frameleft);
+
+  }
+*/
+  updateHistograms(hp, team){
+    let red_hps : Array<number> = [];
+    let blue_hps : Array<number> = [];
+    for(var i = 0; i < hp.length; i++){
+      if(hp[i] == 0){
+        continue;
+      }
+      if(team[i] == 1){
+        red_hps.push(hp[i]);
+      } else{
+        blue_hps.push(hp[i]);
+      }
+    }
+    
+    //TODO: fetch histograms to update and pass them below
+    this.updateTeamHistogram(red_hps, this.redHpHisto);
+    this.updateTeamHistogram(blue_hps, this.blueHpHisto);
+
+  }
+
+
+  private updateTeamHistogram(hps: Array<number>, histogram: Chart){
+    let granuality = 10 //should be a power of 10
+    let granuality_str = ""
+
+
+    let lump_vals : Array<number> = [];
+    let lump_labels : Array<string> = [];
+    let max_hp = hps.length >= 1? Math.max(...hps) : 1;
+    let min_hp = hps.length >= 1? Math.min(...hps) : 1;
+    if (min_hp < 0){
+      //console.log("wwwaaaarning---------");
+      //console.log("min hp is " + min_hp.toString());
+    }
+    let base = granuality *  Math.floor(min_hp / granuality) 
+    
+    let lump_size = granuality * Math.max(Math.ceil((max_hp - min_hp) / (granuality * this.num_lumps)), 1);
+    
+    
+    for(let i = 0; i < this.num_lumps; i++){
+      let lump_start = base + i * lump_size;
+      let label = (granuality * Math.round(lump_start / granuality)).toString() + granuality_str;
+      lump_labels.push(label);
+      lump_vals.push(0);
+    }
+    for(let i = 0; i < hps.length; i++){
+      let bin_num = Math.floor((hps[i] - base) / lump_size);
+      lump_vals[bin_num] += 1;
+    }
+    //@ts-ignore
+    histogram.data.labels =  lump_labels;
+    //@ts-ignore
+    histogram.data.datasets[0].data = lump_vals;
+    histogram.update();
+    
+  }
+
   setExtraInfo(info: string) {
     this.extraInfo.innerHTML = info;
   }
@@ -678,26 +1024,26 @@ export default class Stats {
     this.tourneyUpload.style.display = this.tourneyUpload.style.display === "none" ? "" : "none";
   }
 
-  resetECs() {
-    while (this.ECs.lastChild) this.ECs.removeChild(this.ECs.lastChild);
-    // console.log(this.ECs);
-    this.ECs.innerHTML = "";
-  }
+//   resetECs() {
+//     while (this.ECs.lastChild) this.ECs.removeChild(this.ECs.lastChild);
+//     // console.log(this.ECs);
+//     this.ECs.innerHTML = "";
+//   }
 
-  addEC(teamID: number, health: number, body_status: number, level: number/*, img: HTMLImageElement */) {
-    const div = document.createElement("div");
-    let size = 1.0/(1 + Math.exp(-(health/100))) + 0.3;
-    div.style.width = (28*size).toString() + "px";
-    div.style.height = (28*size).toString() + "px";
-    div.style.position = 'releative';
-    div.style.top = '50%';
-    div.style.transform  = `translateY(-${50*size - 35}%)`;
-    const img = /* img */this.images.robots.archon[level * 6 + body_status * 2 + teamID].cloneNode() as HTMLImageElement;
-    img.style.width = `${56 * size}px`;
-    img.style.height = `${56 * size}px`; // update dynamically later
-    // img.style.marginTop = `${28*size}px`;
+//   addEC(teamID: number, health: number, body_status: number, level: number/*, img: HTMLImageElement */) {
+//     const div = document.createElement("div");
+//     let size = 1.0/(1 + Math.exp(-(health/100))) + 0.3;
+//     div.style.width = (28*size).toString() + "px";
+//     div.style.height = (28*size).toString() + "px";
+//     div.style.position = 'releative';
+//     div.style.top = '50%';
+//     div.style.transform  = `translateY(-${50*size - 35}%)`;
+//     const img = /* img */this.images.robots.archon[level * 6 + body_status * 2 + teamID].cloneNode() as HTMLImageElement;
+//     img.style.width = `${56 * size}px`;
+//     img.style.height = `${56 * size}px`; // update dynamically later
+//     // img.style.marginTop = `${28*size}px`;
 
-    div.appendChild(img);
-    this.ECs.appendChild(div);
-  }
+//     div.appendChild(img);
+//     this.ECs.appendChild(div);
+//   }
 }
