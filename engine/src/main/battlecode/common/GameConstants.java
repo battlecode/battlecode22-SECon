@@ -9,7 +9,7 @@ public class GameConstants {
     /**
      * The current spec version the server compiles with.
      */
-    public static final String SPEC_VERSION = "2022sec.0.1.0";
+    public static final String SPEC_VERSION = "2022sec.0.1.5";
 
     // *********************************
     // ****** MAP CONSTANTS ************
