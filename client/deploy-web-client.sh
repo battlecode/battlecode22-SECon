@@ -1,7 +1,8 @@
 # TODO move this to deploy folder
 # TODO enforce state of repo up-to-date
 # TODO year as arg
-# TODO prereqs: npm, tsc, java?, flatc
+# TODO prereqs: npm, tsc, java?.
+# TODO i think flatc is only a prereq, if you do npm run build within the schema folder.
 
 BUCKET_NAME="bc-game-storage"
 # TODO make gs://$BUCKET_NAME/clients/2022/ a var, and use it
@@ -12,10 +13,10 @@ read -p "Press enter to proceed..."
 
 cd ../schema
 npm install
-# Don't do npm run build; 
+# For now, Don't do npm run build; 
 # this regenerates flatbuffers which is pretty annoying
 # npm run build
-# TODO the following replacement could be done automatically i think
+# NOTE!! in case npm run build is run, the following change needs to be made. Uncomment the echo's and read.
 # echo "IMPORTANT: "
 # echo "NOW, change line 3 of schema/ts/battlecode_generated.ts to \`import { flatbuffers } from \"flatbuffers\"\`."
 # echo "DON'T FORGET TO SAVE!"
